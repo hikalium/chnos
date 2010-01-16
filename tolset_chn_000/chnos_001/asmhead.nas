@@ -1,12 +1,35 @@
 
 
 [INSTRSET "i486p"]
-[BITS 16]
+VBEMODE	equ		0x117			; 640 x  480 x 16bitカラー
+; （画面モード一覧）
+;	0x100 :  640 x  400 x 8bitカラー
+;	0x101 :  640 x  480 x 8bitカラー
+;	0x103 :  800 x  600 x 8bitカラー
+;	0x105 : 1024 x  768 x 8bitカラー
+;	0x107 : 1280 x 1024 x 8bitカラー
+;	0x111 :  640 x  480 x 16bitカラー
+;	0x114 :  800 x  600 x 16bitカラー
+;	0x117 : 1024 x  768 x 16bitカラー
+;	0x11A : 1280 x 1024 x 16bitカラー
 
+BOTPAK	equ		0x00280000		; bootpackのロード先
+DSKCAC	equ		0x00100000		; ディスクキャッシュの場所
+DSKCAC0	equ		0x00008000		; ディスクキャッシュの場所（リアルモード）
+
+; BOOT_INFO関係
+CYLS	equ		0x0ff0			; ブートセクタが設定する
+LEDS	equ		0x0ff1
+VMODE	equ		0x0ff2			; 色数に関する情報。何ビットカラーか？
+SCRNX	equ		0x0ff4			; 解像度のX
+SCRNY	equ		0x0ff6			; 解像度のY
+VRAM	equ		0x0ff8			; グラフィックバッファの開始番地
+
+
+[BITS 16]
 
 	org	0xc200
 asmhead:
-
 	mov	ax, 0
 	mov	ss, ax
 	mov	sp, 0xc200
@@ -19,12 +42,17 @@ asmhead:
 	mov	es, ax		    ; esに0xB800を入れる。
 	mov	edi, 0		    ; 画面の一番前から始める。
 	call	printf
+
 	call	a20_try_loop
 	lea	esi, [msg002]    ; 文字列があるところのアドレスをesiに代入する。
 	mov	ax, 0xB800
 	mov	es, ax		    ; esに0xB800を入れる。
 	mov	edi, 80*2	    ; 画面の二行目から始める。
 	call	printf
+
+	call	vbecheck
+	call	keyled
+	call	pmode
 
 
 	call	halthalt
@@ -103,7 +131,7 @@ a20_kbc:
 	call	empty_8042
 
 	mov	al, 0xDF		    ; A20 on
-	out    0x60, al
+	out	0x60, al
 	call	empty_8042
 
 ; A20が本当にONになるまで待つ。これはあるシステムでは
@@ -125,7 +153,7 @@ a20_fast:
 
 ; 制御ポートAに効果が出るのを待つ
 a20_fast_wait:
-	xor    cx, cx
+	xor	cx, cx
 a20_fast_wait_loop:
 	call	a20_test
 	jnz	a20_done
@@ -145,7 +173,7 @@ a20_die:
 	jmp	halthalt
 
 a20_tries:
-	db   A20_ENABLE_LOOPS
+	db	A20_ENABLE_LOOPS
 
 ; ここまで来ると、A20がONになったとしていい。
 a20_done:
@@ -166,7 +194,7 @@ a20_test_wait:
 	mov	word [fs:A20_TEST_ADDR], ax
 	call	delay				
 	cmp	ax, word [gs:A20_TEST_ADDR+0x10]
-	loop   a20_test_wait
+	loop	a20_test_wait
 
 	pop	word [fs:A20_TEST_ADDR]
 	pop	ax
@@ -174,34 +202,148 @@ a20_test_wait:
 	ret	
 
 empty_8042:
-	push   ecx
-	mov    ecx, 100000
+	push	ecx
+	mov	ecx, 100000
 
 empty_8042_loop:
-	dec    ecx
-	jz     empty_8042_end_loop
+	dec	ecx
+	jz	empty_8042_end_loop
 
-	call   delay
+	call	delay
 
-	in     al, 0x64 		    ; 8042状態ポート 
-	test   al, 1			    ; 出力バッファをテスト
-	jz     no_output
+	in	al, 0x64 		    ; 8042状態ポート 
+	test	al, 1		; 出力バッファをテスト
+	jz	no_output
 
-	call   delay
-	in    al, 0x60			    ; 読む
-	jmp    empty_8042_loop
+	call	delay
+	in	al, 0x60			    ; 読む
+	jmp	empty_8042_loop
 
 no_output:
-	test   al, 2			    ; 入力バッファがいっぱいになったか 
-	jnz    empty_8042_loop		    ; yes ? loopを回る
+	test	al, 2			    ; 入力バッファがいっぱいになったか 
+	jnz	empty_8042_loop		    ; yes ? loopを回る
 
 empty_8042_end_loop:
-	pop    ecx
+	pop	ecx
 	ret
 
 delay:
-	out    0x80, al
+	out	0x80, al
 	ret
+
+vbecheck:
+	mov	ax,0x9000
+	mov	es,ax
+	mov	di,0
+	mov	ax,0x4f00
+	int	0x10
+	cmp	ax,0x004f
+	jne	scrn320
+	mov	ax,[es:di+4]
+	cmp	ax,0x0200
+	jb	scrn320
+	mov	cx,VBEMODE
+	mov	ax,0x4f01
+	int	0x10
+	cmp	ax,0x004f
+	jne	scrn320
+	cmp	byte[es:di+0x19],16
+	jne	scrn320
+	cmp	byte[es:di+0x1b],6
+	jne	scrn320
+	mov	ax,[es:di+0x00]
+	and	ax,0x0080
+	jz	scrn320
+	mov	bx,VBEMODE+0x4000
+	mov	ax,0x4f02
+	int	0x10
+	mov	byte[VMODE],16
+	mov	ax,[es:di+0x12]
+	mov	[SCRNX],ax
+	mov	ax,[es:di+0x14]
+	mov	[SCRNY],ax
+	mov	eax,[es:di+0x28]
+	mov	[VRAM],eax
+	ret
+
+scrn320:
+	mov	al,0x13
+	mov	ah,0x00
+	int	0x10
+	mov	byte[VMODE],8
+	mov	word[SCRNX],320
+	mov	word[SCRNY],200
+	mov	dword[VRAM],0x000a0000
+	ret
+
+keyled:
+	mov	ah,0x02
+	int	0x16
+	mov	[LEDS],al
+	ret
+
+pmode:
+	mov	al,0xff
+	out	0x21,al
+	nop
+	out	0xa1,al
+	cli
+
+	lgdt	[GDTR0]
+	mov	eax,cr0
+	and	eax,0x7fffffff
+	or	eax,0x00000001
+	mov	cr0,eax
+	jmp	pipelineflush
+pipelineflush:
+	mov	ax,1*8
+	mov	ds,ax
+	mov	es,ax
+	mov	fs,ax
+	mov	gs,ax
+	mov	ss,ax
+	mov	esi,bootpack	;転送元
+	mov	edi,BOTPAK	;転送先
+	mov	ecx,512*1024/4
+	call	memcpy
+	mov	esi,0x7c00
+	mov	edi,DSKCAC
+	mov	ecx,512/4
+	call	memcpy
+	mov	esi,DSKCAC0+512
+	mov	edi,DSKCAC+512
+	mov	ecx,0
+	mov	cl,byte[CYLS]
+	imul	ecx,512*18*2/4
+	sub	ecx,512/4
+	call	memcpy
+	
+	mov	ebx,BOTPAK
+	mov	ecx,[ebx+16]
+	add	ecx,3
+	shr	ecx,2
+	jz	skip
+	mov	esi,[ebx+20]
+	add	esi,ebx
+	mov	edi,[ebx+12]
+	call	memcpy
+skip:
+	mov	esp,[ebx+12]
+	jmp	dword 2*8:0x0000001b
+
+
+memcpy:
+	mov		eax,[esi]
+	add		esi,4
+	mov		[edi],eax
+	add		edi,4
+	sub		ecx,1
+	jnz		memcpy			; 引き算した結果が0でなければmemcpyへ
+	ret
+
+
+	
+
 
 
 ;データ
@@ -210,6 +352,20 @@ msg001:	db	"Welcome to chnos project .",0
 msg002:	db	"A20GATE on .",0
 msg003:	db	"A20GATE filed .",0
 backcc:	db	".",0
+
+		alignb	16
+GDT0:
+		resb	8				; ヌルセレクタ
+		dw		0xffff,0x0000,0x9200,0x00cf	; 読み書き可能セグメント32bit
+		dw		0xffff,0x0000,0x9a28,0x0047	; 実行可能セグメント32bit（bootpack用）
+
+		dw		0
+GDTR0:
+		dw		8*3-1
+		dd		GDT0
+
+		alignb	16
+bootpack:
 
 
 

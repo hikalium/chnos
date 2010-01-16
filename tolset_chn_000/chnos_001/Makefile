@@ -8,7 +8,7 @@ BIN2OBJ  = $(TOOLPATH)bin2obj.exe
 GAS2NASK = $(TOOLPATH)gas2nask.exe -a
 OBJ2BIM  = $(TOOLPATH)obj2bim.exe
 BIM2HRB  = $(TOOLPATH)bim2hrb.exe
-RULEFILE = $(TOOLPATH)chnos/chnos.rul
+RULEFILE = $(TOOLPATH)CHNOSProject/CHNOSP.rul
 EDIMG    = $(TOOLPATH)edimg.exe
 IMGTOL   = $(TOOLPATH)imgtol.com
 MAKEFONT = $(TOOLPATH)makefont.exe
@@ -34,12 +34,28 @@ hankaku.obj : hankaku.bin Makefile
 asmhead.bin : asmhead.nas Makefile
 	$(NASK) asmhead.nas asmhead.bin asmhead.lst
 
+bootpack.gas : bootpack.c Makefile
+	$(CC1) -o bootpack.gas bootpack.c
+
+bootpack.nas : bootpack.gas Makefile
+	$(GAS2NASK) bootpack.gas bootpack.nas
+
+bootpack.obj : bootpack.nas Makefile
+	$(NASK) bootpack.nas bootpack.obj bootpack.lst
+
 naskfunc.obj : naskfunc.nas Makefile
 	$(NASK) naskfunc.nas naskfunc.obj naskfunc.lst
 
+bootpack.bim : bootpack.obj naskfunc.obj hankaku.obj Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:bootpack.bim stack:3136k map:bootpack.map \
+		bootpack.obj naskfunc.obj hankaku.obj
+# 3MB+64KB=3136KB
 
-chnos.sys : asmhead.bin Makefile
-	copy /B asmhead.bin chnos.sys
+bootpack.hrb : bootpack.bim Makefile
+	$(BIM2HRB) bootpack.bim bootpack.hrb 0
+
+chnos.sys : asmhead.bin bootpack.hrb Makefile
+	copy /B asmhead.bin+bootpack.hrb chnos.sys
 
 chnos.img : chnipl.bin chnos.sys Makefile
 	$(EDIMG)   imgin:../z_tools/fdimg0at.tek \
@@ -66,6 +82,10 @@ clean :
 	-$(DEL) *.lst
 	-$(DEL) *.gas
 	-$(DEL) *.obj
+	-$(DEL) bootpack.nas
+	-$(DEL) bootpack.map
+	-$(DEL) bootpack.bim
+	-$(DEL) bootpack.hrb
 	-$(DEL) chnos.sys
 
 src_only :
