@@ -29,6 +29,39 @@ struct BOOTINFO { /* 0x0ff0-0x0fff */
 #define ADR_BOOTINFO	0x00000ff0
 #define ADR_DISKIMG		0x00100000
 
+struct VESAINFO {/*0xe00--->512byte*/
+	unsigned short ModeAttributes;
+	unsigned char WinAAttributes;
+	unsigned char WinBAttributes;
+	unsigned short WinGranularity;
+	unsigned short WinSize;
+	unsigned short WinASegment;
+	unsigned short WinBSegment;
+	unsigned int WinFuncPtr;
+	unsigned short BytesPerScanLine;
+	unsigned short XResolution;
+	unsigned short YResolution;
+	unsigned char XCharSize;
+	unsigned char YCharSize;
+	unsigned char NumberOfPlanes;
+	unsigned char BitsPerPixel;
+	unsigned char NumberOfBanks;
+	unsigned char MemoryModel;
+	unsigned char BankSize;
+	unsigned char NumberOfImagePages;
+	unsigned char Reserved;
+	unsigned char RedMaskSize;
+	unsigned char RedFieldPosition;
+	unsigned char GreenMaskSize;
+	unsigned char GreenFieldPosition;
+	unsigned char BlueMaskSize;
+	unsigned char BlueFieldPosition;
+	unsigned char RsvdMaskSize;
+	unsigned char RsvdFieldPodition;
+	unsigned char DirectColorModeInfo;
+	unsigned int PhysBasePtr;
+};
+
 /* naskfunc.nas */
 void clts(void);
 void fnsave(int *addr);

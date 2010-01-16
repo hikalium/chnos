@@ -247,6 +247,14 @@ delay:
 	ret
 
 vbecheck:
+
+	mov	ax,0xe0
+	mov	es,ax
+	mov	di,0
+	mov	cx,VBEMODE
+	mov	ax,0x4f01
+	int	0x10
+
 	mov	ax,0x9000
 	mov	es,ax
 	mov	di,0
@@ -269,6 +277,7 @@ vbecheck:
 	mov	ax,[es:di+0x00]
 	and	ax,0x0080
 	jz	scrn320
+
 	mov	bx,VBEMODE+0x4000
 	mov	ax,0x4f02
 	int	0x10
