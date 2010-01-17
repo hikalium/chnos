@@ -59,7 +59,7 @@ struct VESAINFO {/*0xe00--->512byte*/
 	unsigned char RsvdMaskSize;
 	unsigned char RsvdFieldPodition;
 	unsigned char DirectColorModeInfo;
-	unsigned int PhysBasePtr;
+	unsigned short *PhysBasePtr;
 };
 
 /* naskfunc.nas */
