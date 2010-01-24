@@ -1,4 +1,5 @@
 #include "core.h"
+#include <stdio.h>
 #define RGB16(r,g,b) ((r)<<11|(g)<<5|(b))
 
 void boxfill16(unsigned short *vram, int xsize, unsigned short c, int x0, int y0, int x1, int y1);
@@ -7,15 +8,28 @@ void putfonts16_asc(unsigned short *vram, int xsize, int x, int y, unsigned shor
 void putfont16(unsigned short *vram, int xsize, int x, int y, unsigned short c, char *font);
 void init_mouse_cursor16(short *mouse, unsigned short bc);
 void putblock16_16(unsigned short *vram, int vxsize, int pxsize,int pysize, int px0, int py0, short *buf, int bxsize);
+void readrtc(unsigned char *t);
+
+
+
 
 void CHNMain(void)
 {	
-	unsigned short mousecur[1024];
+	unsigned char s[24], t[7];
+	unsigned short mousecur[576];
 	struct BOOTINFO *binfo = (struct BOOTINFO *) 0x0ff0;
 	struct VESAINFO *vinfo = (struct VESAINFO *) 0x0e00;
 	init_scrn(vinfo->PhysBasePtr, binfo->scrnx, binfo->scrny);
 	init_mouse_cursor16(mousecur, RGB16(5,10,5));
-	putblock16_16(vinfo->PhysBasePtr, binfo->scrnx, 32, 32, binfo->scrnx/2, binfo->scrny/2, mousecur, 32);
+	putblock16_16(vinfo->PhysBasePtr, binfo->scrnx, 24, 24, binfo->scrnx/2, binfo->scrny/2, mousecur, 24);
+
+	for (;;){
+	readrtc(t);
+	sprintf(s, "%02X%02X.%02X.%02X %02X:%02X:%02X\n", t[6], t[5], t[4], t[3], t[2], t[1], t[0]);
+	boxfill16(vinfo->PhysBasePtr, binfo->scrnx, RGB16(20,40,30), binfo->scrnx - 200, binfo->scrny - 40, binfo->scrnx, binfo->scrny);
+	putfonts16_asc(vinfo->PhysBasePtr, binfo->scrnx, binfo->scrnx - 200, binfo->scrny - 40, RGB16(0,0,0), s);
+	io_hlt();
+	}
 	for(;;) {
 	io_hlt();
 	}
@@ -75,52 +89,44 @@ void putfont16(unsigned short *vram, int xsize, int x, int y, unsigned short c, 
 
 void init_mouse_cursor16(short *mouse, unsigned short bc)
 {
-	static char cursor[32][32] = {
-		"***.............................",
-		"*O**............................",
-		"*OO**...........................",
-		"*OOO**..........................",
-		"*OOOO**.........................",
-		"*OOOOO**........................",
-		"*OOOOOO**.......................",
-		"*OOOOOOO**......................",
-		"*OOOOOOOO**.....................",
-		"*OOOOOOOOO**....................",
-		"*OOOOOOOOOO**...................",
-		"*OOOOOOOOOOO**..................",
-		"*OOOOOOOOOOOO**.................",
-		"*OOOOOOOOOOOOO**................",
-		"*OOOOOOOOOOOOOO**...............",
-		"*OOOOOOOOOOOOOOO**..............",
-		"*OOOOOOOOOOOOOOOO**.............",
-		"*OOOOOOOOOOOOOOOOO**............",
-		"*OOOOOOOOOOOOOOOOOO**...........",
-		"*OOOOOOOOOOOOOOOOOOO**..........",
-		"*OOOOOOOOOO************.........",
-		"*OOOOOOOOOO*....................",
-		"*OOOOOOOOOOO*...................",
-		"*OOOOOOO*OOO*...................",
-		"*OOOOOO**OOOO*..................",
-		"*OOOOO**.*OOO*..................",
-		"*OOOO**..*OOOO*.................",
-		"*OOO**....*OOO*.................",
-		"*OO**.....*OOO*.................",
-		"*O**.......***..................",
-		"***.............................",
-		"**.............................."
+	static char cursor[24][24] = {
+		"........................",
+		"*O**....................",
+		"*OO**...................",
+		"*OOO**..................",
+		"*OOOO**.................",
+		"*OOOOO**................",
+		"*OOOOOO**...............",
+		"*OOOOOOO**..............",
+		"*OOOOOOOO**.............",
+		"*OOOOOOOOO**............",
+		"*OOOOOOOOOO**...........",
+		"*OOOOOOOOOOO**..........",
+		"*OOOOOOOOOOOO**.........",
+		"*OOOOOOOOOOOOO**........",
+		"*OOOOOOOOOOOOOO**.......",
+		"*OOOOOOOOOOOOOOO**......",
+		"*OOOOOOOOOOOOOOOO**.....",
+		"*OOOOOO*************....",
+		"*OOOOO**................",
+		"*OOOO**.................",
+		"*OOO**..................",
+		"*OO**...................",
+		"*O**....................",
+		"***.....................",
 	};
 	int x, y;
 
-	for (y = 0; y < 32; y++) {
-		for (x = 0; x < 32; x++) {
+	for (y = 0; y < 24; y++) {
+		for (x = 0; x < 24; x++) {
 			if (cursor[y][x] == '*') {
-				mouse[y * 32 + x] = RGB16(0,0,0);
+				mouse[y * 24 + x] = RGB16(0,0,0);
 			}
 			if (cursor[y][x] == 'O') {
-				mouse[y * 32 + x] = RGB16(31,62,31);
+				mouse[y * 24 + x] = RGB16(31,62,31);
 			}
 			if (cursor[y][x] == '.') {
-				mouse[y * 32 + x] = bc;
+				mouse[y * 24 + x] = bc;
 			}
 		}
 	}
@@ -136,5 +142,29 @@ void putblock16_16(unsigned short *vram, int vxsize, int pxsize,int pysize, int 
 		}
 	}
 	return;
+}
+
+void readrtc(unsigned char *t)
+{
+    char err;
+    static unsigned char adr[7] = { 0x00, 0x02, 0x04, 0x07, 0x08, 0x09, 0x32 };
+    static unsigned char max[7] = { 0x60, 0x59, 0x23, 0x31, 0x12, 0x99, 0x99 };
+    int i;
+    for (;;) { /* “Ç‚Ýž‚Ý‚ª¬Œ÷‚·‚é‚Ü‚ÅŒJ‚è•Ô‚· */
+        err = 0;
+        for (i = 0; i < 7; i++) {
+            io_out8(0x70, adr[i]);
+            t[i] = io_in8(0x71);
+        }
+        for (i = 0; i < 7; i++) {
+            io_out8(0x70, adr[i]);
+            if (t[i] != io_in8(0x71) || (t[i] & 0x0f) > 9 || t[i] > max[i]) {
+                err = 1;
+            }
+        }
+        if (err == 0) {
+            return;
+        }
+    }
 }
 
