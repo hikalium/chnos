@@ -15,7 +15,7 @@ void readrtc(unsigned char *t);
 
 void CHNMain(void)
 {	
-	unsigned char s[24], t[7];
+	unsigned char s[24], t[7], beforet = 0xff;
 	unsigned short mousecur[576];
 	struct BOOTINFO *binfo = (struct BOOTINFO *) 0x0ff0;
 	struct VESAINFO *vinfo = (struct VESAINFO *) 0x0e00;
@@ -25,10 +25,14 @@ void CHNMain(void)
 
 	for (;;){
 	readrtc(t);
-	sprintf(s, "%02X%02X.%02X.%02X %02X:%02X:%02X\n", t[6], t[5], t[4], t[3], t[2], t[1], t[0]);
+
+	if (beforet != t[0]) {
+	sprintf(s, "%02X%02X.%02X.%02X %02X:%02X:%02X", t[6], t[5], t[4], t[3], t[2], t[1], t[0]);
 	boxfill16(vinfo->PhysBasePtr, binfo->scrnx, RGB16(20,40,30), binfo->scrnx - 200, binfo->scrny - 40, binfo->scrnx, binfo->scrny);
 	putfonts16_asc(vinfo->PhysBasePtr, binfo->scrnx, binfo->scrnx - 200, binfo->scrny - 40, RGB16(0,0,0), s);
-	io_hlt();
+	beforet = t[0];
+		}
+
 	}
 	for(;;) {
 	io_hlt();
