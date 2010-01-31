@@ -1,23 +1,16 @@
+/*関数的定義*/
+
+#define RGB16(r,g,b) ((r)<<11|(g)<<5|(b))
 
 
-#define COL8_000000		0
-#define COL8_FF0000		1
-#define COL8_00FF00		2
-#define COL8_FFFF00		3
-#define COL8_0000FF		4
-#define COL8_FF00FF		5
-#define COL8_00FFFF		6
-#define COL8_FFFFFF		7
-#define COL8_C6C6C6		8
-#define COL8_840000		9
-#define COL8_008400		10
-#define COL8_848400		11
-#define COL8_000084		12
-#define COL8_840084		13
-#define COL8_008484		14
-#define COL8_848484		15
+/*単なる数値の定義*/
+
+#define ADR_BOOTINFO	0x00000ff0
+#define ADR_DISKIMG	0x00100000
+
 
 /* asmhead.nas */
+
 struct BOOTINFO { /* 0x0ff0-0x0fff */
 	char cyls; /* ブートセクタはどこまでディスクを読んだのか */
 	char leds; /* ブート時のキーボードのLEDの状態 */
@@ -26,8 +19,6 @@ struct BOOTINFO { /* 0x0ff0-0x0fff */
 	short scrnx, scrny; /* 画面解像度 */
 	char *vram;
 };
-#define ADR_BOOTINFO	0x00000ff0
-#define ADR_DISKIMG		0x00100000
 
 struct VESAINFO {/*0xe00--->512byte*/
 	unsigned short ModeAttributes;
@@ -61,6 +52,17 @@ struct VESAINFO {/*0xe00--->512byte*/
 	unsigned char DirectColorModeInfo;
 	unsigned short *PhysBasePtr;
 };
+
+
+/*bootpack.c*/
+void boxfill16(unsigned short *vram, int xsize, unsigned short c, int x0, int y0, int x1, int y1);
+void init_scrn(unsigned short *vram, int xsize, int ysize);
+void putfonts16_asc(unsigned short *vram, int xsize, int x, int y, unsigned short c, unsigned char *s);
+void putfont16(unsigned short *vram, int xsize, int x, int y, unsigned short c, char *font);
+void init_mouse_cursor16(short *mouse, unsigned short bc);
+void putblock16_16(unsigned short *vram, int vxsize, int pxsize,int pysize, int px0, int py0, short *buf, int bxsize);
+void readrtc(unsigned char *t);
+
 
 /* naskfunc.nas */
 void clts(void);
