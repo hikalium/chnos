@@ -34,6 +34,8 @@ void init_scrn(unsigned short *vram, int xsize, int ysize )
 	boxfill16(vram,xsize,RGB16(20,40,30),0,ysize-40,xsize,ysize);
 	boxfill16(vram,xsize,RGB16(20,40,30),xsize/2-8,ysize/2-8,xsize/2+8,ysize/2+8);
 	putfonts16_asc(vram, xsize, 8, 8, RGB16(31,62,31), "welcome to CHNOSProject!");
+	putfonts16_asc(vram, xsize, 8, 24, RGB16(31,62,31), "Ö³º¿ CHNOSÌßÛ¼Þª¸ÄÍ!");
+	putfonts16_asc(vram, xsize, 8, 40, RGB16(31,62,31), "¶ÀºÄÃÞ½¶Þ ÆÎÝºÞ¶Þ ¶¹ÙÖ³Æ ÅØÏ¼À");
 	return;
 
 }
