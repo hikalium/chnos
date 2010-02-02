@@ -1,7 +1,7 @@
 
 
 [INSTRSET "i486p"]
-VBEMODE	equ		0x117			; 640 x  480 x 16bitカラー
+VBEMODE	equ		0x114			
 ; （画面モード一覧）
 ;0x0100  640x400  256  
 ;0x0101  640x480  256  

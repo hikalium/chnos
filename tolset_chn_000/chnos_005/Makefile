@@ -1,3 +1,5 @@
+OBJS_BOOTPACK = bootpack.obj naskfunc.obj hankaku.obj
+
 TOOLPATH = ../z_tools/
 INCPATH  = ../z_tools/CHNOSProject/
 
@@ -14,6 +16,7 @@ IMGTOL   = $(TOOLPATH)imgtol.com
 MAKEFONT = $(TOOLPATH)makefont.exe
 COPY     = copy
 DEL      = del
+SJISCONV = $(TOOLPATH)sjisconv.exe -s
 
 # デフォルト動作
 
@@ -46,9 +49,9 @@ bootpack.obj : bootpack.nas Makefile
 naskfunc.obj : naskfunc.nas Makefile
 	$(NASK) naskfunc.nas naskfunc.obj naskfunc.lst
 
-bootpack.bim : bootpack.obj naskfunc.obj hankaku.obj Makefile
+bootpack.bim : $(OBJS_BOOTPACK) Makefile
 	$(OBJ2BIM) @$(RULEFILE) out:bootpack.bim stack:3136k map:bootpack.map \
-		bootpack.obj naskfunc.obj hankaku.obj
+		$(OBJS_BOOTPACK)
 # 3MB+64KB=3136KB
 
 bootpack.hrb : bootpack.bim Makefile
@@ -62,6 +65,22 @@ chnos.img : chnipl.bin chnos.sys Makefile
 		wbinimg src:chnipl.bin len:512 from:0 to:0 \
 		copy from:chnos.sys to:@: \
 		imgout:chnos.img
+
+#一般規則
+
+%.ca : %.c Makefile
+	$(SJISCONV) $*.c $*.ca
+
+%.gas : %.ca bootpack.h Makefile
+	$(CC1) -o $*.gas $*.ca
+
+%.nas : %.gas Makefile
+	$(GAS2NASK) $*.gas $*.nas
+
+%.obj : %.nas Makefile
+	$(NASK) $*.nas $*.obj $*.lst
+
+
 
 # コマンド
 
