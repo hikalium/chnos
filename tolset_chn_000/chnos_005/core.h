@@ -1,3 +1,7 @@
+/*include files*/
+
+#include <stdio.h>
+
 /*ä÷êîìIíËã`*/
 
 #define RGB16(r,g,b) ((r)<<11|(g)<<5|(b))
@@ -55,14 +59,16 @@ struct VESAINFO {/*0xe00--->512byte*/
 
 
 /*bootpack.c*/
+
+void readrtc(unsigned char *t);
+
+/*graphic.h*/
 void boxfill16(unsigned short *vram, int xsize, unsigned short c, int x0, int y0, int x1, int y1);
 void init_scrn(unsigned short *vram, int xsize, int ysize);
 void putfonts16_asc(unsigned short *vram, int xsize, int x, int y, unsigned short c, unsigned char *s);
 void putfont16(unsigned short *vram, int xsize, int x, int y, unsigned short c, char *font);
 void init_mouse_cursor16(short *mouse, unsigned short bc);
 void putblock16_16(unsigned short *vram, int vxsize, int pxsize,int pysize, int px0, int py0, short *buf, int bxsize);
-void readrtc(unsigned char *t);
-
 
 /* naskfunc.nas */
 void clts(void);

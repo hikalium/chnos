@@ -1,4 +1,4 @@
-OBJS_BOOTPACK = bootpack.obj naskfunc.obj hankaku.obj
+OBJS_BOOTPACK = bootpack.obj naskfunc.obj hankaku.obj graphic.obj
 
 TOOLPATH = ../z_tools/
 INCPATH  = ../z_tools/CHNOSProject/
@@ -71,7 +71,7 @@ chnos.img : chnipl.bin chnos.sys Makefile
 %.ca : %.c Makefile
 	$(SJISCONV) $*.c $*.ca
 
-%.gas : %.ca bootpack.h Makefile
+%.gas : %.ca core.h Makefile
 	$(CC1) -o $*.gas $*.ca
 
 %.nas : %.gas Makefile
