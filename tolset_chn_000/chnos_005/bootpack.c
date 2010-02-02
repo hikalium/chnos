@@ -7,7 +7,7 @@ void CHNMain(void)
 	struct BOOTINFO *binfo = (struct BOOTINFO *) 0x0ff0;
 	struct VESAINFO *vinfo = (struct VESAINFO *) 0x0e00;
 	init_scrn(vinfo->PhysBasePtr, binfo->scrnx, binfo->scrny);
-	init_mouse_cursor16(mousecur, RGB16(5,10,5));
+	init_mouse_cursor16(mousecur, DESKTOP_COL);
 	putblock16_16(vinfo->PhysBasePtr, binfo->scrnx, 24, 24, binfo->scrnx/2, binfo->scrny/2, mousecur, 24);
 
 	for (;;){

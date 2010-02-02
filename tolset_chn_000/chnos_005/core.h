@@ -7,6 +7,7 @@
 #define RGB16(r,g,b) ((r)<<11|(g)<<5|(b))
 
 
+
 /*単なる数値の定義*/
 
 #define ADR_BOOTINFO	0x00000ff0
@@ -63,6 +64,9 @@ struct VESAINFO {/*0xe00--->512byte*/
 void readrtc(unsigned char *t);
 
 /*graphic.h*/
+#define DESKTOP_COL RGB16(10,20,10)		/*初期値：10,20,10*/
+#define TASKBAR_COL RGB16(20,40,30)		/*初期値：20,40,30*/
+
 void boxfill16(unsigned short *vram, int xsize, unsigned short c, int x0, int y0, int x1, int y1);
 void init_scrn(unsigned short *vram, int xsize, int ysize);
 void putfonts16_asc(unsigned short *vram, int xsize, int x, int y, unsigned short c, unsigned char *s);
