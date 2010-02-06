@@ -1,7 +1,7 @@
 
 
 [INSTRSET "i486p"]
-VBEMODE	equ		0x114			
+VBEMODE	equ		0x0114			
 ; （画面モード一覧）
 ;0x0100  640x400  256  
 ;0x0101  640x480  256  
@@ -77,8 +77,13 @@ asmhead:
 ;	サブルーチン
 
 halthalt:
-	hlt
-	jmp	halthalt
+	lea	esi, [msg005]    ; 文字列があるところのアドレスをesiに代入する。
+	mov	ax, 0xB800
+	mov	es, ax		    ; esに0xB800を入れる。
+	mov	edi, 80*2*2*2*2	    ; 画面の二行目から始める。
+	call	printf	
+	call	entkeywait
+	call	shutdown
 
 printf:
 	push	eax		    ; すでにあったeax値をスタックに保存しておく。
@@ -291,6 +296,13 @@ vbecheck:
 	ret
 
 scrn320:
+
+	lea	esi, [msg004]    ; 文字列があるところのアドレスをesiに代入する。
+	mov	ax, 0xB800
+	mov	es, ax		    ; esに0xB800を入れる。
+	mov	edi, 80*2*2*2	    ; 画面の二行目から始める。
+	call	printf
+	jmp	halthalt
 	mov	al,0x13
 	mov	ah,0x00
 	int	0x10
@@ -357,24 +369,68 @@ skip:
 
 
 memcpy:
-	mov		eax,[esi]
-	add		esi,4
-	mov		[edi],eax
-	add		edi,4
-	sub		ecx,1
-	jnz		memcpy			; 引き算した結果が0でなければmemcpyへ
+	mov	eax,[esi]
+	add	esi,4
+	mov	[edi],eax
+	add	edi,4
+	sub	ecx,1
+	jnz	memcpy			; 引き算した結果が0でなければmemcpyへ
 	ret
 
+entkeywait:
+	mov	ah,0
+	int	0x16
+	cmp	ah,0x1c
+	jne	entkeywait
+	ret
 
-	
+shutdown:
+	mov	ax,0x5300
+	mov	bx,0
+	int	0x15
+	jc	thend
+	mov	ax,0x5301
+	mov	bx,0
+	int	0x15
+	mov	ax,0x530e
+	mov	bx,0
+	mov	cx,0x0101
+	int	0x15
+	jc	thend
+	mov	ax,0x530f
+	mov	bx,0x0001
+	mov	cx,0x0001
+	int	0x15
+	jc	thend
+	mov	ax,0x5308
+	mov	bx,0x0001
+	mov	cx,0x0001
+	int	0x15
+	jc	thend
+	mov	ax,0x5307
+	mov	bx,0x0001
+	mov	cx,0x0003
+	int	0x15
+	hlt
 
-
+thend:
+	lea	esi, [msg006]    ; 文字列があるところのアドレスをesiに代入する。
+	mov	ax, 0xB800
+	mov	es, ax		    ; esに0xB800を入れる。
+	mov	edi, 80*2*2*2*2	    ; 画面の二行目から始める。
+	call	printf
+thend2:
+	hlt
+	jmp	thend2	
 
 ;データ
 
 msg001:	db	"Welcome to chnos project .",0
 msg002:	db	"A20GATE on .",0
 msg003:	db	"A20GATE filed .",0
+msg004:	db	"Video mode is not supported or invalid.",0
+msg005:	db	"Press the Enter key to shut down ...",0
+msg006:	db	"Sorry . Shutdown filed . Press power button ."
 backcc:	db	".",0
 
 		alignb	16
