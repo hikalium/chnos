@@ -1,7 +1,7 @@
 
 
 [INSTRSET "i486p"]
-VBEMODE	equ		0x0114			
+VBEMODE	equ		0x0000			
 ; （画面モード一覧）
 ;0x0100  640x400  256  
 ;0x0101  640x480  256  
@@ -28,161 +28,136 @@ VBEMODE	equ		0x0114
 ;0x011B  1280x1024  約1678万色(8:8:8)  
 
 
-BOTPAK	equ		0x00280000		; bootpackのロード先
-DSKCAC	equ		0x00100000		; ディスクキャッシュの場所
-DSKCAC0	equ		0x00008000		; ディスクキャッシュの場所（リアルモード）
+BOTPAK	equ		0x00280000		;bootpackのロード先
+DSKCAC	equ		0x00100000		;ディスクキャッシュの場所
+DSKCAC0	equ		0x00008000		;ディスクキャッシュの場所（リアルモード）
 
 ; BOOT_INFO関係
-CYLS	equ		0x0ff0			; ブートセクタが設定する
-LEDS	equ		0x0ff1
-VMODE	equ		0x0ff2			; 色数に関する情報。何ビットカラーか？
-SCRNX	equ		0x0ff4			; 解像度のX
-SCRNY	equ		0x0ff6			; 解像度のY
-VRAM	equ		0x0ff8			; グラフィックバッファの開始番地
+CYLS	equ		0x0ff0			;ブートセクタが設定する
+LEDS	equ		0x0ff1			;キーボードの状態を記録
+VMODE	equ		0x0ff2			;色数に関する情報。何ビットカラーか？（VESAINFOを使用することを推奨）
+SCRNX	equ		0x0ff4			;解像度のX（VESAINFOを使用することを推奨）
+SCRNY	equ		0x0ff6			;解像度のY（VESAINFOを使用することを推奨）
+VRAM	equ		0x0ff8			;グラフィックバッファの開始番地（VESAINFOを使用することを推奨）
 
 
 [BITS 16]
 
-	org	0xc200
-asmhead:
-	mov	ax, 0
-	mov	ss, ax
-	mov	sp, 0xc200
-	mov	ds, ax
-	mov	es, ax
+	org	0xc200				;このプログラムは、0xc200番地から始まる
+asmhead:					
+	mov	ax, 0				;レジスタ初期化。axを0に。
+	mov	ss, ax				;レジスタ初期化。ssをaxに。つまり、ssを0に。
+	mov	sp, 0xc200			;スタックポインタを初期化。spを0xc200に。
+	mov	ds, ax				;レジスタ初期化。dsをaxに。つまり、dsを0に。
+	mov	es, ax				;レジスタ初期化。esをaxに。つまり、esを0に。
 
-	call	backc
-	lea	esi, [msg001]    ; 文字列があるところのアドレスをesiに代入する。
-	mov	ax, 0xB800
-	mov	es, ax		    ; esに0xB800を入れる。
-	mov	edi, 0		    ; 画面の一番前から始める。
-	call	printf
+	call	backc				;テキストモード背景の初期化。
+	lea	esi, [msg001]    		;msg001のアドレスをesiに代入する。
+	mov	ax, 0xB800			;アドレスの指定。テキストモードは、0xB800から始まる。
+	mov	es, ax		    		;esに0xB800を入れる。esに直接代入はできないので。
+	mov	edi, 0			    	;文字の位置指定。ゼロ行目は0。一行目は80*2。
+	call	printf				;printfを呼び出す。
 
-	call	a20_try_loop
-	lea	esi, [msg002]    ; 文字列があるところのアドレスをesiに代入する。
-	mov	ax, 0xB800
-	mov	es, ax		    ; esに0xB800を入れる。
-	mov	edi, 80*2	    ; 画面の二行目から始める。
-	call	printf
+	call	a20_try_loop			;A20GATEをonにする。失敗すると、戻ってこない。
+	lea	esi, [msg002]			;msg002のアドレスをesiに代入する。
+	mov	ax, 0xB800			;アドレスの指定。テキストモードは、0xB800から始まる。
+	mov	es, ax				;esに0xB800を入れる。esに直接代入はできないので。
+	mov	edi, 80*2			;画面の一行目から始める。
+	call	printf				;printfを呼び出す。
 
-	call	vbecheck
-	call	keyled
-	call	pmode
-
-
-	call	halthalt
+	call	vbecheck			;VesaBiosExtentionで画面モード切替。失敗すると、戻ってこない。
+	call	keyled				;BIOSを利用して、キーボードのLEDなどの情報を取得。
+	call	pmode				;プロテクテッド・バーチャルアドレスモードに移行。戻ってこない。
 
 
-
-;	サブルーチン
+;サブルーチン
 
 halthalt:
-	lea	esi, [msg005]    ; 文字列があるところのアドレスをesiに代入する。
-	mov	ax, 0xB800
-	mov	es, ax		    ; esに0xB800を入れる。
-	mov	edi, 80*2*2*2*2	    ; 画面の二行目から始める。
-	call	printf	
-	call	entkeywait
-	call	shutdown
+	lea	esi, [msg005]			;msg003のアドレスをesiに代入する。
+	mov	ax, 0xB800			;アドレスの指定。テキストモードは、0xB800から始まる。
+	mov	es, ax		    		;esに0xB800を入れる。esに直接代入はできないので。
+	mov	edi, 80*2*2*2*2			;画面の四行目から始める。
+	call	printf				;printfを呼び出す。
+	call	entkeywait			;エンターキーを押すまで戻ってこない。
+	call	shutdown			;シャットダウンする。
 
-printf:
-	push	eax		    ; すでにあったeax値をスタックに保存しておく。
-
+printf:						;テキストモード文字表示ルーチン
+	push	eax		 		;eaxをスタックに保存。
 printf_loop:
-	mov	al, byte [esi]	    ; esiが指しているアドレスから文字を1つ持ってくる。
-	mov	byte [es:edi], al   ; 文字を画面に表示する
-	or	al, al		    ; alが0なのかを調べる。
-	jz	printf_end	    ; 0であれば、printf_endにジャンプする。
-	inc	edi		    ; 0でなければ、ediを1つ増やして
-	mov	byte [es:edi], 0x06 ; 文字の色と背景色の値を入れる。
-	inc	esi		    ; 次の文字を取り出すためにesiを1つ増やす。
-	inc	edi		    ; 画面に次の文字を表示するためにediを増やす。
-	jmp	printf_loop	    ; ループを回る。
-
+	mov	al, byte [esi]			;esi番地の文字をalに代入。
+	mov	byte [es:edi], al		;alを画面の指定した番地に代入。
+	or	al, al				;alが0なのかを調べる。
+	jz	printf_end			;0であれば、printf_endにジャンプする。
+	inc	edi				;0でなければ、ediを1つ増やす
+	mov	byte [es:edi], 0x06		;文字の色と背景色の値を入れる。
+	inc	esi				;次の文字を取り出すためにesiを1つ増やす。
+	inc	edi				;画面に次の文字を表示するためにediを増やす。
+	jmp	printf_loop			;printf_loopに行く。これを文字数分繰り返す。
 printf_end:
-	pop	eax		    ; スタックに保存しておいたeaxを再び取り出す。
-	ret			    ; 呼び出し元に戻る。
+	pop	eax				;スタックに保存しておいたeaxをeaxに戻す。
+	ret					;呼び出し元に戻る。
 
-backc:
-	mov	ax,0xb800
-	mov	es,ax
-	mov	di,0
-	mov	ax,word[backcc]
-	mov	cx,0x7ff
+backc:						;テキストモード背景色描画ルーチン
+	mov	ax,0xb800			;アドレスの指定。テキストモードは、0xB800から始まる。
+	mov	es,ax				;esに0xB800を入れる。esに直接代入はできないので。
+	mov	di,0				;画面の一番初めから始める。
+	mov	ax,word[backcc]			;axに書く文字を代入。
+	mov	cx,0x7ff			;0x7ff回繰り返す。
 	
-paint:
-	mov	word[es:di],ax
-	add	di,2
-	dec	cx
-	jnz	paint
-	ret
+paint:						;テキストモード背景色描画ルーチンループ
+	mov	word[es:di],ax			;画面の番地にaxを代入。
+	add	di,2				;画面の番地を増やす。
+	dec	cx				;cxを減らして、回数を数える。
+	jnz	paint				;cxがゼロではなかったら、また繰り返す。
+	ret					;cxがゼロだったら、呼び出し元に戻る。
 
-A20_TEST_LOOPS		equ  32 	  ; waitするたびに繰り返す回数
-A20_ENABLE_LOOPS	equ 255 	  ;  テストする loop の合計
-A20_TEST_ADDR		equ 4*0x80
+A20_TEST_LOOPS		equ	32 	  	;A20GATEがONになったかテストするループの回数。
+A20_ENABLE_LOOPS	equ	255 	 	;A20GATEがONになるまでがんばる全体のループの回数。 
+A20_TEST_ADDR		equ	4*0x80		;A20GATEテスト対象のアドレス。
 
 
-a20_try_loop:
-
-; まず、コンピュータにA20がないか調べる
+a20_try_loop:					;A20GATE有効化ルーチン
 a20_none:
-	call	a20_test
-	jnz	a20_done
-
-; 次に	BIOS (INT 0x15, AX=0x2401)をテストしてみる
-	a20_bios:
-	mov	ax, 0x2401 
-	pushfd				    ; FLAGをちょっと深く疑う
-	int	0x15
-	popfd
-
-	call	a20_test
-	jnz	a20_done
-	
-; キーボードコントローラを通じてA20をONにしてみる
-a20_kbc:
-	call	empty_8042
-
-	call	a20_test		    ; BIOS機能で施されている場合 
-	jnz	a20_done		    ; delayされた反応
-
-	mov	al, 0xD1		    ; commandをライトする
-	out	0x64, al
-	call	empty_8042
-
-	mov	al, 0xDF		    ; A20 on
-	out	0x60, al
-	call	empty_8042
-
-; A20が本当にONになるまで待つ。これはあるシステムでは
-; 相当長い時間が掛る可能性がある
-; Toshiba Tecrasはこういう問題を持っていると言われる
-a20_kbc_wait:
-	xor	cx, cx
+	call	a20_test			;A20GATEがすでにONになっていないか調べる。
+	jnz	a20_done			;すでにONだったら必要ないので、終了。
+a20_bios:					;BIOS (INT 0x15, AX=0x2401)を使用したA20GATE有効化を試す。
+	mov	ax, 0x2401			;機能番号0x2401=A20をオンにする。
+						;機能番号0x2400=A20をオフにする。
+	pushfd					;FLAGSをスタックに保存。
+	int	0x15				;BIOS INT 0x15
+	popfd					;FLAGSをスタックから復元。
+	call	a20_test			;ONになったか調べる。
+	jnz	a20_done			;ONになっていたら終了。そうじゃなかったら続く。
+a20_kbc:					;キーボードコントローラー（KBC）を使用したA20GATE有効化を試す。
+	call	empty_8042			;KBCのステータスレジスタを読んで、データポートが空になるまで待つ。
+	call	a20_test			;なんとなくもう一回、ONになったか調べる。
+	jnz	a20_done			;ONになっていたら終了。そうじゃなかったら続く。
+	mov	al, 0xD1			;alに0xd1を代入。
+	out	0x64, al			;KBCのコマンド出力（ポート0x64）に0xd1を代入。直接代入できないので。
+	call	empty_8042			;KBCのステータスレジスタを読んで、データポートが空になるまで待つ。
+	mov	al, 0xDF			;alに0xdfを代入。
+	out	0x60, al			;KBCのデータ出力（ポート0x60）に0x60(A20GATE)
+	call	empty_8042			;KBCのステータスレジスタを読んで、データポートが空になるまで待つ。
+a20_kbc_wait:					;とにかく待つ。
+	xor	cx, cx				;loopの回数を指定。
 a20_kbc_wait_loop:
-	call	a20_test
-	jnz	a20_done
-	loop	a20_kbc_wait_loop
-
-; 最後の試み: "制御ポート A"
-a20_fast:
-	in	al, 0x92		    ; 制御ポートA
-	or	al, 0x02		    ; "fast A20" バージョンは
-	and	al, 0xFE		    ; 急にRESETされない
-	out	0x92, al
-
-; 制御ポートAに効果が出るのを待つ
-a20_fast_wait:
-	xor	cx, cx
+	call	a20_test			;ONになったか調べる。
+	jnz	a20_done			;ONになっていたら終了。
+	loop	a20_kbc_wait_loop		;loop(dec cxをして、ゼロになるまで何度もループ)。
+a20_fast:					;最終手段　system control port（ポート0x92）。
+	in	al, 0x92			;system control portをalに代入。
+	or	al, 0x02			;alに0x02をor計算する。つまり、bit1を1にしている。
+						;bit1=1=A20GATEをONにする。bit1=0=A20GATEをOFFにする。
+	and	al, 0xFE			;さらに、alに0xfeをand計算する。
+	out	0x92, al			;system control portにalを戻す。
+a20_fast_wait:					;とにかく待つ。
+	xor	cx, cx				;loopの回数を指定。
 a20_fast_wait_loop:
-	call	a20_test
-	jnz	a20_done
-	loop	a20_fast_wait_loop
-
-; A20がまだ反応を見せない。繰り返してみる
-; 
-	dec	byte [a20_tries]
-	jnz	a20_try_loop
+	call	a20_test			;ONになったか調べる。
+	jnz	a20_done			;ONになっていたら終了。
+	loop	a20_fast_wait_loop		;loop(dec cxをして、ゼロになるまで何度もループ)。
+	dec	byte [a20_tries]		;全体の繰り返し回数を一回減らす。
+	jnz	a20_try_loop			;ゼロになるまであきらめず、最初から。。。
 
 a20_die:
 	lea	esi, [msg003]    ; 文字列があるところのアドレスをesiに代入する。
