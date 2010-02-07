@@ -18,10 +18,23 @@
 		GLOBAL	_start_app
 		GLOBAL  _asm_osselect_third
 		GLOBAL  _clts, _fnsave, _frstor
+		GLOBAL	_pit_beep_on, _pit_beep_off
 
 
 
 [SECTION .text]
+_pit_beep_on:
+	in	al,0x61
+	or	al,0x03
+	and	al,0x0f
+	out	0x61,al
+	ret
+
+_pit_beep_off:
+	in	al,0x61
+	and	al,0xd
+	out	0x61,al
+	ret
 
 _asm_osselect_third:   ; void asm_osselect_third(int esp);
         MOV     AX,SS           ; SS‚É‚Í8‚ª“ü‚Á‚Ä‚¢‚é‚Ì‚Å‚»‚ê‚ðŽg‚¤

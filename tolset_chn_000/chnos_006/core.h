@@ -55,7 +55,7 @@ struct VESAINFO {/*0xe00--->512byte*/
 	unsigned char RsvdMaskSize;
 	unsigned char RsvdFieldPodition;
 	unsigned char DirectColorModeInfo;
-	unsigned short *PhysBasePtr;
+	unsigned int *PhysBasePtr;
 };
 
 
@@ -64,17 +64,68 @@ struct VESAINFO {/*0xe00--->512byte*/
 void readrtc(unsigned char *t);
 
 /*graphic.h*/
-#define DESKTOP_COL RGB16(10,20,10)		/*初期値：10,20,10*/
-#define TASKBAR_COL RGB16(20,40,30)		/*初期値：20,40,30*/
 
+#define COL8_000000		0
+#define COL8_FF0000		1
+#define COL8_00FF00		2
+#define COL8_FFFF00		3
+#define COL8_0000FF		4
+#define COL8_FF00FF		5
+#define COL8_00FFFF		6
+#define COL8_FFFFFF		7
+#define COL8_C6C6C6		8
+#define COL8_840000		9
+#define COL8_008400		10
+#define COL8_848400		11
+#define COL8_000084		12
+#define COL8_840084		13
+#define COL8_008484		14
+#define COL8_848484		15
+
+#define DESKTOP_COL8	COL8_C6C6C6
+#define TASKBAR_COL8	COL8_0000FF
+
+#define DESKTOP_COL16	RGB16(17,33,17)		/*初期値：10,20,10*/
+#define TASKBAR_COL16	RGB16(20,40,30)		/*初期値：20,40,30*/
+
+#define DESKTOP_COL32	0xC6C6C6
+#define TASKBAR_COL32	0x0000FF
+
+/*全色対応*/
+void init_scrn_i(unsigned int *vram, int xsize, int ysize, unsigned char bits);
+void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
+
+/*8bits*/
+void init_palette(void);
+void set_palette(int start, int end, unsigned char *rgb);
+
+void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1);
+void init_scrn8(unsigned char *vram, int x, int y);
+void putfont8(unsigned char *vram, int xsize, int x, int y, unsigned char c, unsigned char *font);
+void putfonts8_asc(unsigned char *vram, int xsize, int x, int y, unsigned char c, unsigned char *s);
+void init_mouse_cursor8(unsigned char *mouse, unsigned char bc);
+void putblock8_8(unsigned char *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned char *buf, int bxsize);
+
+/*16bits*/
 void boxfill16(unsigned short *vram, int xsize, unsigned short c, int x0, int y0, int x1, int y1);
-void init_scrn(unsigned short *vram, int xsize, int ysize);
+void init_scrn16(unsigned short *vram, int xsize, int ysize, unsigned short *mousecur);
+void putfont16(unsigned short *vram, int xsize, int x, int y, unsigned short c, unsigned char *font);
 void putfonts16_asc(unsigned short *vram, int xsize, int x, int y, unsigned short c, unsigned char *s);
-void putfont16(unsigned short *vram, int xsize, int x, int y, unsigned short c, char *font);
-void init_mouse_cursor16(short *mouse, unsigned short bc);
-void putblock16_16(unsigned short *vram, int vxsize, int pxsize,int pysize, int px0, int py0, short *buf, int bxsize);
+void init_mouse_cursor16(unsigned short *mouse, unsigned short bc);
+void putblock16_16(unsigned short *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned short *buf, int bxsize);
+
+/*32bits*/
+void boxfill32(unsigned int *vram, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
+void init_scrn32(unsigned int *vram, int xsize, int ysize);
+void putfont32(unsigned int *vram, int xsize, int x, int y, unsigned int c, unsigned char *font);
+void putfonts32_asc(unsigned int *vram, int xsize, int x, int y, unsigned int c, unsigned char *s);
+void init_mouse_cursor32(unsigned int *mouse, unsigned int bc);
+void putblock32_32(unsigned int *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned int *buf, int bxsize);
+
 
 /* naskfunc.nas */
+void pit_beep_on(void);
+void pit_beep_off(void);
 void clts(void);
 void fnsave(int *addr);
 void frstor(int *addr);

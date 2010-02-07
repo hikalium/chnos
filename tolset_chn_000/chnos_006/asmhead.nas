@@ -1,7 +1,7 @@
 
 
 [INSTRSET "i486p"]
-VBEMODE	equ		0x0000			
+VBEMODE	equ		0x0114		
 ; （画面モード一覧）
 ;0x0100  640x400  256  
 ;0x0101  640x480  256  
@@ -250,10 +250,10 @@ vbecheck:
 	int	0x10
 	cmp	ax,0x004f
 	jne	scrn320
-	cmp	byte[es:di+0x19],16
-	jne	scrn320
-	cmp	byte[es:di+0x1b],6
-	jne	scrn320
+;	cmp	byte[es:di+0x19],16
+;	jne	scrn320
+;	cmp	byte[es:di+0x1b],6
+;	jne	scrn320
 	mov	ax,[es:di+0x00]
 	and	ax,0x0080
 	jz	scrn320
