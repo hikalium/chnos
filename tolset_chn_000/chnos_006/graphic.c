@@ -3,15 +3,19 @@
 /*ägí£ëSÉÇÅ[ÉhëŒâûî≈*/
 void init_scrn_i(unsigned int *vrami, int xsize, int ysize, unsigned char bits)
 {
-	char s[10];
-	sprintf(s,"%d",bits);
-	unsigned short *vram = (unsigned short *)vrami;
-	boxfill16(vram,xsize,DESKTOP_COL16,0,0,xsize,ysize);
-	boxfill16(vram,xsize,TASKBAR_COL16,0,ysize-40,xsize,ysize);
-	putfonts16_asc(vram, xsize, 8, 8, RGB16(31,62,31), "welcome to CHNOSProject! on 16bit video mode .");
-	putfonts16_asc(vram, xsize, 8, 24, RGB16(31,62,31), "÷≥∫ø CHNOSÃﬂ€ºﬁ™∏ƒÕ!");
-	putfonts16_asc(vram, xsize, 8, 40, RGB16(31,62,31), "∂¿∫ƒ√ﬁΩ∂ﬁ ∆Œ›∫ﬁ∂ﬁ ∂πŸ÷≥∆ ≈ÿœº¿");
-	putfonts16_asc(vram, xsize, 8, 56, RGB16(31,62,31), s);
+	if(bits == 8){
+	unsigned char mousecur8 [256];
+	unsigned char *vram8 = (unsigned char *)vrami;
+	init_palette();
+	init_scrn8(vram8, xsize, ysize ,mousecur8);
+	} else if(bits == 16){
+	unsigned short mousecur16 [576];
+	unsigned short *vram16 = (unsigned short *)vrami;
+	init_scrn16(vram16, xsize, ysize ,mousecur16);
+	} else if(bits == 32){
+	unsigned int mousecur32 [576];
+	init_scrn32(vrami, xsize, ysize ,mousecur32);
+	}
 	return;
 }
 
@@ -93,13 +97,15 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, i
 	return;
 }
 
-void init_scrn8(unsigned char *vram, int xsize, int ysize)
+void init_scrn8(unsigned char *vram, int xsize, int ysize, unsigned char *mousecur)
 {
 	boxfill8(vram,xsize,DESKTOP_COL8,0,0,xsize,ysize);
 	boxfill8(vram,xsize,TASKBAR_COL8,0,ysize-40,xsize,ysize);
 	putfonts8_asc(vram, xsize, 8, 8, COL8_FFFFFF, "welcome to CHNOSProject! on 8bit video mode .");
 	putfonts8_asc(vram, xsize, 8, 24, COL8_FFFFFF, "÷≥∫ø CHNOSÃﬂ€ºﬁ™∏ƒÕ!");
 	putfonts8_asc(vram, xsize, 8, 40, COL8_FFFFFF, "∂¿∫ƒ√ﬁΩ∂ﬁ ∆Œ›∫ﬁ∂ﬁ ∂πŸ÷≥∆ ≈ÿœº¿");
+	init_mouse_cursor8(mousecur, DESKTOP_COL8);
+	putblock8_8(vram, xsize,16, 16, xsize/2, ysize/2, mousecur, 16);
 	return;
 }
 
@@ -182,6 +188,8 @@ void putblock8_8(unsigned char *vram, int vxsize, int pxsize,int pysize, int px0
 }
 
 /*16bits*/
+
+
 void boxfill16(unsigned short *vram, int xsize, unsigned short c, int x0, int y0, int x1, int y1)
 {
 	int x, y;
@@ -305,13 +313,15 @@ void boxfill32(unsigned int *vram, int xsize, unsigned int c, int x0, int y0, in
 }
 
 
-void init_scrn32(unsigned int *vram, int xsize, int ysize )
+void init_scrn32(unsigned int *vram, int xsize, int ysize, unsigned int *mousecur)
 {
 	boxfill32(vram,xsize,DESKTOP_COL32,0,0,xsize,ysize);
 	boxfill32(vram,xsize,TASKBAR_COL32,0,ysize-40,xsize,ysize);
 	putfonts32_asc(vram, xsize, 8, 8, 0xFFFFFF, "welcome to CHNOSProject! on 32bit video mode .");
 	putfonts32_asc(vram, xsize, 8, 24, 0xFFFFFF, "÷≥∫ø CHNOSÃﬂ€ºﬁ™∏ƒÕ!");
 	putfonts32_asc(vram, xsize, 8, 40, 0xFFFFFF, "∂¿∫ƒ√ﬁΩ∂ﬁ ∆Œ›∫ﬁ∂ﬁ ∂πŸ÷≥∆ ≈ÿœº¿");
+	init_mouse_cursor32(mousecur, DESKTOP_COL32);
+	putblock32_32(vram, xsize, 24, 24, xsize/2, ysize/2, mousecur, 24);
 	return;
 
 }

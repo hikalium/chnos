@@ -100,7 +100,7 @@ void init_palette(void);
 void set_palette(int start, int end, unsigned char *rgb);
 
 void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1);
-void init_scrn8(unsigned char *vram, int x, int y);
+void init_scrn8(unsigned char *vram, int x, int y, unsigned char *mousecur);
 void putfont8(unsigned char *vram, int xsize, int x, int y, unsigned char c, unsigned char *font);
 void putfonts8_asc(unsigned char *vram, int xsize, int x, int y, unsigned char c, unsigned char *s);
 void init_mouse_cursor8(unsigned char *mouse, unsigned char bc);
@@ -116,7 +116,7 @@ void putblock16_16(unsigned short *vram, int vxsize, int pxsize,int pysize, int 
 
 /*32bits*/
 void boxfill32(unsigned int *vram, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
-void init_scrn32(unsigned int *vram, int xsize, int ysize);
+void init_scrn32(unsigned int *vram, int xsize, int ysize, unsigned int *mousecur);
 void putfont32(unsigned int *vram, int xsize, int x, int y, unsigned int c, unsigned char *font);
 void putfonts32_asc(unsigned int *vram, int xsize, int x, int y, unsigned int c, unsigned char *s);
 void init_mouse_cursor32(unsigned int *mouse, unsigned int bc);
