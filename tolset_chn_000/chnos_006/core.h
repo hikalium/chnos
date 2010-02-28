@@ -92,6 +92,25 @@ void readrtc(unsigned char *t);
 #define TASKBAR_COL32	0x0000FF
 
 /*‘SF‘Î‰*/
+static int rgb_int2char_list [16] = {
+	0x000000,
+	0xff0000,
+	0x00ff00,
+	0xffff00,
+	0x0000ff,
+	0xff00ff,
+	0x00ffff,
+	0xffffff,
+	0xc6c6c6,
+	0x840000,
+	0x008400,
+	0x848400,
+	0x000084,
+	0x840084,
+	0x008484,
+	0x848484
+	};
+unsigned char rgb_int2char(unsigned int c32);
 void init_scrn_i(unsigned int *vram, int xsize, int ysize, unsigned char bits);
 void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
 

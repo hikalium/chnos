@@ -8,14 +8,14 @@ void CHNMain(void)
 	init_scrn_i(vinfo->PhysBasePtr, binfo->scrnx, binfo->scrny, vinfo->BitsPerPixel);
 
 	pit_beep_off();
+	
 
 	for (;;){
 	readrtc(t);
-
 	if (beforet != t[0]) {
 	sprintf(s, "%02X%02X.%02X.%02X %02X:%02X:%02X", t[6], t[5], t[4], t[3], t[2], t[1], t[0]);
 	boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, RGB16(20,40,30), binfo->scrnx - 200, binfo->scrny - 40, binfo->scrnx, binfo->scrny);
-	putfonts16_asc(vinfo->PhysBasePtr, binfo->scrnx, binfo->scrnx - 200, binfo->scrny - 40, RGB16(0,0,0), s);
+	putfonts32_asc(vinfo->PhysBasePtr, binfo->scrnx, binfo->scrnx - 200, binfo->scrny - 40, RGB16(0,0,0), s);
 	beforet = t[0];
 		}
 
@@ -51,3 +51,13 @@ void readrtc(unsigned char *t)
     }
 }
 
+unsigned char rgb_int2char (unsigned int c32)
+{
+unsigned char i ;
+for(i = 0;i < 15; i++) {
+	if(rgb_int2char_list[i] == c32) {
+		return i;
+		}
+	}
+return 7;
+}
