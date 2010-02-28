@@ -23,10 +23,15 @@ void init_scrn_i(unsigned int *vrami, int xsize, int ysize, unsigned char bits)
 
 void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1)
 {
-	int x, y;
-	for (y = y0;y <= y1;y++) {
-		for (x = x0; x <= x1; x++)
-		vrami[y * xsize + x] = c;
+	struct VESAINFO *vinfo = (struct VESAINFO *) 0x0e00;
+	if(vinfo->BitsPerPixel == 8){
+	unsigned char *vram8 = (unsigned char *)vrami;
+	boxfill8(vram8, xsize, c, x0, y0, x1, y1);	
+	} else if(vinfo->BitsPerPixel == 16){
+	unsigned short *vram16 = (unsigned short *)vrami;
+	boxfill16(vram16, xsize, c, x0, y0, x1, y1);
+	} else if(vinfo->BitsPerPixel == 32){
+	boxfill32(vrami, xsize, c, x0, y0, x1, y1);
 	}
 	return;
 }
