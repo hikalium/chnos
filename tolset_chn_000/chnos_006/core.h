@@ -113,6 +113,7 @@ static int rgb_int2char_list [16] = {
 unsigned char rgb_int2char(unsigned int c32);
 void init_scrn_i(unsigned int *vram, int xsize, int ysize, unsigned char bits);
 void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
+void col_pat_256safe(unsigned int *vrami, int xsize, int ysize);
 
 /*8bits*/
 void init_palette(void);

@@ -51,13 +51,4 @@ void readrtc(unsigned char *t)
     }
 }
 
-unsigned char rgb_int2char (unsigned int c32)
-{
-unsigned char i ;
-for(i = 0;i < 15; i++) {
-	if(rgb_int2char_list[i] == c32) {
-		return i;
-		}
-	}
-return 7;
-}
+

@@ -16,6 +16,7 @@ void init_scrn_i(unsigned int *vrami, int xsize, int ysize, unsigned char bits)
 	unsigned int mousecur32 [576];
 	init_scrn32(vrami, xsize, ysize ,mousecur32);
 	}
+	col_pat_256safe(vrami,xsize,ysize);
 	return;
 }
 
@@ -36,7 +37,65 @@ void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, i
 	return;
 }
 
+unsigned char rgb_int2char (unsigned int c32)
+{
+unsigned char i ;
+for(i = 0;i < 15; i++) {
+	if(rgb_int2char_list[i] == c32) {
+		return i;
+		}
+	}
+return 7;
+}
 
+void col_pat_256safe(unsigned int *vrami, int xsize, int ysize)
+{
+	int x,y;
+	x=0;
+	y=80;
+	boxfill_i(vrami,xsize,0x000000,x,y,x+40,y+40);
+	x+=40;
+	boxfill_i(vrami,xsize,0xFF0000,x,y,x+40,y+40);
+	x+=40;
+	boxfill_i(vrami,xsize,0x00FF00,x,y,x+40,y+40);
+	x+=40;
+	boxfill_i(vrami,xsize,0xFFFF00,x,y,x+40,y+40);
+
+	y+=40;
+	x=0;
+	boxfill_i(vrami,xsize,0x0000FF,x,y,x+40,y+40);
+	x+=40;
+	boxfill_i(vrami,xsize,0xFF00FF,x,y,x+40,y+40);
+	x+=40;
+	boxfill_i(vrami,xsize,0x00FFFF,x,y,x+40,y+40);
+	x+=40;
+	boxfill_i(vrami,xsize,0xFFFFFF,x,y,x+40,y+40);
+
+	y+=40;
+	x=0;
+	boxfill_i(vrami,xsize,0xC6C6C6,x,y,x+40,y+40);
+	x+=40;
+	boxfill_i(vrami,xsize,0x840000,x,y,x+40,y+40);
+	x+=40;
+	boxfill_i(vrami,xsize,0x008400,x,y,x+40,y+40);
+	x+=40;
+	boxfill_i(vrami,xsize,0x848400,x,y,x+40,y+40);
+
+	y+=40;
+	x=0;
+	boxfill_i(vrami,xsize,0x000084,x,y,x+40,y+40);
+	x+=40;
+	boxfill_i(vrami,xsize,0x840084,x,y,x+40,y+40);
+	x+=40;
+	boxfill_i(vrami,xsize,0x008484,x,y,x+40,y+40);
+	x+=40;
+	boxfill_i(vrami,xsize,0x848484,x,y,x+40,y+40);
+
+
+	return;
+
+
+}
 
 
 /*8bits*/
