@@ -1,7 +1,7 @@
 
 
 [INSTRSET "i486p"]
-VBEMODE	equ		0x0115
+VBEMODE	equ		0x0115	;標準は0x0115
 ; （画面モード一覧）
 ;0x0100  640x400  256  
 ;0x0101  640x480  256  

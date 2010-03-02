@@ -27,10 +27,12 @@ void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, i
 	struct VESAINFO *vinfo = (struct VESAINFO *) 0x0e00;
 	if(vinfo->BitsPerPixel == 8){
 	unsigned char *vram8 = (unsigned char *)vrami;
-	boxfill8(vram8, xsize, c, x0, y0, x1, y1);	
+	unsigned char c8 = rgb_int2char(c);
+	boxfill8(vram8, xsize, c8, x0, y0, x1, y1);	
 	} else if(vinfo->BitsPerPixel == 16){
 	unsigned short *vram16 = (unsigned short *)vrami;
-	boxfill16(vram16, xsize, c, x0, y0, x1, y1);
+	unsigned short c16 = rgb_int2short(c);
+	boxfill16(vram16, xsize, c16, x0, y0, x1, y1);
 	} else if(vinfo->BitsPerPixel == 32){
 	boxfill32(vrami, xsize, c, x0, y0, x1, y1);
 	}
@@ -46,6 +48,15 @@ for(i = 0;i < 15; i++) {
 		}
 	}
 return 7;
+}
+
+unsigned short rgb_int2short (unsigned int c32)
+{
+unsigned short c16;
+unsigned char c8;
+c8 = rgb_int2char(c32);
+c16 = rgb_char2short_list[c8];
+return c16;
 }
 
 void col_pat_256safe(unsigned int *vrami, int xsize, int ysize)

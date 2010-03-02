@@ -110,6 +110,26 @@ static int rgb_int2char_list [16] = {
 	0x008484,
 	0x848484
 	};
+static short rgb_char2short_list[16] = {
+	RGB16(0,0,0),
+	RGB16(31,0,0),
+	RGB16(0,62,0),
+	RGB16(31,62,0),
+	RGB16(0,0,31),
+	RGB16(31,0,31),
+	RGB16(0,62,31),
+	RGB16(31,62,31),
+	RGB16(25,50,25),
+	RGB16(17,0,0),
+	RGB16(0,33,0),
+	RGB16(17,33,0),
+	RGB16(0,0,17),
+	RGB16(17,0,17),
+	RGB16(0,33,17),
+	RGB16(17,33,17)
+	};
+
+unsigned short rgb_int2short (unsigned int c32);
 unsigned char rgb_int2char(unsigned int c32);
 void init_scrn_i(unsigned int *vram, int xsize, int ysize, unsigned char bits);
 void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
