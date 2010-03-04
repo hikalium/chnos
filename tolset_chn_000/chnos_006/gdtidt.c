@@ -2,8 +2,8 @@
 
 void init_gdtidt(void)
 {
-	struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) 0x00270000;
-	struct GATE_DESCRIPTOR *idt = (struct GATE_DESCRIPTOR *) 0x0026f800;
+	struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) ADR_SEG_DESC;
+	struct GATE_DESCRIPTOR *idt = (struct GATE_DESCRIPTOR *) ADR_GATE_DESC;
 	int i;
 
 	for(i=0;i<8192;i++) {
@@ -11,12 +11,12 @@ void init_gdtidt(void)
 	}
 	set_segmdesc(gdt+1,0xffffffff,0x00000000,0x4092);
 	set_segmdesc(gdt+2,0x0007ffff,0x00280000,0x409a);
-	load_gdtr(0xffff,0x0026f800);
+	load_gdtr(0xffff,ADR_GATE_DESC);
 	
 	for(i =0;i<256;i++) {
 		set_gatedesc(idt+i,0,0,0);
 	}
-	load_idtr(0x7ff, 0x0026f800);
+	load_idtr(0x7ff, ADR_GATE_DESC);
 	
 	return;
 

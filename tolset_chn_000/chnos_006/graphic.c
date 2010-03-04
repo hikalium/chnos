@@ -1,4 +1,43 @@
 #include "core.h"
+/*変換テーブル*/
+
+
+static int rgb_int2char_list [16] = {
+	0x000000,
+	0xff0000,
+	0x00ff00,
+	0xffff00,
+	0x0000ff,
+	0xff00ff,
+	0x00ffff,
+	0xffffff,
+	0xc6c6c6,
+	0x840000,
+	0x008400,
+	0x848400,
+	0x000084,
+	0x840084,
+	0x008484,
+	0x848484
+	};
+static short rgb_char2short_list[16] = {
+	RGB16(0,0,0),
+	RGB16(31,0,0),
+	RGB16(0,62,0),
+	RGB16(31,62,0),
+	RGB16(0,0,31),
+	RGB16(31,0,31),
+	RGB16(0,62,31),
+	RGB16(31,62,31),
+	RGB16(25,50,25),
+	RGB16(17,0,0),
+	RGB16(0,33,0),
+	RGB16(17,33,0),
+	RGB16(0,0,17),
+	RGB16(17,0,17),
+	RGB16(0,33,17),
+	RGB16(17,33,17)
+	};
 
 /*拡張全モード対応版*/
 void init_scrn_i(unsigned int *vrami, int xsize, int ysize, unsigned char bits)
@@ -52,11 +91,11 @@ return 7;
 
 unsigned short rgb_int2short (unsigned int c32)
 {
-unsigned short c16;
-unsigned char c8;
-c8 = rgb_int2char(c32);
-c16 = rgb_char2short_list[c8];
-return c16;
+	unsigned short c16;
+	unsigned char c8;
+	c8 = rgb_int2char(c32);
+	c16 = rgb_char2short_list[c8];
+	return c16;
 }
 
 void col_pat_256safe(unsigned int *vrami, int xsize, int ysize)
@@ -175,7 +214,7 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, i
 void init_scrn8(unsigned char *vram, int xsize, int ysize, unsigned char *mousecur)
 {
 	boxfill8(vram,xsize,DESKTOP_COL8,0,0,xsize,ysize);
-	boxfill8(vram,xsize,TASKBAR_COL8,0,ysize-40,xsize,ysize);
+	boxfill8(vram,xsize,TASKBAR_COL8,0,ysize-TASKBAR_HEIGHT,xsize,ysize);
 	putfonts8_asc(vram, xsize, 8, 8, COL8_FFFFFF, "welcome to CHNOSProject! on 8bit video mode .");
 	putfonts8_asc(vram, xsize, 8, 24, COL8_FFFFFF, "ﾖｳｺｿ CHNOSﾌﾟﾛｼﾞｪｸﾄﾍ!");
 	putfonts8_asc(vram, xsize, 8, 40, COL8_FFFFFF, "ｶﾀｺﾄﾃﾞｽｶﾞ ﾆﾎﾝｺﾞｶﾞ ｶｹﾙﾖｳﾆ ﾅﾘﾏｼﾀ");
@@ -278,7 +317,7 @@ void boxfill16(unsigned short *vram, int xsize, unsigned short c, int x0, int y0
 void init_scrn16(unsigned short *vram, int xsize, int ysize ,unsigned short *mousecur)
 {
 	boxfill16(vram,xsize,DESKTOP_COL16,0,0,xsize,ysize);
-	boxfill16(vram,xsize,TASKBAR_COL16,0,ysize-40,xsize,ysize);
+	boxfill16(vram,xsize,TASKBAR_COL16,0,ysize-TASKBAR_HEIGHT,xsize,ysize);
 	putfonts16_asc(vram, xsize, 8, 8, RGB16(31,62,31), "welcome to CHNOSProject! on 16bit video mode .");
 	putfonts16_asc(vram, xsize, 8, 24, RGB16(31,62,31), "ﾖｳｺｿ CHNOSﾌﾟﾛｼﾞｪｸﾄﾍ!");
 	putfonts16_asc(vram, xsize, 8, 40, RGB16(31,62,31), "ｶﾀｺﾄﾃﾞｽｶﾞ ﾆﾎﾝｺﾞｶﾞ ｶｹﾙﾖｳﾆ ﾅﾘﾏｼﾀ");
@@ -391,7 +430,7 @@ void boxfill32(unsigned int *vram, int xsize, unsigned int c, int x0, int y0, in
 void init_scrn32(unsigned int *vram, int xsize, int ysize, unsigned int *mousecur)
 {
 	boxfill32(vram,xsize,DESKTOP_COL32,0,0,xsize,ysize);
-	boxfill32(vram,xsize,TASKBAR_COL32,0,ysize-40,xsize,ysize);
+	boxfill32(vram,xsize,TASKBAR_COL32,0,ysize-TASKBAR_HEIGHT,xsize,ysize);
 	putfonts32_asc(vram, xsize, 8, 8, 0xFFFFFF, "welcome to CHNOSProject! on 32bit video mode .");
 	putfonts32_asc(vram, xsize, 8, 24, 0xFFFFFF, "ﾖｳｺｿ CHNOSﾌﾟﾛｼﾞｪｸﾄﾍ!");
 	putfonts32_asc(vram, xsize, 8, 40, 0xFFFFFF, "ｶﾀｺﾄﾃﾞｽｶﾞ ﾆﾎﾝｺﾞｶﾞ ｶｹﾙﾖｳﾆ ﾅﾘﾏｼﾀ");

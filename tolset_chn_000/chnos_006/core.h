@@ -8,15 +8,29 @@
 
 
 
-/*単なる数値の定義*/
+/*設定数値の定義*/
 
 #define ADR_BOOTINFO	0x00000ff0
 #define ADR_DISKIMG	0x00100000
 
+#define ADR_SEG_DESC	0x00270000
+#define ADR_GATE_DESC	0x0026f800
+
+#define DESKTOP_COL8	COL8_C6C6C6
+#define TASKBAR_COL8	COL8_0000FF
+
+#define DESKTOP_COL16	RGB16(17,33,17)		/*初期値：10,20,10*/
+#define TASKBAR_COL16	RGB16(20,40,30)		/*初期値：20,40,30*/
+
+#define DESKTOP_COL32	0xC6C6C6
+#define TASKBAR_COL32	0x0000FF
+
+#define TASKBAR_HEIGHT	40	
+
 
 /* asmhead.nas */
 
-struct BOOTINFO { /* 0x0ff0-0x0fff */
+struct BOOTINFO { /* 0x0ff0-0x0fff 標準*/
 	char cyls; /* ブートセクタはどこまでディスクを読んだのか */
 	char leds; /* ブート時のキーボードのLEDの状態 */
 	char vmode; /* ビデオモード  何ビットカラーか */
@@ -25,7 +39,7 @@ struct BOOTINFO { /* 0x0ff0-0x0fff */
 	char *vram;
 };
 
-struct VESAINFO {/*0xe00--->512byte*/
+struct VESAINFO {/*0xe00--->512byte 標準*/
 	unsigned short ModeAttributes;
 	unsigned char WinAAttributes;
 	unsigned char WinBAttributes;
@@ -65,12 +79,12 @@ void readrtc(unsigned char *t);
 
 /*gdtidt.c		割り込み等*/
 
-struct SEGMENT_DESCRIPTOR { /*0x270000~0x27ffff*/
+struct SEGMENT_DESCRIPTOR { /*0x270000~0x27ffff 標準*/
 	short limit_low,base_low;
 	char base_mid,access_right;
 	char limit_high,base_high;
 };
-struct GATE_DESCRIPTOR { /*0x26f800~0x26ffff*/
+struct GATE_DESCRIPTOR { /*0x26f800~0x26ffff 標準*/
 	short offset_low,selector;
 	char dw_count,access_right;
 	short offset_high;
@@ -99,53 +113,8 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 #define COL8_008484		14
 #define COL8_848484		15
 
-#define DESKTOP_COL8	COL8_C6C6C6
-#define TASKBAR_COL8	COL8_0000FF
-
-#define DESKTOP_COL16	RGB16(17,33,17)		/*初期値：10,20,10*/
-#define TASKBAR_COL16	RGB16(20,40,30)		/*初期値：20,40,30*/
-
-#define DESKTOP_COL32	0xC6C6C6
-#define TASKBAR_COL32	0x0000FF
 
 /*全色対応*/
-static int rgb_int2char_list [16] = {
-	0x000000,
-	0xff0000,
-	0x00ff00,
-	0xffff00,
-	0x0000ff,
-	0xff00ff,
-	0x00ffff,
-	0xffffff,
-	0xc6c6c6,
-	0x840000,
-	0x008400,
-	0x848400,
-	0x000084,
-	0x840084,
-	0x008484,
-	0x848484
-	};
-static short rgb_char2short_list[16] = {
-	RGB16(0,0,0),
-	RGB16(31,0,0),
-	RGB16(0,62,0),
-	RGB16(31,62,0),
-	RGB16(0,0,31),
-	RGB16(31,0,31),
-	RGB16(0,62,31),
-	RGB16(31,62,31),
-	RGB16(25,50,25),
-	RGB16(17,0,0),
-	RGB16(0,33,0),
-	RGB16(17,33,0),
-	RGB16(0,0,17),
-	RGB16(17,0,17),
-	RGB16(0,33,17),
-	RGB16(17,33,17)
-	};
-
 unsigned short rgb_int2short (unsigned int c32);
 unsigned char rgb_int2char(unsigned int c32);
 void init_scrn_i(unsigned int *vram, int xsize, int ysize, unsigned char bits);
