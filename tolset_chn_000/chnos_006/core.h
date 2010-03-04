@@ -59,11 +59,28 @@ struct VESAINFO {/*0xe00--->512byte*/
 };
 
 
-/*bootpack.c*/
+/*bootpack.c	ＯＳメイン*/
 
 void readrtc(unsigned char *t);
 
-/*graphic.h*/
+/*gdtidt.c		割り込み等*/
+
+struct SEGMENT_DESCRIPTOR { /*0x270000~0x27ffff*/
+	short limit_low,base_low;
+	char base_mid,access_right;
+	char limit_high,base_high;
+};
+struct GATE_DESCRIPTOR { /*0x26f800~0x26ffff*/
+	short offset_low,selector;
+	char dw_count,access_right;
+	short offset_high;
+};
+
+void init_gdtidt(void);
+void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
+void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
+
+/*graphic.h	グラフィック関係*/
 
 #define COL8_000000		0
 #define COL8_FF0000		1
