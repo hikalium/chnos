@@ -6,6 +6,7 @@ void CHNMain(void)
 	struct BOOTINFO *binfo = (struct BOOTINFO *) 0x0ff0;
 	struct VESAINFO *vinfo = (struct VESAINFO *) 0x0e00;
 	init_gdtidt();
+	init_pic();
 	init_scrn_i(vinfo->PhysBasePtr, binfo->scrnx, binfo->scrny, vinfo->BitsPerPixel);
 
 	pit_beep_off();

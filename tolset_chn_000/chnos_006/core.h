@@ -16,6 +16,19 @@
 #define ADR_SEG_DESC	0x00270000
 #define ADR_GATE_DESC	0x0026f800
 
+#define PIC0_ICW1		0x0020
+#define PIC0_OCW2	0x0020
+#define PIC0_IMR		0x0021
+#define PIC0_ICW2		0x0021
+#define PIC0_ICW3		0x0021
+#define PIC0_ICW4		0x0021
+#define PIC1_ICW1		0x00a0
+#define PIC1_OCW2	0x00a0
+#define PIC1_IMR		0x00a1
+#define PIC1_ICW2		0x00a1
+#define PIC1_ICW3		0x00a1
+#define PIC1_ICW4		0x00a1
+
 #define DESKTOP_COL8	COL8_C6C6C6
 #define TASKBAR_COL8	COL8_0000FF
 
@@ -77,7 +90,11 @@ struct VESAINFO {/*0xe00--->512byte 標準*/
 
 void readrtc(unsigned char *t);
 
-/*gdtidt.c		割り込み等*/
+/*int.c		割り込み関係ＰＩＣ等*/
+
+void init_pic(void);
+
+/*gdtidt.c		割り込み、セグメントテーブル等*/
 
 struct SEGMENT_DESCRIPTOR { /*0x270000~0x27ffff 標準*/
 	short limit_low,base_low;
