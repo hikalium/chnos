@@ -11,6 +11,7 @@
 /*İ’è”’l‚Ì’è‹`*/
 
 #define ADR_BOOTINFO	0x00000ff0
+#define ADR_VESAINFO	0x00000e00
 #define ADR_DISKIMG	0x00100000
 
 #define ADR_SEG_DESC	0x00270000
