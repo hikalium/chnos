@@ -31,3 +31,10 @@ void init_pic(void)
 
 	return;
 }
+
+void inthandler21(int *esp)
+{
+
+}
+
+

@@ -78,6 +78,35 @@ void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, i
 	return;
 }
 
+void putfonts_asc_i(unsigned int *vrami, int xsize, int x, int y, unsigned int ci, unsigned char *s)
+{
+	extern char hankaku[4096];
+	struct VESAINFO *vinfo = (struct VESAINFO *) 0x0e00;
+	if(vinfo->BitsPerPixel == 8){
+	unsigned char *vram8 = (unsigned char *)vrami;
+	unsigned char c8 = rgb_int2char(ci);
+	for (; *s != 0x00; s++) {
+		putfont8(vram8, xsize, x, y, c8, hankaku + *s * 16);
+		x += 8;
+	}
+	return;
+	} else if(vinfo->BitsPerPixel == 16){
+	unsigned short *vram16 = (unsigned short *)vrami;
+	unsigned short c16 = rgb_int2short(ci);
+	for (; *s != 0x00; s++) {
+		putfont16(vram16, xsize, x, y, c16, hankaku + *s * 16);
+		x += 8;
+	}
+	return;
+	} else if(vinfo->BitsPerPixel == 32){
+	for (; *s != 0x00; s++) {
+		putfont32(vrami, xsize, x, y, ci, hankaku + *s * 16);
+		x += 8;
+		}
+	}
+	return;
+}
+
 unsigned char rgb_int2char (unsigned int c32)
 {
 unsigned char i ;
