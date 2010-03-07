@@ -63,7 +63,7 @@ void init_scrn_i(unsigned int *vrami, int xsize, int ysize, unsigned char bits)
 
 void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1)
 {
-	struct VESAINFO *vinfo = (struct VESAINFO *) 0x0e00;
+	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
 	if(vinfo->BitsPerPixel == 8){
 	unsigned char *vram8 = (unsigned char *)vrami;
 	unsigned char c8 = rgb_int2char(c);
@@ -81,7 +81,7 @@ void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, i
 void putfonts_asc_i(unsigned int *vrami, int xsize, int x, int y, unsigned int ci, unsigned char *s)
 {
 	extern char hankaku[4096];
-	struct VESAINFO *vinfo = (struct VESAINFO *) 0x0e00;
+	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
 	if(vinfo->BitsPerPixel == 8){
 	unsigned char *vram8 = (unsigned char *)vrami;
 	unsigned char c8 = rgb_int2char(ci);

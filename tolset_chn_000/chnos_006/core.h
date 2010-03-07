@@ -17,6 +17,18 @@
 #define ADR_SEG_DESC	0x00270000
 #define ADR_GATE_DESC	0x0026f800
 
+#define ADR_IDT		0x0026f800
+#define LIMIT_IDT		0x000007ff
+#define ADR_GDT		0x00270000
+#define LIMIT_GDT		0x0000ffff
+#define ADR_BOTPAK	0x00280000
+#define LIMIT_BOTPAK	0x0007ffff
+#define AR_DATA32_RW	0x4092
+#define AR_CODE32_ER	0x409a
+#define AR_LDT		0x0082
+#define AR_TSS32		0x0089
+#define AR_INTGATE32	0x008e
+
 #define PIC0_ICW1		0x0020
 #define PIC0_OCW2	0x0020
 #define PIC0_IMR		0x0021
@@ -94,6 +106,7 @@ void readrtc(unsigned char *t);
 /*int.c		割り込み関係ＰＩＣ等*/
 
 void init_pic(void);
+void inthandler21(int *esp);
 
 /*gdtidt.c		割り込み、セグメントテーブル等*/
 
@@ -197,4 +210,5 @@ void farjmp(int eip, int cs);
 void farcall(int eip, int cs);
 void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);
 void asm_end_app(void);
+void asm_inthandler21(void);
 

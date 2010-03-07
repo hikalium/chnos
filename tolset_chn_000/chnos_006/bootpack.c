@@ -7,10 +7,11 @@ void CHNMain(void)
 	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
 	init_gdtidt();
 	init_pic();
+
+	io_sti();
 	init_scrn_i(vinfo->PhysBasePtr, binfo->scrnx, binfo->scrny, vinfo->BitsPerPixel);
 
 	pit_beep_off();
-	
 
 	for (;;){
 	readrtc(t);
@@ -21,9 +22,6 @@ void CHNMain(void)
 	beforet = t[0];
 		}
 
-	}
-	for(;;) {
-	io_hlt();
 	}
 
 

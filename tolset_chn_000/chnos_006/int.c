@@ -26,7 +26,7 @@ void init_pic(void)
 	io_out8(PIC1_ICW3, 2);	/*自分はマスタのIRQ2番につながってますということ。*/
 	io_out8(PIC1_ICW4, 0x01);	/*ノンバッファモード（スレーブ）*/
 
-	io_out8(PIC0_IMR, 0xfb);	/*11111011つまり、IRQ2番（スレーブ）だけ許可。あとは無視。（マスタ）*/	
+	io_out8(PIC0_IMR, 0xf9);	/*11111001つまり、IRQ2番（スレーブ）とIRQ1番（キーボード）だけ許可。あとは無視。（マスタ）*/	
 	io_out8(PIC1_IMR, 0xff);	/*割り込み全部無視（スレーブ）*/
 
 	return;
@@ -34,7 +34,15 @@ void init_pic(void)
 
 void inthandler21(int *esp)
 {
-
+	struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
+	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
+	boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,200, 0, 216);	
+	putfonts_asc_i(vinfo->PhysBasePtr, binfo->scrnx, 0,200,0xffffff,"INT 21(IRQ-1) : PS/2 ｷｰﾎﾞｰﾄﾞ");
+	for(;;){
+		io_hlt();
+	}
+	io_out8(PIC0_OCW2, 0x61);	/* IRQ-01受付完了をPICに通知 */
+	return;
 }
 
 

@@ -6,11 +6,11 @@ void init_gdtidt(void)
 	struct GATE_DESCRIPTOR *idt = (struct GATE_DESCRIPTOR *) ADR_GATE_DESC;
 	int i;
 
-	for(i=0;i<8192;i++) {
+	for(i=0;i <= LIMIT_GDT /8;i++) {
 		set_segmdesc(gdt+i,0,0,0);
 	}
-	set_segmdesc(gdt+1,0xffffffff,0x00000000,0x4092);
-	set_segmdesc(gdt+2,0x0007ffff,0x00280000,0x409a);
+	set_segmdesc(gdt+1,0xffffffff,0x00000000,AR_DATA32_RW);
+	set_segmdesc(gdt+2,LIMIT_BOTPAK,ADR_BOTPAK,AR_CODE32_ER);
 	/*
 	set_segmとset_gateの各第四引数は、アクセス権の設定。
 	上位二桁は、Ｇビットとセグメントのモードにより変化。
@@ -31,13 +31,15 @@ void init_gdtidt(void)
 	第三引数は、ベース。
 	第三引数は、それぞれgdt+番号、idt+番号。
 	*/
-	load_gdtr(0xffff,ADR_GATE_DESC);
+	load_gdtr(LIMIT_GDT,ADR_SEG_DESC);
 	
-	for(i =0;i<256;i++) {
+	for(i =0;i <= LIMIT_IDT / 8;i++) {
 		set_gatedesc(idt+i,0,0,0);
+
 	}
-	load_idtr(0x7ff, ADR_GATE_DESC);
-	
+	load_idtr(LIMIT_IDT, ADR_GATE_DESC);
+	set_gatedesc(idt+0x21, (int) asm_inthandler21, 2 * 8, AR_INTGATE32);
+
 	return;
 
 }
