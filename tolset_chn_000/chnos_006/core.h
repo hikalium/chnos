@@ -45,6 +45,8 @@
 #define PIT_CTRL		0x0043
 #define PIT_CNT0		0x0040
 
+#define KEYB_DATA		0x0060
+
 #define DESKTOP_COL8	COL8_C6C6C6
 #define TASKBAR_COL8	COL8_0000FF
 
