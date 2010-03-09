@@ -104,7 +104,9 @@ struct VESAINFO {/*0xe00--->512byte •W€*/
 
 /*bootpack.c	‚n‚rƒƒCƒ“*/
 
+/*io.c		‚»‚Ì‘¼ŠO•”‘•’uŠÖŒW*/
 void readrtc(unsigned char *t);
+void init_pit(void);
 
 /*int.c		Š„‚è‚İŠÖŒW‚o‚h‚b“™*/
 
