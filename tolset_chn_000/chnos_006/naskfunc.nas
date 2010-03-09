@@ -19,9 +19,9 @@
 		GLOBAL  _asm_osselect_third
 		GLOBAL  _clts, _fnsave, _frstor
 		GLOBAL	_pit_beep_on, _pit_beep_off
-		GLOBAL	_asm_inthandler21
+		GLOBAL	_asm_inthandler21, _asm_inthandler20
 		
-		EXTERN	_inthandler21
+		EXTERN	_inthandler21, _inthandler20
 
 
 
@@ -41,6 +41,23 @@ _asm_inthandler21:
 	pop	ds
 	pop	es
 	iretd
+
+_asm_inthandler20:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler20
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
 
 _pit_beep_on:
 	in	al,0x61

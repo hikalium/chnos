@@ -1,5 +1,8 @@
 #include "core.h"
 
+int time_tick_100 = 0;
+
+
 void init_pic(void)
 {
 	/*
@@ -36,12 +39,26 @@ void inthandler21(int *esp)
 {
 	struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
 	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
-	boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,200, 0, 216);	
-	putfonts_asc_i(vinfo->PhysBasePtr, binfo->scrnx, 0,200,0xffffff,"INT 21(IRQ-1) : PS/2 ｷｰﾎﾞｰﾄﾞ");
-	for(;;){
-		io_hlt();
-	}
-	io_out8(PIC0_OCW2, 0x61);	/* IRQ-01受付完了をPICに通知 */
+	boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,240,264 , 256);	
+	putfonts_asc_i(vinfo->PhysBasePtr, binfo->scrnx, 0,240,0xffffff,"INT 21(IRQ-1) : PS/2 ｷｰﾎﾞｰﾄﾞ");
+	io_out8(PIT_CTRL, 0x34);
+	io_out8(PIT_CNT0, 0x9c);
+	io_out8(PIT_CNT0, 0x2e);
+	io_out8(PIC0_IMR, 0xf8);
+	io_out8(PIC0_OCW2, 0x61);	/* IRQ-01受付完了をPICに通知 。0x60+番号。*/
+	return;
+}
+
+void inthandler20(int *esp)
+{
+	struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
+	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
+	char s[20];
+	time_tick_100 ++;
+	boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,256,264 , 272);	
+	sprintf(s, "INT 20(IRQ-0) : PIT : %d", time_tick_100);
+	putfonts_asc_i(vinfo->PhysBasePtr, binfo->scrnx, 0,256,0xffffff,s);
+	io_out8(PIC0_OCW2, 0x60);	/* IRQ-00受付完了をPICに通知 。0x60+番号。*/
 	return;
 }
 

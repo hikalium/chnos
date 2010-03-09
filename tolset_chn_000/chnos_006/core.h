@@ -42,6 +42,9 @@
 #define PIC1_ICW3		0x00a1
 #define PIC1_ICW4		0x00a1
 
+#define PIT_CTRL		0x0043
+#define PIT_CNT0		0x0040
+
 #define DESKTOP_COL8	COL8_C6C6C6
 #define TASKBAR_COL8	COL8_0000FF
 
@@ -107,6 +110,8 @@ void readrtc(unsigned char *t);
 
 void init_pic(void);
 void inthandler21(int *esp);
+void inthandler20(int *esp);
+
 
 /*gdtidt.c		割り込み、セグメントテーブル等*/
 
@@ -211,4 +216,4 @@ void farcall(int eip, int cs);
 void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);
 void asm_end_app(void);
 void asm_inthandler21(void);
-
+void asm_inthandler20(void);
