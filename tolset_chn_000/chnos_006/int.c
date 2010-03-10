@@ -35,20 +35,6 @@ void init_pic(void)
 	return;
 }
 
-void inthandler21(int *esp)
-{
-	char s[30];
-	unsigned char data;
-	struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
-	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
-	boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,240,264 , 256);	
-	data = io_in8(KEYB_DATA);
-	sprintf(s,"INT 21(IRQ-1) : PS/2 ｷｰﾎﾞｰﾄﾞ%02X",data);
-	putfonts_asc_i(vinfo->PhysBasePtr, binfo->scrnx, 0,240,0xffffff,s);
-	io_out8(PIC0_OCW2, 0x61);	/* IRQ-01受付完了をPICに通知 。0x60+番号。*/
-	return;
-}
-
 void inthandler20(int *esp)
 {
 	struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;

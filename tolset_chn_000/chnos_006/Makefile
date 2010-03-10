@@ -1,4 +1,4 @@
-OBJS_BOOTPACK = bootpack.obj naskfunc.obj hankaku.obj graphic.obj gdtidt.obj int.obj io.obj
+OBJS_BOOTPACK = naskfunc.obj hankaku.obj graphic.obj gdtidt.obj int.obj io.obj fifo.obj keyboard.obj bootpack.obj
 
 TOOLPATH = ../z_tools/
 INCPATH  = ../z_tools/CHNOSProject/

@@ -6,60 +6,13 @@
 
 #define RGB16(r,g,b) ((r)<<11|(g)<<5|(b))
 
+/*構造体宣言*/
 
+struct FIFO32 {
+	unsigned int *buf;
+	int p, q, size, free, flags;
+};
 
-/*設定数値の定義*/
-
-#define ADR_BOOTINFO	0x00000ff0
-#define ADR_VESAINFO	0x00000e00
-#define ADR_DISKIMG	0x00100000
-
-#define ADR_SEG_DESC	0x00270000
-#define ADR_GATE_DESC	0x0026f800
-
-#define ADR_IDT		0x0026f800
-#define LIMIT_IDT		0x000007ff
-#define ADR_GDT		0x00270000
-#define LIMIT_GDT		0x0000ffff
-#define ADR_BOTPAK	0x00280000
-#define LIMIT_BOTPAK	0x0007ffff
-#define AR_DATA32_RW	0x4092
-#define AR_CODE32_ER	0x409a
-#define AR_LDT		0x0082
-#define AR_TSS32		0x0089
-#define AR_INTGATE32	0x008e
-
-#define PIC0_ICW1		0x0020
-#define PIC0_OCW2	0x0020
-#define PIC0_IMR		0x0021
-#define PIC0_ICW2		0x0021
-#define PIC0_ICW3		0x0021
-#define PIC0_ICW4		0x0021
-#define PIC1_ICW1		0x00a0
-#define PIC1_OCW2	0x00a0
-#define PIC1_IMR		0x00a1
-#define PIC1_ICW2		0x00a1
-#define PIC1_ICW3		0x00a1
-#define PIC1_ICW4		0x00a1
-
-#define PIT_CTRL		0x0043
-#define PIT_CNT0		0x0040
-
-#define KEYB_DATA		0x0060
-
-#define DESKTOP_COL8	COL8_C6C6C6
-#define TASKBAR_COL8	COL8_0000FF
-
-#define DESKTOP_COL16	RGB16(17,33,17)		/*初期値：10,20,10*/
-#define TASKBAR_COL16	RGB16(20,40,30)		/*初期値：20,40,30*/
-
-#define DESKTOP_COL32	0xC6C6C6
-#define TASKBAR_COL32	0x0000FF
-
-#define TASKBAR_HEIGHT	40	
-
-
-/* asmhead.nas */
 
 struct BOOTINFO { /* 0x0ff0-0x0fff 標準*/
 	char cyls; /* ブートセクタはどこまでディスクを読んだのか */
@@ -103,22 +56,6 @@ struct VESAINFO {/*0xe00--->512byte 標準*/
 	unsigned int *PhysBasePtr;
 };
 
-
-/*bootpack.c	ＯＳメイン*/
-
-/*io.c		その他外部装置関係*/
-void readrtc(unsigned char *t);
-void init_pit(void);
-
-/*int.c		割り込み関係ＰＩＣ等*/
-
-void init_pic(void);
-void inthandler21(int *esp);
-void inthandler20(int *esp);
-
-
-/*gdtidt.c		割り込み、セグメントテーブル等*/
-
 struct SEGMENT_DESCRIPTOR { /*0x270000~0x27ffff 標準*/
 	short limit_low,base_low;
 	char base_mid,access_right;
@@ -130,11 +67,66 @@ struct GATE_DESCRIPTOR { /*0x26f800~0x26ffff 標準*/
 	short offset_high;
 };
 
-void init_gdtidt(void);
-void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
-void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 
-/*graphic.h	グラフィック関係*/
+
+/*設定数値の定義*/
+
+#define ADR_BOOTINFO	0x00000ff0
+#define ADR_VESAINFO	0x00000e00
+#define ADR_DISKIMG	0x00100000
+
+#define ADR_SEG_DESC	0x00270000
+#define ADR_GATE_DESC	0x0026f800
+
+#define ADR_IDT		0x0026f800
+#define LIMIT_IDT		0x000007ff
+#define ADR_GDT		0x00270000
+#define LIMIT_GDT		0x0000ffff
+#define ADR_BOTPAK	0x00280000
+#define LIMIT_BOTPAK	0x0007ffff
+#define AR_DATA32_RW	0x4092
+#define AR_CODE32_ER	0x409a
+#define AR_LDT		0x0082
+#define AR_TSS32		0x0089
+#define AR_INTGATE32	0x008e
+
+#define PIC0_ICW1		0x0020
+#define PIC0_OCW2	0x0020
+#define PIC0_IMR		0x0021
+#define PIC0_ICW2		0x0021
+#define PIC0_ICW3		0x0021
+#define PIC0_ICW4		0x0021
+#define PIC1_ICW1		0x00a0
+#define PIC1_OCW2	0x00a0
+#define PIC1_IMR		0x00a1
+#define PIC1_ICW2		0x00a1
+#define PIC1_ICW3		0x00a1
+#define PIC1_ICW4		0x00a1
+
+#define PIT_CTRL		0x0043
+#define PIT_CNT0		0x0040
+
+#define KEYB_DATA		0x0060
+#define PORT_KEYSTA	0x0064
+#define KEYSTA_SEND_NOTREADY	0x02
+#define KEYCMD_WRITE_MODE	0x60
+#define KBC_MODE		0x47
+#define PORT_KEYCMD	0x0064
+
+#define SYSFIFO_KEYB	0x00
+
+#define DESKTOP_COL8	COL8_C6C6C6
+#define TASKBAR_COL8	COL8_0000FF
+
+#define DESKTOP_COL16	RGB16(17,33,17)		/*初期値：10,20,10*/
+#define TASKBAR_COL16	RGB16(20,40,30)		/*初期値：20,40,30*/
+
+#define DESKTOP_COL32	0xC6C6C6
+#define TASKBAR_COL32	0x0000FF
+
+#define TASKBAR_HEIGHT	40	
+
+#define FIFO32_PUT_OVER 0x0001
 
 #define COL8_000000		0
 #define COL8_FF0000		1
@@ -153,6 +145,38 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 #define COL8_008484		14
 #define COL8_848484		15
 
+
+/*bootpack.c	ＯＳメイン*/
+
+/*io.c		その他外部装置関係*/
+
+void readrtc(unsigned char *t);
+void init_pit(void);
+
+/*int.c		割り込み関係ＰＩＣ等*/
+
+void init_pic(void);
+void inthandler20(int *esp);
+
+/*keyboard.c	キーボード関係*/
+void wait_KBC_sendready(void);
+void init_keyboard(struct FIFO32 *fifo, int data0);
+void inthandler21(int *esp);
+
+/*fifo.c		FIFOバッファ関係*/
+
+void fifo32_init(struct FIFO32 *fifo, int size, unsigned int *buf);
+int fifo32_put(struct FIFO32 *fifo, unsigned int data);
+int fifo32_get(struct FIFO32 *fifo);
+int fifo32_status(struct FIFO32 *fifo);
+
+/*gdtidt.c		割り込み、セグメントテーブル等*/
+
+void init_gdtidt(void);
+void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
+void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
+
+/*graphic.h	グラフィック関係*/
 
 /*全色対応*/
 unsigned short rgb_int2short (unsigned int c32);
