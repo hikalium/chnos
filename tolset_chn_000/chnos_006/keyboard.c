@@ -3,17 +3,6 @@
 struct FIFO32 *keyfifo;
 int keydata0;
 
-void wait_KBC_sendready(void)
-{
-	/* キーボードコントローラがデータ送信可能になるのを待つ */
-	for (;;) {
-		if ((io_in8(PORT_KEYSTA) & KEYSTA_SEND_NOTREADY) == 0) {
-			break;
-		}
-	}
-	return;
-}
-
 void init_keyboard(struct FIFO32 *fifo, int data0)
 {
 	/* 書き込み先のFIFOバッファを記憶 */

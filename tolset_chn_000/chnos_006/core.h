@@ -112,8 +112,11 @@ struct GATE_DESCRIPTOR { /*0x26f800~0x26ffff 標準*/
 #define KEYCMD_WRITE_MODE	0x60
 #define KBC_MODE		0x47
 #define PORT_KEYCMD	0x0064
+#define KEYCMD_SENDTO_MOUSE	0xd4
+#define MOUSECMD_ENABLE	0xf4
 
 #define SYSFIFO_KEYB	0x100			/*256~511=keycode*/
+#define SYSFIFO_MOUSE	0x200			/*512~767=mouse*/
 
 #define DESKTOP_COL8	COL8_C6C6C6
 #define TASKBAR_COL8	COL8_0000FF
@@ -151,15 +154,20 @@ struct GATE_DESCRIPTOR { /*0x26f800~0x26ffff 標準*/
 /*io.c		その他外部装置関係*/
 
 void readrtc(unsigned char *t);
+void wait_KBC_sendready(void);
 
 /*int.c		割り込み関係ＰＩＣ等*/
 
 void init_pic(void);
 
 /*keyboard.c	キーボード関係*/
-void wait_KBC_sendready(void);
 void init_keyboard(struct FIFO32 *fifo, int data0);
 void inthandler21(int *esp);
+
+/*mouse.c	マウス関係*/
+
+void inthandler2c(int *esp);
+void init_mouse(struct FIFO32 *fifo, int data0);
 
 /*timer.c		タイマー関係*/
 void init_pit(int *time_tick);
@@ -247,3 +255,4 @@ void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);
 void asm_end_app(void);
 void asm_inthandler21(void);
 void asm_inthandler20(void);
+void asm_inthandler2c(void);

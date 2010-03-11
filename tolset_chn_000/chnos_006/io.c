@@ -24,4 +24,14 @@ void readrtc(unsigned char *t)
     }
 }
 
+void wait_KBC_sendready(void)
+{
+	/* キーボードコントローラがデータ送信可能になるのを待つ */
+	for (;;) {
+		if ((io_in8(PORT_KEYSTA) & KEYSTA_SEND_NOTREADY) == 0) {
+			break;
+		}
+	}
+	return;
+}
 
