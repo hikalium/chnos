@@ -1,7 +1,5 @@
 #include "core.h"
 
-int time_tick_100 = 0;
-
 
 void init_pic(void)
 {
@@ -35,17 +33,6 @@ void init_pic(void)
 	return;
 }
 
-void inthandler20(int *esp)
-{
-	struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
-	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
-	char s[20];
-	time_tick_100 ++;
-	boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,256,264 , 272);	
-	sprintf(s, "INT 20(IRQ-0) : PIT : %d", time_tick_100);
-	putfonts_asc_i(vinfo->PhysBasePtr, binfo->scrnx, 0,256,0xffffff,s);
-	io_out8(PIC0_OCW2, 0x60);	/* IRQ-00受付完了をPICに通知 。0x60+番号。*/
-	return;
-}
+
 
 

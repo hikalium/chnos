@@ -113,7 +113,7 @@ struct GATE_DESCRIPTOR { /*0x26f800~0x26ffff 標準*/
 #define KBC_MODE		0x47
 #define PORT_KEYCMD	0x0064
 
-#define SYSFIFO_KEYB	0x00
+#define SYSFIFO_KEYB	0x100			/*256~511=keycode*/
 
 #define DESKTOP_COL8	COL8_C6C6C6
 #define TASKBAR_COL8	COL8_0000FF
@@ -151,17 +151,19 @@ struct GATE_DESCRIPTOR { /*0x26f800~0x26ffff 標準*/
 /*io.c		その他外部装置関係*/
 
 void readrtc(unsigned char *t);
-void init_pit(void);
 
 /*int.c		割り込み関係ＰＩＣ等*/
 
 void init_pic(void);
-void inthandler20(int *esp);
 
 /*keyboard.c	キーボード関係*/
 void wait_KBC_sendready(void);
 void init_keyboard(struct FIFO32 *fifo, int data0);
 void inthandler21(int *esp);
+
+/*timer.c		タイマー関係*/
+void init_pit(int *time_tick);
+void inthandler20(int *esp);
 
 /*fifo.c		FIFOバッファ関係*/
 
