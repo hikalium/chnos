@@ -42,25 +42,44 @@ static short rgb_char2short_list[16] = {
 /*Šg’£‘Sƒ‚[ƒh‘Î‰ž”Å*/
 void init_scrn_i(unsigned int *vrami, int xsize, int ysize, unsigned char bits)
 {
+	unsigned int mousecur32 [576];
 	if(bits == 8){
-	unsigned char mousecur8 [256];
+	unsigned char *mousecur8 = (unsigned char *)mousecur32;
 	unsigned char *vram8 = (unsigned char *)vrami;
 	init_palette();
 	init_scrn8(vram8, xsize, ysize ,mousecur8);
 	} else if(bits == 16){
-	unsigned short mousecur16 [576];
+	unsigned short *mousecur16 = (unsigned short *)mousecur32;
 	unsigned short *vram16 = (unsigned short *)vrami;
 	init_scrn16(vram16, xsize, ysize ,mousecur16);
 	} else if(bits == 32){
-	unsigned int mousecur32 [576];
+
 	init_scrn32(vrami, xsize, ysize ,mousecur32);
 	}
 	col_pat_256safe(vrami,xsize,ysize);
 	return;
 }
 
-
-
+void draw_mouse_i(unsigned int *vrami, int x, int y, int xsize)
+{
+	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
+	unsigned int mousecur32 [576];
+	if(vinfo->BitsPerPixel == 8){
+	unsigned char *mousecur8 = (unsigned char *)mousecur32;
+	unsigned char *vram8 = (unsigned char *)vrami;
+	init_mouse_cursor8(mousecur8, DESKTOP_COL8);
+	putblock8_8(vram8, xsize,24, 24, x, y, mousecur8, 24);
+	} else if(vinfo->BitsPerPixel == 16){
+	unsigned short *mousecur16 = (unsigned short *)mousecur32;
+	unsigned short *vram16 = (unsigned short *)vrami;
+	init_mouse_cursor16(mousecur16, DESKTOP_COL16);
+	putblock16_16(vram16, xsize,24, 24, x, y, mousecur16, 24);
+	} else if(vinfo->BitsPerPixel == 32){
+	init_mouse_cursor32(mousecur32, DESKTOP_COL32);
+	putblock32_32(vrami, xsize,24, 24, x, y, mousecur32, 24);
+	}
+	return;
+}
 void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1)
 {
 	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
@@ -248,7 +267,7 @@ void init_scrn8(unsigned char *vram, int xsize, int ysize, unsigned char *mousec
 	putfonts8_asc(vram, xsize, 8, 24, COL8_FFFFFF, "Ö³º¿ CHNOSÌßÛ¼Þª¸ÄÍ!");
 	putfonts8_asc(vram, xsize, 8, 40, COL8_FFFFFF, "¶ÀºÄÃÞ½¶Þ ÆÎÝºÞ¶Þ ¶¹ÙÖ³Æ ÅØÏ¼À");
 	init_mouse_cursor8(mousecur, DESKTOP_COL8);
-	putblock8_8(vram, xsize,16, 16, xsize/2, ysize/2, mousecur, 16);
+	putblock8_8(vram, xsize,24, 24, xsize/2, ysize/2, mousecur, 24);
 	return;
 }
 
@@ -283,36 +302,44 @@ void putfonts8_asc(unsigned char *vram, int xsize, int x, int y, unsigned char c
 
 void init_mouse_cursor8(unsigned char *mouse, unsigned char bc)
 {
-	static char cursor[16][16] = {
-		"*...............",
-		"**..............",
-		"*O*.............",
-		"*OO*............",
-		"*OOO*...........",
-		"*OOOO*..........",
-		"*OOOOO*.........",
-		"*OOOOOO*........",
-		"*OOOOOOO*.......",
-		"*OOOOOOOO*......",
-		"*OOOOOOOOO*.....",
-		"*OOO*O******....",
-		"*OO*.*O*........",
-		"*O*...*O*.......",
-		"**.....*O*......",
-		"........**......"
+	static char cursor[24][24] = {
+		"***.....................",
+		"*O**....................",
+		"*OO**...................",
+		"*OOO**..................",
+		"*OOOO**.................",
+		"*OOOOO**................",
+		"*OOOOOO**...............",
+		"*OOOOOOO**..............",
+		"*OOOOOOOO**.............",
+		"*OOOOOOOOO**............",
+		"*OOOOOOOOOO**...........",
+		"*OOOOOOOOOOO**..........",
+		"*OOOOOOOOOOOO**.........",
+		"*OOOOOOOOOOOOO**........",
+		"*OOOOOOOOOOOOOO**.......",
+		"*OOOOOOOOOOOOOOO**......",
+		"*OOOOOOOOOOOOOOOO**.....",
+		"*OOOOOO*************....",
+		"*OOOOO**................",
+		"*OOOO**.................",
+		"*OOO**..................",
+		"*OO**...................",
+		"*O**....................",
+		"***.....................",
 	};
 	int x, y;
 
-	for (y = 0; y < 16; y++) {
-		for (x = 0; x < 16; x++) {
+	for (y = 0; y < 24; y++) {
+		for (x = 0; x < 24; x++) {
 			if (cursor[y][x] == '*') {
-				mouse[y * 16 + x] = COL8_000000;
+				mouse[y * 24 + x] = COL8_000000;
 			}
 			if (cursor[y][x] == 'O') {
-				mouse[y * 16 + x] = COL8_FFFFFF;
+				mouse[y * 24 + x] = COL8_FFFFFF;
 			}
 			if (cursor[y][x] == '.') {
-				mouse[y * 16 + x] = bc;
+				mouse[y * 24 + x] = bc;
 			}
 		}
 	}
@@ -389,7 +416,7 @@ void putfonts16_asc(unsigned short *vram, int xsize, int x, int y, unsigned shor
 void init_mouse_cursor16(unsigned short *mouse, unsigned short bc)
 {
 	static char cursor[24][24] = {
-		"........................",
+		"***.....................",
 		"*O**....................",
 		"*OO**...................",
 		"*OOO**..................",
@@ -503,7 +530,7 @@ void putfonts32_asc(unsigned int *vram, int xsize, int x, int y, unsigned int c,
 void init_mouse_cursor32(unsigned int *mouse, unsigned int bc)
 {
 	static char cursor[24][24] = {
-		"........................",
+		"***.....................",
 		"*O**....................",
 		"*OO**...................",
 		"*OOO**..................",

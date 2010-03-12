@@ -43,6 +43,8 @@ void CHNMain(void)
 				sprintf(s,"INT 2C(IRQ-12) : PS/2 Ï³½(%02X,%02X,%02X)",mdec.buf[0], mdec.buf[1], mdec.buf[2]);
 				putfonts_asc_i(vinfo->PhysBasePtr, binfo->scrnx, 0,256,0xffffff,s);
 
+				boxfill_i(vinfo->PhysBasePtr, binfo->scrnx,DESKTOP_COL32,mx,my,mx + 32, my + 32);
+
 				boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,272,300 , 288);	
 				sprintf(s,"[lcr %4d %4d]",mdec.x, mdec.y);
 				if((mdec.btn & 0x01) != 0) s[1] = 'L';
@@ -55,6 +57,8 @@ void CHNMain(void)
 				if(my < 0) my = 0;
 				if(mx > binfo->scrnx - 32) mx = binfo->scrnx - 32;
 				if(my > binfo->scrny - 32) my = binfo->scrny - 32;
+				
+				draw_mouse_i(vinfo->PhysBasePtr, mx, my, binfo->scrnx);
 				boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,288,300,304);	
 				sprintf(s,"(%4d,%4d)",mx,my);
 				putfonts_asc_i(vinfo->PhysBasePtr, binfo->scrnx, 0,288,0xffffff,s);				

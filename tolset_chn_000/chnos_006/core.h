@@ -203,6 +203,7 @@ void init_scrn_i(unsigned int *vram, int xsize, int ysize, unsigned char bits);
 void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
 void col_pat_256safe(unsigned int *vrami, int xsize, int ysize);
 void putfonts_asc_i(unsigned int *vrami, int xsize, int x, int y, unsigned int ci, unsigned char *s);
+void draw_mouse_i(unsigned int *vrami, int x, int y, int xsize);
 
 /*8bits*/
 void init_palette(void);

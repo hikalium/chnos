@@ -26,6 +26,7 @@
 
 
 [SECTION .text]
+
 _asm_inthandler21:
 	push	es
 	push	ds
