@@ -13,6 +13,12 @@ struct FIFO32 {
 	int p, q, size, free, flags;
 };
 
+struct MOUSE_DECODE {
+	unsigned int buf[3];
+	int x,y,btn;
+	unsigned char phase; 
+
+};
 
 struct BOOTINFO { /* 0x0ff0-0x0fff 標準*/
 	char cyls; /* ブートセクタはどこまでディスクを読んだのか */
@@ -167,7 +173,9 @@ void inthandler21(int *esp);
 /*mouse.c	マウス関係*/
 
 void inthandler2c(int *esp);
-void init_mouse(struct FIFO32 *fifo, int data0);
+void init_mouse(struct FIFO32 *fifo, int data0, struct MOUSE_DECODE *mdec0);
+int decode_mouse (unsigned int dat);
+
 
 /*timer.c		タイマー関係*/
 void init_pit(int *time_tick);
