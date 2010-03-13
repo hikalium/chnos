@@ -85,41 +85,44 @@ struct GATE_DESCRIPTOR { /*0x26f800~0x26ffff ïWèÄ*/
 #define ADR_GATE_DESC	0x0026f800
 
 #define ADR_IDT		0x0026f800
-#define LIMIT_IDT		0x000007ff
+#define LIMIT_IDT	0x000007ff
 #define ADR_GDT		0x00270000
-#define LIMIT_GDT		0x0000ffff
+#define LIMIT_GDT	0x0000ffff
 #define ADR_BOTPAK	0x00280000
 #define LIMIT_BOTPAK	0x0007ffff
 #define AR_DATA32_RW	0x4092
 #define AR_CODE32_ER	0x409a
 #define AR_LDT		0x0082
-#define AR_TSS32		0x0089
+#define AR_TSS32	0x0089
 #define AR_INTGATE32	0x008e
 
-#define PIC0_ICW1		0x0020
+#define PIC0_ICW1	0x0020
 #define PIC0_OCW2	0x0020
-#define PIC0_IMR		0x0021
-#define PIC0_ICW2		0x0021
-#define PIC0_ICW3		0x0021
-#define PIC0_ICW4		0x0021
-#define PIC1_ICW1		0x00a0
+#define PIC0_IMR	0x0021
+#define PIC0_ICW2	0x0021
+#define PIC0_ICW3	0x0021
+#define PIC0_ICW4	0x0021
+#define PIC1_ICW1	0x00a0
 #define PIC1_OCW2	0x00a0
-#define PIC1_IMR		0x00a1
-#define PIC1_ICW2		0x00a1
-#define PIC1_ICW3		0x00a1
-#define PIC1_ICW4		0x00a1
+#define PIC1_IMR	0x00a1
+#define PIC1_ICW2	0x00a1
+#define PIC1_ICW3	0x00a1
+#define PIC1_ICW4	0x00a1
 
-#define PIT_CTRL		0x0043
-#define PIT_CNT0		0x0040
+#define PIT_CTRL	0x0043
+#define PIT_CNT0	0x0040
 
-#define KEYB_DATA		0x0060
+#define KEYB_DATA	0x0060
 #define PORT_KEYSTA	0x0064
 #define KEYSTA_SEND_NOTREADY	0x02
 #define KEYCMD_WRITE_MODE	0x60
-#define KBC_MODE		0x47
+#define KBC_MODE	0x47
 #define PORT_KEYCMD	0x0064
 #define KEYCMD_SENDTO_MOUSE	0xd4
 #define MOUSECMD_ENABLE	0xf4
+
+#define EFLAGS_AC_BIT	0x00040000
+#define CR0_CACHE_DISABLE	0x60000000	
 
 #define SYSFIFO_KEYB	0x100			/*256~511=keycode*/
 #define SYSFIFO_MOUSE	0x200			/*512~767=mouse*/
@@ -165,6 +168,9 @@ void wait_KBC_sendready(void);
 /*int.c		äÑÇËçûÇ›ä÷åWÇoÇhÇbìô*/
 
 void init_pic(void);
+
+/*memory.c	ÉÅÉÇÉää«óùä÷åW*/
+unsigned int memtest(unsigned int start, unsigned int end);
 
 /*keyboard.c	ÉLÅ[É{Å[Éhä÷åW*/
 void init_keyboard(struct FIFO32 *fifo, int data0);

@@ -7,11 +7,11 @@ void CHNMain(void)
 	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
 	struct FIFO32 sysfifo;
 	struct MOUSE_DECODE mdec;
-	int fifobuf[256], i,time_tick,mx = binfo->scrnx / 2, my = binfo->scrny / 2;
+	int fifobuf[256], i = 0,time_tick,mx = binfo->scrnx / 2, my = binfo->scrny / 2;
+	unsigned int all_mem_size = memtest(0x00400000, 0xbffffffff);
 	init_gdtidt();
 	init_pic();
 	init_pit(&time_tick);
-	i = 0;
 
 	io_sti();
 
@@ -20,6 +20,12 @@ void CHNMain(void)
 	init_keyboard(&sysfifo, SYSFIFO_KEYB);
 	init_mouse(&sysfifo, SYSFIFO_MOUSE, &mdec);
 	pit_beep_off();
+
+	sprintf(s,"memory %d Byte(%d KB,%d MB)",all_mem_size,all_mem_size/1024, all_mem_size/(1024*1024));
+	boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,304,300,320);	
+	putfonts_asc_i(vinfo->PhysBasePtr, binfo->scrnx, 0,304,0xffffff,s);
+	
+	
 
 	for (;;){
 	io_cli();
@@ -55,8 +61,8 @@ void CHNMain(void)
 				my += mdec.y;
 				if(mx < 0) mx = 0;
 				if(my < 0) my = 0;
-				if(mx > binfo->scrnx - 32) mx = binfo->scrnx - 32;
-				if(my > binfo->scrny - 32) my = binfo->scrny - 32;
+				if(mx > binfo->scrnx - 24) mx = binfo->scrnx - 24;
+				if(my > binfo->scrny - 24) my = binfo->scrny - 24;
 				
 				draw_mouse_i(vinfo->PhysBasePtr, mx, my, binfo->scrnx);
 				boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,288,300,304);	
