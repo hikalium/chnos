@@ -22,7 +22,7 @@ void CHNMain(void)
 	pit_beep_off();
 
 	sprintf(s,"memory %d Byte(%d KB,%d MB)",all_mem_size,all_mem_size/1024, all_mem_size/(1024*1024));
-	boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,304,300,320);	
+	boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,304,INT_MONITOR_LONG,320);	
 	putfonts_asc_i(vinfo->PhysBasePtr, binfo->scrnx, 0,304,0xffffff,s);
 	
 	
@@ -37,7 +37,7 @@ void CHNMain(void)
 	if( 256 <= i && i <=511) {
 			i -= SYSFIFO_KEYB;
 			io_sti();
-			boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,240,300 , 256);	
+			boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,240,INT_MONITOR_LONG , 256);	
 			sprintf(s,"INT 21(IRQ-1) : PS/2 ·°ÎÞ°ÄÞ%02X",i);
 			putfonts_asc_i(vinfo->PhysBasePtr, binfo->scrnx, 0,240,0xffffff,s);
 			
@@ -45,13 +45,13 @@ void CHNMain(void)
 			i -= SYSFIFO_MOUSE;
 			io_sti();
 			if (decode_mouse(i) == 1) {
-				boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,256,300 , 272);	
+				boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,256,INT_MONITOR_LONG , 272);	
 				sprintf(s,"INT 2C(IRQ-12) : PS/2 Ï³½(%02X,%02X,%02X)",mdec.buf[0], mdec.buf[1], mdec.buf[2]);
 				putfonts_asc_i(vinfo->PhysBasePtr, binfo->scrnx, 0,256,0xffffff,s);
 
 				boxfill_i(vinfo->PhysBasePtr, binfo->scrnx,DESKTOP_COL32,mx,my,mx + 32, my + 32);
 
-				boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,272,300 , 288);	
+				boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,272,INT_MONITOR_LONG , 288);	
 				sprintf(s,"[lcr %4d %4d]",mdec.x, mdec.y);
 				if((mdec.btn & 0x01) != 0) s[1] = 'L';
 				if((mdec.btn & 0x02) != 0) s[3] = 'R';
@@ -65,7 +65,7 @@ void CHNMain(void)
 				if(my > binfo->scrny - 24) my = binfo->scrny - 24;
 				
 				draw_mouse_i(vinfo->PhysBasePtr, mx, my, binfo->scrnx);
-				boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,288,300,304);	
+				boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,288,INT_MONITOR_LONG,304);	
 				sprintf(s,"(%4d,%4d)",mx,my);
 				putfonts_asc_i(vinfo->PhysBasePtr, binfo->scrnx, 0,288,0xffffff,s);				
 			}
