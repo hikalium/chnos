@@ -7,29 +7,38 @@ void CHNMain(void)
 	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
 	struct FIFO32 sysfifo;
 	struct MOUSE_DECODE mdec;
+	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
 	int fifobuf[256], i = 0,time_tick,mx = binfo->scrnx / 2, my = binfo->scrny / 2;
 	unsigned int all_mem_size = memtest(0x00400000, 0xbffffffff);
+	unsigned int free_mem_size = 0;
 	init_gdtidt();
 	init_pic();
-	init_pit(&time_tick);
-
 	io_sti();
 
+	memman_init(memman);
+	memman_free(0x00001000,0x0009e000);
+	memman_free(0x00400000,all_mem_size - 0x00400000);
 	init_scrn_i(vinfo->PhysBasePtr, binfo->scrnx, binfo->scrny, vinfo->BitsPerPixel);
 	fifo32_init(&sysfifo, 256, fifobuf);
 	init_keyboard(&sysfifo, SYSFIFO_KEYB);
 	init_mouse(&sysfifo, SYSFIFO_MOUSE, &mdec);
+	init_pit(&time_tick);
 	pit_beep_off();
+
 
 	sprintf(s,"memory %d Byte(%d KB,%d MB)",all_mem_size,all_mem_size/1024, all_mem_size/(1024*1024));
 	boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,304,INT_MONITOR_LONG,320);	
 	putfonts_asc_i(vinfo->PhysBasePtr, binfo->scrnx, 0,304,0xffffff,s);
-	
-	
 
 	for (;;){
 	io_cli();
 	if(fifo32_status(&sysfifo) == 0) {
+		
+		free_mem_size = memman_free_total();
+		sprintf(s,"free   %d Byte(%d KB,%d MB)",free_mem_size,free_mem_size/1024, free_mem_size/(1024*1024));
+		boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,320,INT_MONITOR_LONG,336);	
+		putfonts_asc_i(vinfo->PhysBasePtr, binfo->scrnx, 0,320,0xffffff,s);
+	
 		io_stihlt();
 	} else {
 		i = fifo32_get(&sysfifo);
