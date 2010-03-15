@@ -1,4 +1,5 @@
 #include "core.h"
+#include <math.h>
 /*•ÏŠ·ƒe[ƒuƒ‹*/
 
 
@@ -57,6 +58,38 @@ void init_scrn_i(unsigned int *vrami, int xsize, int ysize, unsigned char bits)
 	init_scrn32(vrami, xsize, ysize ,mousecur32);
 	}
 	col_pat_256safe(vrami,xsize,ysize);
+	return;
+}
+
+void circle_i(unsigned int *vrami, int cx, int cy, unsigned int c, int xsize, int r)
+{
+	double pi = 3.1415;
+	int c_div = 100;
+	double incr = 2 * pi / c_div;
+	double th = 0;
+	int i,x,y;
+	for (i = 0;i <= c_div;i++){
+		x = r * cos(th);
+		y = r * sin(th);
+		point_i(vrami,cx+x,cy+y,c,xsize);
+		th += incr;
+	}
+
+}
+
+void point_i(unsigned int *vrami, int x, int y, unsigned int c, int xsize)
+{	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
+	if(vinfo->BitsPerPixel == 8){
+	unsigned char *vram8 = (unsigned char *)vrami;
+	unsigned char c8 = rgb_int2char(c);
+	vram8[y * xsize + x] = c8;
+	} else if(vinfo->BitsPerPixel == 16){
+	unsigned short *vram16 = (unsigned short *)vrami;
+	unsigned short c16 = rgb_int2short(c);
+	vram16[y * xsize + x] = c16;
+	} else if(vinfo->BitsPerPixel == 32){
+	vrami[y * xsize + x] = c;
+	}
 	return;
 }
 

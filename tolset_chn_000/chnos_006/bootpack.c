@@ -11,6 +11,7 @@ void CHNMain(void)
 	int fifobuf[256], i = 0,time_tick,mx = binfo->scrnx / 2, my = binfo->scrny / 2;
 	unsigned int all_mem_size = memtest(0x00400000, 0xbffffffff);
 	unsigned int free_mem_size = 0;
+
 	init_gdtidt();
 	init_pic();
 	io_sti();
@@ -26,6 +27,7 @@ void CHNMain(void)
 	init_sheets(vinfo->PhysBasePtr,binfo->scrnx,binfo->scrny);
 	pit_beep_off();
 
+	circle_i(vinfo->PhysBasePtr, binfo->scrnx/2, binfo->scrny/2, 0xff0000, binfo->scrnx, 100);
 
 	sprintf(s,"memory %d Byte(%d KB,%d MB)",all_mem_size,all_mem_size/1024, all_mem_size/(1024*1024));
 	boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,304,INT_MONITOR_LONG,320);	
@@ -39,7 +41,7 @@ void CHNMain(void)
 		sprintf(s,"free   %d Byte(%d KB,%d MB)",free_mem_size,free_mem_size/1024, free_mem_size/(1024*1024));
 		boxfill_i(vinfo->PhysBasePtr, binfo->scrnx, 0x000000, 0,320,INT_MONITOR_LONG,336);	
 		putfonts_asc_i(vinfo->PhysBasePtr, binfo->scrnx, 0,320,0xffffff,s);
-	
+
 		io_stihlt();
 	} else {
 		i = fifo32_get(&sysfifo);

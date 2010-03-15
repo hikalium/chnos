@@ -19,9 +19,9 @@ err:
 
 }
 
-struct SHEET *sheet_alloc(void)
+struct SHEET32 *sheet_alloc(void)
 {
-	struct SHEET *sht;
+	struct SHEET32 *sht;
 	int i;
 	for(i = 0;i < MAX_SHEETS;i++){
 		if(ctl->sheets0[i].flags == SHT_FLAGS_VOID){
@@ -34,7 +34,7 @@ struct SHEET *sheet_alloc(void)
 	return 0;
 }
 
-void sheet_setbuf(struct SHEET *sht,unsigned int *buf,int xsize, int ysize, int col_inv)
+void sheet_setbuf(struct SHEET32 *sht,unsigned int *buf,int xsize, int ysize, int col_inv)
 {
 	sht->buf = buf;
 	sht->bxsize = xsize;

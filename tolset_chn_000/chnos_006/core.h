@@ -216,8 +216,8 @@ int memman_free_4k(unsigned int addr, unsigned int size);
 /*sheet.c	画面管理関係*/
 
 void init_sheets(unsigned int *vram, int xsize, int ysize);
-struct SHEET *sheet_alloc(void);
-void sheet_setbuf(struct SHEET *sht,unsigned int *buf,int xsize, int ysize, int col_inv );
+struct SHEET32 *sheet_alloc(void);
+void sheet_setbuf(struct SHEET32 *sht,unsigned int *buf,int xsize, int ysize, int col_inv );
 
 /*keyboard.c	キーボード関係*/
 void init_keyboard(struct FIFO32 *fifo, int data0);
@@ -250,6 +250,8 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 /*graphic.h	グラフィック関係*/
 
 /*全色対応*/
+
+void circle_i(unsigned int *vrami, int cx, int cy, unsigned int c, int xsize, int r);
 unsigned short rgb_int2short (unsigned int c32);
 unsigned char rgb_int2char(unsigned int c32);
 void init_scrn_i(unsigned int *vram, int xsize, int ysize, unsigned char bits);
@@ -257,6 +259,7 @@ void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, i
 void col_pat_256safe(unsigned int *vrami, int xsize, int ysize);
 void putfonts_asc_i(unsigned int *vrami, int xsize, int x, int y, unsigned int ci, unsigned char *s);
 void draw_mouse_i(unsigned int *vrami, int x, int y, int xsize);
+void point_i(unsigned int *vrami, int x, int y, unsigned int c32, int xsize);
 
 /*8bits*/
 void init_palette(void);
