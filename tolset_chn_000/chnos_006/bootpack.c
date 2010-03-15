@@ -23,6 +23,7 @@ void CHNMain(void)
 	init_keyboard(&sysfifo, SYSFIFO_KEYB);
 	init_mouse(&sysfifo, SYSFIFO_MOUSE, &mdec);
 	init_pit(&time_tick);
+	init_sheets(vinfo->PhysBasePtr,binfo->scrnx,binfo->scrny);
 	pit_beep_off();
 
 

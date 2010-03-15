@@ -114,4 +114,21 @@ int memman_free(unsigned int addr, unsigned int size)
 	return -1;
 }
 
+unsigned int memman_alloc_4k(unsigned int size)
+{
+	unsigned int a;
+	size = (size + 0xfff) & 0xfffff000;
+	a = memman_alloc(size);
+	return a;
+}
+
+int memman_free_4k(unsigned int addr, unsigned int size)
+{
+	int i;
+	size = (size + 0xfff) & 0xfffff000;
+	i = memman_free(addr,size);
+	return i;
+}
+
+
 

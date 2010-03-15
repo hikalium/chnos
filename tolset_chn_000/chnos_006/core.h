@@ -59,6 +59,11 @@
 #define MEMMAN_FREES	4090	
 #define MEMMAN_ADDR	0x003c0000
 
+#define MAX_SHEETS	256
+
+#define SHT_FLAGS_VOID	0
+#define SHT_FLAGS_USE	1
+
 #define SYSFIFO_KEYB	0x100			/*256~511=keycode*/
 #define SYSFIFO_MOUSE	0x200			/*512~767=mouse*/
 
@@ -115,6 +120,13 @@ struct SHEET32 {
 struct FIFO32 {
 	unsigned int *buf;
 	int p, q, size, free, flags;
+};
+
+struct SHTCTL {
+	unsigned int *vram;
+	int xsize,ysize,top;
+	struct SHEET32 *sheets[MAX_SHEETS];
+	struct SHEET32 sheets0[MAX_SHEETS];
 };
 
 struct MOUSE_DECODE {
@@ -192,12 +204,20 @@ void wait_KBC_sendready(void);
 void init_pic(void);
 
 /*memory.c	ÉÅÉÇÉää«óùä÷åW*/
+
 unsigned int memtest(unsigned int start, unsigned int end);
 void memman_init(struct MEMMAN *man);
 unsigned int memman_free_total(void);
 unsigned int memman_alloc(unsigned int size);
 int memman_free(unsigned int addr, unsigned int size);
+unsigned int memman_alloc_4k(unsigned int size);
+int memman_free_4k(unsigned int addr, unsigned int size);
 
+/*sheet.c	âÊñ ä«óùä÷åW*/
+
+void init_sheets(unsigned int *vram, int xsize, int ysize);
+struct SHEET *sheet_alloc(void);
+void sheet_setbuf(struct SHEET *sht,unsigned int *buf,int xsize, int ysize, int col_inv );
 
 /*keyboard.c	ÉLÅ[É{Å[Éhä÷åW*/
 void init_keyboard(struct FIFO32 *fifo, int data0);
