@@ -67,6 +67,9 @@
 #define SYSFIFO_KEYB	0x100			/*256~511=keycode*/
 #define SYSFIFO_MOUSE	0x200			/*512~767=mouse*/
 
+#define INV_COL32	0xFFFFFFFF
+#define VOID_INV_COL32	0xFEFFFFFF
+
 #define DESKTOP_COL8	COL8_C6C6C6
 #define TASKBAR_COL8	COL8_0000FF
 
@@ -113,8 +116,8 @@ struct MEMMAN {
 };
 
 struct SHEET32 {
-	unsigned int *buf;
-	int bxsize,bysize,vx0,vy0,col_inv,height,flags;
+	unsigned int *buf,col_inv;
+	int bxsize,bysize,vx0,vy0,height,flags;
 };
 
 struct FIFO32 {
@@ -217,7 +220,12 @@ int memman_free_4k(unsigned int addr, unsigned int size);
 
 void init_sheets(unsigned int *vram, int xsize, int ysize);
 struct SHEET32 *sheet_alloc(void);
-void sheet_setbuf(struct SHEET32 *sht,unsigned int *buf,int xsize, int ysize, int col_inv );
+void sheet_setbuf(struct SHEET32 *sht,unsigned int *buf,int xsize, int ysize, unsigned int col_inv );
+void sheet_updown(struct SHEET32 *sht,int height);
+void sheet_refresh(struct SHEET32 *sht, int bx0, int by0, int bx1, int by1);
+void sheet_slide(struct SHEET32 *sht, int vx0, int vy0);
+void sheet_free(struct SHEET32 *sht);
+void sheet_refreshsub(int vx0, int vy0, int vx1, int vy1);
 
 /*keyboard.c	キーボード関係*/
 void init_keyboard(struct FIFO32 *fifo, int data0);
@@ -254,11 +262,10 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 void circle_i(unsigned int *vrami, int cx, int cy, unsigned int c, int xsize, int r);
 unsigned short rgb_int2short (unsigned int c32);
 unsigned char rgb_int2char(unsigned int c32);
-void init_scrn_i(unsigned int *vram, int xsize, int ysize, unsigned char bits);
+void init_scrn_i(unsigned int *vram, int xsize, int ysize, unsigned char bits, unsigned int *mousecur32);
 void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
 void col_pat_256safe(unsigned int *vrami, int xsize, int ysize);
 void putfonts_asc_i(unsigned int *vrami, int xsize, int x, int y, unsigned int ci, unsigned char *s);
-void draw_mouse_i(unsigned int *vrami, int x, int y, int xsize);
 void point_i(unsigned int *vrami, int x, int y, unsigned int c32, int xsize);
 
 /*8bits*/
@@ -285,7 +292,7 @@ void boxfill32(unsigned int *vram, int xsize, unsigned int c, int x0, int y0, in
 void init_scrn32(unsigned int *vram, int xsize, int ysize, unsigned int *mousecur);
 void putfont32(unsigned int *vram, int xsize, int x, int y, unsigned int c, unsigned char *font);
 void putfonts32_asc(unsigned int *vram, int xsize, int x, int y, unsigned int c, unsigned char *s);
-void init_mouse_cursor32(unsigned int *mouse, unsigned int bc);
+void init_mouse_cursor32(unsigned int *mouse);
 void putblock32_32(unsigned int *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned int *buf, int bxsize);
 
 
