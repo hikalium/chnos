@@ -12,27 +12,30 @@ void CHNMain(void)
 	int fifobuf[256], i = 0,time_tick,mx = binfo->scrnx / 2, my = binfo->scrny / 2;
 	unsigned int all_mem_size = memtest(0x00400000, 0xbffffffff);
 	unsigned int free_mem_size = 0;
-	unsigned int *buf_back, buf_mouse[576];
+	unsigned int *buf_back, buf_mouse[576], *buf_win;
 
 	init_gdtidt();
 	init_pic();
 	io_sti();
 
 	memman_init(memman);
-//	memman_free(0x00001000,0x0009e000);
+//	memman_free(0x00001000,0x0009e000);/*ここのメモリは誰かが使用中のようだ。*/
 	memman_free(0x00400000,all_mem_size - 0x00400000);
+
 
 	fifo32_init(&sysfifo, 256, fifobuf);
 	init_keyboard(&sysfifo, SYSFIFO_KEYB);
 	init_mouse(&sysfifo, SYSFIFO_MOUSE, &mdec);
 	init_pit(&time_tick);
 	init_sheets(vinfo->PhysBasePtr,binfo->scrnx,binfo->scrny);
+	init_windows();
 	pit_beep_off();
 
 
 	sht_back = sheet_alloc();
 	sht_mouse = sheet_alloc();
-	buf_back = (unsigned int *) memman_alloc_4k(vinfo->BankSize * 1024);
+	buf_back = (unsigned int *) memman_alloc_4k(binfo->scrnx * binfo->scrny * 4);
+	buf_win = (unsigned int *) memman_alloc_4k(200 * 150 * 4);
 	sheet_setbuf(sht_back, buf_back, binfo->scrnx, binfo->scrny, VOID_INV_COL32);
 	sheet_setbuf(sht_mouse, buf_mouse, 24, 24, INV_COL32);
 	boxfill32(buf_back, binfo->scrnx, 0x000000, 0,0,binfo->scrnx, binfo->scrny);
@@ -40,10 +43,11 @@ void CHNMain(void)
 	sheet_slide(sht_back, 0,0);
 	sheet_slide(sht_mouse, mx, my);
 	sheet_updown(sht_back, 0);
-	sheet_updown(sht_mouse, 1);
+	make_window32(buf_win, "testwindow", 200, 150, 200, 50, 1);	
+	sheet_updown(sht_mouse, 6);
 
 
-	circle_i(buf_back, binfo->scrnx/2, binfo->scrny/2, 0xff0000, binfo->scrnx, 100);
+	circle_i(buf_back, 100,100, 0xff0000, binfo->scrnx, 100);
 
 	sprintf(s,"memory %d Byte(%d KB,%d MB)",all_mem_size,all_mem_size/1024, all_mem_size/(1024*1024));
 	boxfill_i(buf_back, binfo->scrnx, 0x000000, 0,304,INT_MONITOR_LONG,320);	
@@ -89,12 +93,12 @@ void CHNMain(void)
 				my += mdec.y;
 				if(mx < 0) mx = 0;
 				if(my < 0) my = 0;
-				if(mx > binfo->scrnx - 24) mx = binfo->scrnx - 24;
-				if(my > binfo->scrny - 24) my = binfo->scrny - 24;
+				if(mx > binfo->scrnx - 1) mx = binfo->scrnx - 1;
+				if(my > binfo->scrny - 1) my = binfo->scrny - 1;
 				
 				sheet_slide(sht_mouse, mx,my);
 				boxfill_i(buf_back, binfo->scrnx, 0x000000, 0,288,INT_MONITOR_LONG,304);	
-				sprintf(s,"(%4d,%4d)",mx,my);
+				sprintf(s,"(%4d,%4d)  %X",mx,my,vinfo->PhysBasePtr);
 				putfonts_asc_i(buf_back, binfo->scrnx, 0,288,0xffffff,s);	
 				sheet_refresh(sht_back, 0, 256, INT_MONITOR_LONG, 336);			
 			}

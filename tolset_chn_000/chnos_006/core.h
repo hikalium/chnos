@@ -59,10 +59,15 @@
 #define MEMMAN_FREES	4090	
 #define MEMMAN_ADDR	0x003c0000
 
-#define MAX_SHEETS	256
+#define MAX_SHEETS	1024
+
+#define MAX_WINDOWS	256
 
 #define SHT_FLAGS_VOID	0
 #define SHT_FLAGS_USE	1
+
+#define WIN_FLAGS_VOID	0
+#define WIN_FLAGS_USE	1
 
 #define SYSFIFO_KEYB	0x100			/*256~511=keycode*/
 #define SYSFIFO_MOUSE	0x200			/*512~767=mouse*/
@@ -105,6 +110,18 @@
 
 
 /*構造体宣言*/
+struct WINDOWINFO {
+	unsigned char title[32];
+	unsigned int *buf_c;
+	struct SHEET32 *head, *center, *sideL, *sideR, *bottom; 
+	unsigned int *buf_head, *buf_L, *buf_R, *buf_bottom; 
+	int xsize,ysize,bxsize,bysize,px,py;
+	unsigned int flags;
+};
+
+struct WINCTL {
+	struct WINDOWINFO winfos[MAX_WINDOWS];
+};
 
 struct MEM_FREEINFO {
 	unsigned int addr, size;
@@ -215,6 +232,12 @@ unsigned int memman_alloc(unsigned int size);
 int memman_free(unsigned int addr, unsigned int size);
 unsigned int memman_alloc_4k(unsigned int size);
 int memman_free_4k(unsigned int addr, unsigned int size);
+
+/*window.c	ウィンドウ関係*/
+void init_windows(void);
+struct WINDOWINFO *window_alloc(void);
+void make_window32(unsigned int *buf, unsigned char *title, int xsize, int ysize, int px, int py, int height);
+
 
 /*sheet.c	画面管理関係*/
 
