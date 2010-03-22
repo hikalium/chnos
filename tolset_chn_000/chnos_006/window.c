@@ -30,7 +30,7 @@ struct WINDOWINFO *window_alloc(void)
 	return 0;
 }
 
-void make_window32(unsigned int *buf, unsigned char *title, int xsize, int ysize, int px, int py, int height)
+struct WINDOWINFO *make_window32(unsigned int *buf, unsigned char *title, int xsize, int ysize, int px, int py, int height)
 {
 	static char closebtn[16][40] = {
 		"OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO@",
@@ -117,11 +117,21 @@ void make_window32(unsigned int *buf, unsigned char *title, int xsize, int ysize
 	sheet_updown(winfo->head, height);	
 	
 err:
-	return;
+	return winfo;
 
 }
 
-
+void slide_window(struct WINDOWINFO *winfo, int px, int py)
+{
+	winfo->px = px;
+	winfo->py = py;
+	sheet_slide(winfo->center, px + 4,py + 24);
+	sheet_slide(winfo->sideL, px,py + 24);
+	sheet_slide(winfo->sideR, px + winfo->xsize - 4,py + 24);
+	sheet_slide(winfo->bottom, px,py + winfo->ysize - 4);
+	sheet_slide(winfo->head, px,py);
+	return;
+}
 
 
 

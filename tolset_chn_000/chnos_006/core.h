@@ -236,8 +236,8 @@ int memman_free_4k(unsigned int addr, unsigned int size);
 /*window.c	ウィンドウ関係*/
 void init_windows(void);
 struct WINDOWINFO *window_alloc(void);
-void make_window32(unsigned int *buf, unsigned char *title, int xsize, int ysize, int px, int py, int height);
-
+struct WINDOWINFO *make_window32(unsigned int *buf, unsigned char *title, int xsize, int ysize, int px, int py, int height);
+void slide_window(struct WINDOWINFO *winfo, int px, int py);
 
 /*sheet.c	画面管理関係*/
 

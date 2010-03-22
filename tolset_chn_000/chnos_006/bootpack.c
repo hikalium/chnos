@@ -9,6 +9,7 @@ void CHNMain(void)
 	struct MOUSE_DECODE mdec;
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
 	struct SHEET32 *sht_back, *sht_mouse;
+	struct WINDOWINFO *winfo1;
 	int fifobuf[256], i = 0,time_tick,mx = binfo->scrnx / 2, my = binfo->scrny / 2;
 	unsigned int all_mem_size = memtest(0x00400000, 0xbffffffff);
 	unsigned int free_mem_size = 0;
@@ -43,7 +44,7 @@ void CHNMain(void)
 	sheet_slide(sht_back, 0,0);
 	sheet_slide(sht_mouse, mx, my);
 	sheet_updown(sht_back, 0);
-	make_window32(buf_win, "testwindow", 200, 150, 200, 50, 1);	
+	winfo1 = make_window32(buf_win, "testwindow", 200, 150, 200, 50, 1);	
 	sheet_updown(sht_mouse, 6);
 
 
@@ -97,6 +98,7 @@ void CHNMain(void)
 				if(my > binfo->scrny - 1) my = binfo->scrny - 1;
 				
 				sheet_slide(sht_mouse, mx,my);
+				slide_window(winfo1, mx + 50, my + 50);
 				boxfill_i(buf_back, binfo->scrnx, 0x000000, 0,288,INT_MONITOR_LONG,304);	
 				sprintf(s,"(%4d,%4d)  %X",mx,my,vinfo->PhysBasePtr);
 				putfonts_asc_i(buf_back, binfo->scrnx, 0,288,0xffffff,s);	
