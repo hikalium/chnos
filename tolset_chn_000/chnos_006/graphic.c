@@ -60,6 +60,8 @@ void init_scrn_i(unsigned int *vrami, int xsize, int ysize, unsigned char bits, 
 	return;
 }
 
+
+
 void circle_i(unsigned int *vrami, int cx, int cy, unsigned int c, int xsize, int r)
 {
 	double pi = 3.1415;

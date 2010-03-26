@@ -123,13 +123,13 @@ err:
 
 void slide_window(struct WINDOWINFO *winfo, int px, int py)
 {
-	winfo->px = px;
-	winfo->py = py;
-	sheet_slide(winfo->center, px + 4,py + 24);
-	sheet_slide(winfo->sideL, px,py + 24);
-	sheet_slide(winfo->sideR, px + winfo->xsize - 4,py + 24);
-	sheet_slide(winfo->bottom, px,py + winfo->ysize - 4);
-	sheet_slide(winfo->head, px,py);
+	if(px != 0)	winfo->px = px;
+	if(py != 0)	winfo->py = py;
+	sheet_slide(winfo->center, winfo->px + 4,winfo->py + 24);
+	sheet_slide(winfo->sideL, winfo->px,winfo->py + 24);
+	sheet_slide(winfo->sideR, winfo->px + winfo->xsize - 4,winfo->py + 24);
+	sheet_slide(winfo->bottom, winfo->px,winfo->py + winfo->ysize - 4);
+	sheet_slide(winfo->head, winfo->px,winfo->py);
 	return;
 }
 

@@ -262,7 +262,7 @@ int decode_mouse (unsigned int dat);
 
 
 /*timer.c		タイマー関係*/
-void init_pit(int *time_tick);
+void init_pit(volatile int *time_tick);
 void inthandler20(int *esp);
 
 /*fifo.c		FIFOバッファ関係*/

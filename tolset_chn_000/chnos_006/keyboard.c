@@ -13,6 +13,7 @@ void init_keyboard(struct FIFO32 *fifo, int data0)
 	io_out8(PORT_KEYCMD, KEYCMD_WRITE_MODE);
 	wait_KBC_sendready();
 	io_out8(KEYB_DATA, KBC_MODE);
+	io_out8(PIC0_IMR, io_in8(PIC0_IMR) & 0xfd);
 	return;
 }
 

@@ -25,6 +25,7 @@ void init_mouse(struct FIFO32 *fifo, int data0, struct MOUSE_DECODE *mdec0)
 	io_out8(PORT_KEYCMD, KEYCMD_SENDTO_MOUSE);
 	wait_KBC_sendready();
 	io_out8(KEYB_DATA, MOUSECMD_ENABLE);
+	io_out8(PIC1_IMR, io_in8(PIC1_IMR) & 0xef);
 	return;	/*成功すれば、0xfaがマウスからやってくる。*/
 }
 
