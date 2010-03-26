@@ -7,6 +7,7 @@ void CHNMain(void)
 	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
 	struct FIFO32 sysfifo;
 	struct MOUSE_DECODE mdec;
+	struct SYSTEM system;
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
 	struct SHEET32 *sht_back, *sht_mouse;
 	struct WINDOWINFO *winfo1;
@@ -15,12 +16,12 @@ void CHNMain(void)
 	unsigned int all_mem_size = memtest(0x00400000, 0xbffffffff);
 	unsigned int free_mem_size = 0;
 	unsigned int *buf_back, buf_mouse[576], *buf_win;
-
+	init_system(&system);
 	init_gdtidt();
 	init_pic();
 	io_sti();
 
-	memman_init(memman);
+	system.memory.init(memman);
 //	memman_free(0x00001000,0x0009e000);/*ここのメモリは誰かが使用中のようだ。*/
 	memman_free(0x00400000,all_mem_size - 0x00400000);
 
@@ -29,7 +30,8 @@ void CHNMain(void)
 	init_keyboard(&sysfifo, SYSFIFO_KEYB);
 	init_mouse(&sysfifo, SYSFIFO_MOUSE, &mdec);
 	init_sheets(vinfo->PhysBasePtr,binfo->scrnx,binfo->scrny);
-	init_windows();
+//	init_windows();
+	system.window.init();
 	pit_beep_off();
 
 
@@ -112,6 +114,4 @@ void CHNMain(void)
 		}
 	}
 }
-
-
 

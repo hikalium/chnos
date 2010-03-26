@@ -209,10 +209,26 @@ struct GATE_DESCRIPTOR { /*0x26f800~0x26ffff 標準*/
 	short offset_high;
 };
 
+struct WINDOW {
+	void (*init)(void);
+};
+
+struct MEMORY {
+	void (*init)(struct MEMMAN *man);
+};
+
+struct SYSTEM {
+	struct WINDOW window;
+	struct MEMORY memory;
+};
+
 /*関数宣言*/
 
 
 /*bootpack.c	ＯＳメイン*/
+
+/*system.c	関数ポインタ関係、system構造体の管理*/
+void init_system(struct SYSTEM *system);
 
 /*io.c		その他外部装置関係*/
 
@@ -351,3 +367,4 @@ void asm_end_app(void);
 void asm_inthandler21(void);
 void asm_inthandler20(void);
 void asm_inthandler2c(void);
+
