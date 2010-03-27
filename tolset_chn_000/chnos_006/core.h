@@ -143,7 +143,7 @@ struct FIFO32 {
 };
 
 struct SHTCTL {
-	unsigned int *vram;
+	unsigned int *vram, *map;
 	int xsize,ysize,top;
 	struct SHEET32 *sheets[MAX_SHEETS];
 	struct SHEET32 sheets0[MAX_SHEETS];
@@ -217,9 +217,15 @@ struct MEMORY {
 	void (*init)(struct MEMMAN *man);
 };
 
+struct IO {
+	void (*readrtc)(unsigned char *t);
+	void (*wait_kbc)(void);
+};
+
 struct SYSTEM {
 	struct WINDOW window;
 	struct MEMORY memory;
+	struct IO io;
 };
 
 /*関数宣言*/
@@ -264,7 +270,8 @@ void sheet_updown(struct SHEET32 *sht,int height);
 void sheet_refresh(struct SHEET32 *sht, int bx0, int by0, int bx1, int by1);
 void sheet_slide(struct SHEET32 *sht, int vx0, int vy0);
 void sheet_free(struct SHEET32 *sht);
-void sheet_refreshsub(int vx0, int vy0, int vx1, int vy1);
+void sheet_refreshsub(int vx0, int vy0, int vx1, int vy1, int h0, int h1);
+void sheet_refreshmap(int vx0, int vy0, int vx1, int vy1, int h0);
 
 /*keyboard.c	キーボード関係*/
 void init_keyboard(struct FIFO32 *fifo, int data0);
