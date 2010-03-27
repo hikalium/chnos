@@ -72,7 +72,6 @@ void CHNMain(void)
 		boxfill_i(buf_win, INT_MONITOR_LONG, 0x000000, 0,32,INT_MONITOR_LONG,48);	
 		putfonts_asc_i(buf_win, INT_MONITOR_LONG, 0,32,0xffffff,s);
 		sheet_refresh(winfo1->center, 0, 32, INT_MONITOR_LONG, 48);
-
 		io_stihlt();
 	} else {
 		i = fifo32_get(&sysfifo);

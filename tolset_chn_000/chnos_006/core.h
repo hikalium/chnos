@@ -209,20 +209,74 @@ struct GATE_DESCRIPTOR { /*0x26f800~0x26ffff ïWèÄ*/
 	short offset_high;
 };
 
+/*ã[éóÉNÉâÉX*/
+
+struct SHEET {
+	void (*init)(unsigned int *vram, int xsize, int ysize);
+	struct SHEET32 *(alloc)(void);
+	void (*set)(struct SHEET32 *sht,unsigned int *buf,int xsize, int ysize, unsigned int col_inv );
+	void (*updown)(struct SHEET32 *sht,int height);
+	void (*refresh)(struct SHEET32 *sht, int bx0, int by0, int bx1, int by1);
+	void (*slide)(struct SHEET32 *sht, int vx0, int vy0);
+	void (*free)(struct SHEET32 *sht);
+	void (*refsub)(int vx0, int vy0, int vx1, int vy1, int h0, int h1);
+	void (*refmap)(int vx0, int vy0, int vx1, int vy1, int h0);
+
+};
+
+struct INTERRUPT {
+
+};
+
+struct FIFO {
+	void (*init)(struct FIFO32 *fifo, int size, unsigned int *buf);
+	int (*put)(struct FIFO32 *fifo, unsigned int data);
+	int (*get)(struct FIFO32 *fifo);
+	int (*status)(struct FIFO32 *fifo);
+};
+
+struct TIMER {
+	void (*init)(volatile int *time_tick);
+	void (*inthandler)(int *esp);
+};
+
+struct MOUSE {
+	void (*inthandler)(int *esp);
+	void (*init)(struct FIFO32 *fifo, int data0, struct MOUSE_DECODE *mdec0);
+	int (*decode) (unsigned int dat);
+};
+
+struct KEYBOARD {
+	void (*wait_kbc)(void);
+	void (*init)(struct FIFO32 *fifo, int data0);
+	void (*inthandler)(int *esp);
+};
+
 struct WINDOW {
 	void (*init)(void);
+	struct WINDOWINFO *(*alloc)(void);
+	struct WINDOWINFO *(*make)(unsigned int *buf, unsigned char *title, int xsize, int ysize, int px, int py, int height);
+	void (*slide)(struct WINDOWINFO *winfo, int px, int py);
 };
 
 struct MEMORY {
 	void (*init)(struct MEMMAN *man);
+	unsigned int (*test)(unsigned int start, unsigned int end);
+	unsigned int (*freesize)(void);
+	unsigned int (*allocb)(unsigned int size);
+	int (*freeb)(unsigned int addr, unsigned int size);
+	unsigned int (*alloc)(unsigned int size);
+	int (*free)(unsigned int addr, unsigned int size);
 };
 
 struct IO {
+	struct KEYBOARD keyboard;
 	void (*readrtc)(unsigned char *t);
-	void (*wait_kbc)(void);
+	void (*init_pic)(void);
 };
 
 struct SYSTEM {
+	struct SHEET sheet;
 	struct WINDOW window;
 	struct MEMORY memory;
 	struct IO io;
