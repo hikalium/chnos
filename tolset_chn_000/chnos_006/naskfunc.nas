@@ -19,13 +19,30 @@
 		GLOBAL  _asm_osselect_third
 		GLOBAL  _clts, _fnsave, _frstor
 		GLOBAL	_pit_beep_on, _pit_beep_off
-		GLOBAL	_asm_inthandler21, _asm_inthandler20, _asm_inthandler2c
+		GLOBAL	_asm_inthandler21, _asm_inthandler20, _asm_inthandler2c, _asm_inthandler27
 		
-		EXTERN	_inthandler21, _inthandler20, _inthandler2c
+		EXTERN	_inthandler21, _inthandler20, _inthandler2c, _inthandler27
 
 
 
 [SECTION .text]
+
+_asm_inthandler27:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler27
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
 
 _asm_inthandler21:
 	push	es

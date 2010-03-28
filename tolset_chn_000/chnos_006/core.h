@@ -211,75 +211,138 @@ struct GATE_DESCRIPTOR { /*0x26f800~0x26ffff ïWèÄ*/
 
 /*ã[éóÉNÉâÉX*/
 
-struct SHEET {
-	void (*init)(unsigned int *vram, int xsize, int ysize);
-	struct SHEET32 *(alloc)(void);
-	void (*set)(struct SHEET32 *sht,unsigned int *buf,int xsize, int ysize, unsigned int col_inv );
-	void (*updown)(struct SHEET32 *sht,int height);
-	void (*refresh)(struct SHEET32 *sht, int bx0, int by0, int bx1, int by1);
-	void (*slide)(struct SHEET32 *sht, int vx0, int vy0);
-	void (*free)(struct SHEET32 *sht);
-	void (*refsub)(int vx0, int vy0, int vx1, int vy1, int h0, int h1);
-	void (*refmap)(int vx0, int vy0, int vx1, int vy1, int h0);
-
-};
-
-struct INTERRUPT {
-
-};
-
-struct FIFO {
-	void (*init)(struct FIFO32 *fifo, int size, unsigned int *buf);
-	int (*put)(struct FIFO32 *fifo, unsigned int data);
-	int (*get)(struct FIFO32 *fifo);
-	int (*status)(struct FIFO32 *fifo);
-};
-
-struct TIMER {
-	void (*init)(volatile int *time_tick);
-	void (*inthandler)(int *esp);
-};
-
-struct MOUSE {
-	void (*inthandler)(int *esp);
-	void (*init)(struct FIFO32 *fifo, int data0, struct MOUSE_DECODE *mdec0);
-	int (*decode) (unsigned int dat);
-};
-
-struct KEYBOARD {
-	void (*wait_kbc)(void);
-	void (*init)(struct FIFO32 *fifo, int data0);
-	void (*inthandler)(int *esp);
-};
-
-struct WINDOW {
-	void (*init)(void);
-	struct WINDOWINFO *(*alloc)(void);
-	struct WINDOWINFO *(*make)(unsigned int *buf, unsigned char *title, int xsize, int ysize, int px, int py, int height);
-	void (*slide)(struct WINDOWINFO *winfo, int px, int py);
-};
-
-struct MEMORY {
-	void (*init)(struct MEMMAN *man);
-	unsigned int (*test)(unsigned int start, unsigned int end);
-	unsigned int (*freesize)(void);
-	unsigned int (*allocb)(unsigned int size);
-	int (*freeb)(unsigned int addr, unsigned int size);
-	unsigned int (*alloc)(unsigned int size);
-	int (*free)(unsigned int addr, unsigned int size);
-};
-
-struct IO {
-	struct KEYBOARD keyboard;
-	void (*readrtc)(unsigned char *t);
-	void (*init_pic)(void);
-};
-
 struct SYSTEM {
-	struct SHEET sheet;
-	struct WINDOW window;
-	struct MEMORY memory;
-	struct IO io;
+	struct IO {
+		struct beep{
+			void (*on)(void);
+			void (*off)(void);
+		} beep;
+		void (*clts)(void);
+		void (*fnsave)(int *addr);
+		void (*frstor)(int *addr);
+		void (*hlt)(void);
+		void (*cli)(void);
+		void (*sti)(void);
+		void (*stihlt)(void);
+		int (*in8)(int port);
+		int (*in32)(int port);
+		void (*out32)(int port, int data);
+		void (*out8)(int port, int data);
+		int (*in16)(int port);
+		void (*out16)(int port, int data);
+		void (*farcall)(int eip, int cs);
+		void (*readrtc)(unsigned char *t);
+		void (*init_pic)(void);
+		struct EFLAGS { 
+			int (*load)(void);
+			void (*store)(int eflags);
+		} eflags;
+		struct GDTR {
+			void (*load)(int limit, int addr);
+		} gdtr;
+		struct IDTR {
+			void (*load)(int limit, int addr);
+		} idtr;
+		struct CR0 {
+			int (*load)(void);
+			void (*store)(int cr0);
+		} cr0;
+		struct TR {
+			void (*load)(int tr);
+		} tr;
+		struct KEYBOARD {
+			void (*wait_kbc)(void);
+			void (*init)(struct FIFO32 *fifo, int data0);
+			void (*inthandler)(int *esp);
+		} keyboard;
+		struct TIMER {
+			void (*init)(volatile int *time_tick);
+			void (*inthandler)(int *esp);
+		} timer;
+		struct MOUSE {
+			void (*inthandler)(int *esp);
+			void (*init)(struct FIFO32 *fifo, int data0, struct MOUSE_DECODE *mdec0);
+			int (*decode) (unsigned int dat);
+		} mouse;
+		struct INTERRUPT {
+			void (*init)(void);
+			void (*set_segment)(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
+			void (*set_gate)(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
+			struct HANDLER {
+				void (*int27)(int *esp);
+			} handler;
+		} interrupt;
+		struct MEMORY {
+			void (*init)(struct MEMMAN *man);
+			unsigned int (*test)(unsigned int start, unsigned int end);
+			unsigned int (*freesize)(void);
+			unsigned int (*allocb)(unsigned int size);
+			int (*freeb)(unsigned int addr, unsigned int size);
+			unsigned int (*alloc)(unsigned int size);
+			int (*free)(unsigned int addr, unsigned int size);
+		} memory;
+	} io;
+	struct DRAW {
+		void (*circle)(unsigned int *vrami, int cx, int cy, unsigned int c, int xsize, int r);
+		unsigned short (*int2short) (unsigned int c32);
+		unsigned char (*int2char)(unsigned int c32);
+		void (*init_scrn)(unsigned int *vram, int xsize, int ysize, unsigned char bits, unsigned int *mousecur32);
+		void (*boxfill)(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
+		void (*col_pat_256safe)(unsigned int *vrami, int xsize, int ysize);
+		void (*putfonts)(unsigned int *vrami, int xsize, int x, int y, unsigned int ci, unsigned char *s);
+		void (*point)(unsigned int *vrami, int x, int y, unsigned int c32, int xsize);
+		struct DRAW_BITS8 {
+			void (*init)(void);
+			void (*set)(int start, int end, unsigned char *rgb);
+			void (*boxfill)(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1);
+			void (*init_scrn)(unsigned char *vram, int x, int y, unsigned char *mousecur);
+			void (*putfont)(unsigned char *vram, int xsize, int x, int y, unsigned char c, unsigned char *font);
+			void (*putfonts)(unsigned char *vram, int xsize, int x, int y, unsigned char c, unsigned char *s);
+			void (*mouse_cursor)(unsigned char *mouse, unsigned char bc);
+			void (*putblock)(unsigned char *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned char *buf, int bxsize);
+		} bits8;
+		struct DRAW_BITS16 {
+			void (*boxfill)(unsigned short *vram, int xsize, unsigned short c, int x0, int y0, int x1, int y1);
+			void (*init_scrn)(unsigned short *vram, int xsize, int ysize, unsigned short *mousecur);
+			void (*putfont)(unsigned short *vram, int xsize, int x, int y, unsigned short c, unsigned char *font);
+			void (*putfonts)(unsigned short *vram, int xsize, int x, int y, unsigned short c, unsigned char *s);
+			void (*mouse_cursor)(unsigned short *mouse, unsigned short bc);
+			void (*putblock)(unsigned short *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned short *buf, int bxsize);
+		} bits16;
+		struct DRAW_BITS32 {
+			void (*boxfill)(unsigned int *vram, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
+			void (*init_scrn)(unsigned int *vram, int xsize, int ysize, unsigned int *mousecur);
+			void (*putfont)(unsigned int *vram, int xsize, int x, int y, unsigned int c, unsigned char *font);
+			void (*putfonts)(unsigned int *vram, int xsize, int x, int y, unsigned int c, unsigned char *s);
+			void (*mouse_cursor)(unsigned int *mouse);
+			void (*putblock)(unsigned int *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned int *buf, int bxsize);
+		}bits32;
+		struct WINDOW {
+			void (*init)(void);
+			struct WINDOWINFO *(*alloc)(void);
+			struct WINDOWINFO *(*make)(unsigned int *buf, unsigned char *title, int xsize, int ysize, int px, int py, int height);
+			void (*slide)(struct WINDOWINFO *winfo, int px, int py);
+		} window;
+		struct SHEET {
+			void (*init)(unsigned int *vram, int xsize, int ysize);
+			struct SHEET32 *(*alloc)(void);
+			void (*set)(struct SHEET32 *sht,unsigned int *buf,int xsize, int ysize, unsigned int col_inv );
+			void (*updown)(struct SHEET32 *sht,int height);
+			void (*refresh)(struct SHEET32 *sht, int bx0, int by0, int bx1, int by1);
+			void (*slide)(struct SHEET32 *sht, int vx0, int vy0);
+			void (*free)(struct SHEET32 *sht);
+			void (*refsub)(int vx0, int vy0, int vx1, int vy1, int h0, int h1);
+			void (*refmap)(int vx0, int vy0, int vx1, int vy1, int h0);
+		} sheet;
+	} draw;
+	struct DATA {
+		struct FIFO {
+			void (*init)(struct FIFO32 *fifo, int size, unsigned int *buf);
+			int (*put)(struct FIFO32 *fifo, unsigned int data);
+			int (*get)(struct FIFO32 *fifo);
+			int (*status)(struct FIFO32 *fifo);
+		} fifo;
+	} data;
 };
 
 /*ä÷êîêÈåæ*/
@@ -298,6 +361,7 @@ void wait_KBC_sendready(void);
 /*int.c		äÑÇËçûÇ›ä÷åWÇoÇhÇbìô*/
 
 void init_pic(void);
+void inthandler27(int *esp);
 
 /*memory.c	ÉÅÉÇÉää«óùä÷åW*/
 
@@ -339,7 +403,7 @@ int decode_mouse (unsigned int dat);
 
 
 /*timer.c		É^ÉCÉ}Å[ä÷åW*/
-void init_pit(volatile int *time_tick);
+void init_pit(void);
 void inthandler20(int *esp);
 
 /*fifo.c		FIFOÉoÉbÉtÉ@ä÷åW*/
@@ -428,4 +492,6 @@ void asm_end_app(void);
 void asm_inthandler21(void);
 void asm_inthandler20(void);
 void asm_inthandler2c(void);
+void asm_inthandler27(void);
+
 

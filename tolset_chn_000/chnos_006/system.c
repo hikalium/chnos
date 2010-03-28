@@ -3,7 +3,7 @@
 
 void init_system(struct SYSTEM *system)
 {
-	system->window.init = init_windows;
-	system->memory.init = memman_init;
+	system->draw.window.init = init_windows;
+	system->io.memory.init = memman_init;
 	return;
 }

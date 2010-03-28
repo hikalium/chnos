@@ -29,10 +29,16 @@ void init_pic(void)
 
 	io_out8(PIC0_IMR, 0xfb);	/*11111011つまり、IRQ2番（スレーブ）だけ許可。あとは無視。（マスタ）*/	
 	io_out8(PIC1_IMR, 0xff);	/*11111111つまり、全て無視*/
+	io_out8(PIC0_IMR, io_in8(PIC0_IMR) & 0x7f);	/*IRQ-07対策*/
 
 	return;
 }
 
+void inthandler27(int *esp)
+{
+	io_out8(PIC0_OCW2, 0x67);	/* IRQ-07受付完了をPICに通知 。0x60+番号。*/
+	return;
+}
 
 
 
