@@ -213,13 +213,9 @@ struct GATE_DESCRIPTOR { /*0x26f800~0x26ffff ïWèÄ*/
 
 struct SYSTEM {
 	struct IO {
-		struct beep{
-			void (*on)(void);
-			void (*off)(void);
-		} beep;
 		void (*clts)(void);
 		void (*fnsave)(int *addr);
-		void (*frstor)(int *addr);
+		void (*frstore)(int *addr);
 		void (*hlt)(void);
 		void (*cli)(void);
 		void (*sti)(void);
@@ -231,8 +227,11 @@ struct SYSTEM {
 		int (*in16)(int port);
 		void (*out16)(int port, int data);
 		void (*farcall)(int eip, int cs);
+		void (*farjmp)(int eip, int cs);
 		void (*readrtc)(unsigned char *t);
-		void (*init_pic)(void);
+		struct PIC {
+			void (*init)(void);
+		} pic;
 		struct EFLAGS { 
 			int (*load)(void);
 			void (*store)(int eflags);
@@ -251,12 +250,12 @@ struct SYSTEM {
 			void (*load)(int tr);
 		} tr;
 		struct KEYBOARD {
-			void (*wait_kbc)(void);
+			void (*wait)(void);
 			void (*init)(struct FIFO32 *fifo, int data0);
 			void (*inthandler)(int *esp);
 		} keyboard;
 		struct TIMER {
-			void (*init)(volatile int *time_tick);
+			void (*init)(void);
 			void (*inthandler)(int *esp);
 		} timer;
 		struct MOUSE {
@@ -281,6 +280,14 @@ struct SYSTEM {
 			unsigned int (*alloc)(unsigned int size);
 			int (*free)(unsigned int addr, unsigned int size);
 		} memory;
+		struct BEEP {
+			void (*on)(void);
+			void (*off)(void);
+		} beep;
+		struct SERIAL {
+			void (*init)(void);
+			void (*send)(unsigned char *s);
+		} serial;
 	} io;
 	struct DRAW {
 		void (*circle)(unsigned int *vrami, int cx, int cy, unsigned int c, int xsize, int r);
@@ -357,6 +364,8 @@ void init_system(struct SYSTEM *system);
 
 void readrtc(unsigned char *t);
 void wait_KBC_sendready(void);
+void init_serial(void);
+void send_serial(unsigned char *s);
 
 /*int.c		äÑÇËçûÇ›ä÷åWÇoÇhÇbìô*/
 

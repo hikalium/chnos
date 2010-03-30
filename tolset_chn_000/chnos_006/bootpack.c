@@ -33,6 +33,7 @@ void CHNMain(void)
 //	init_windows();
 	system.draw.window.init();
 	pit_beep_off();
+	init_serial();
 
 
 	sht_back = sheet_alloc();
@@ -76,8 +77,8 @@ void CHNMain(void)
 			boxfill_i(buf_win, INT_MONITOR_LONG, 0x000000, 0,48,INT_MONITOR_LONG, 64);	
 			sprintf(s,"INT 21(IRQ-1) : PS/2 ·°ÎÞ°ÄÞ%02X",i);
 			putfonts_asc_i(buf_win, INT_MONITOR_LONG, 0,48,0xffffff,s);
+			send_serial(s);
 			sheet_refresh(winfo1->center, 0,48,INT_MONITOR_LONG , 64);			
-
 	} else if(512 <= i && i <= 767) {
 			i -= SYSFIFO_MOUSE;
 			io_sti();
