@@ -3,6 +3,9 @@
 
 void init_system(struct SYSTEM *system)
 {
+	struct VESAINFO *vesa = (struct VESAINFO *) ADR_VESAINFO;
+	struct BOOTINFO *boot = (struct BOOTINFO *) ADR_BOOTINFO;
+
 	system->io.clts			= clts;
 	system->io.fnsave		= fnsave;
 	system->io.frstore		= frstor;
@@ -116,6 +119,11 @@ void init_system(struct SYSTEM *system)
 	system->data.fifo.put		= fifo32_put;
 	system->data.fifo.get		= fifo32_get;
 	system->data.fifo.status	= fifo32_status;
- 
+
+	system->info.vesa = *vesa;
+	system->info.boot = *boot;
+	
+
+
 	return;
 }

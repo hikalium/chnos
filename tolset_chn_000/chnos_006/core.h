@@ -350,6 +350,15 @@ struct SYSTEM {
 			int (*status)(struct FIFO32 *fifo);
 		} fifo;
 	} data;
+	struct INFOS {
+		struct VESAINFO vesa;
+		struct BOOTINFO boot;
+	} info;
+	struct FIFO32 sysfifo;
+	struct MOUSE_DECODE mouse_dec;
+	int fifobuf[256];
+	struct MEMMAN memman;
+	struct SHEET32 *sht_back;
 };
 
 /*ä÷êîêÈåæ*/

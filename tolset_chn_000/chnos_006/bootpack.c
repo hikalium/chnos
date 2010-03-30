@@ -1,5 +1,7 @@
 #include "core.h"
 
+struct SYSTEM system;
+
 void CHNMain(void)
 {	
 	unsigned char s[24];
@@ -7,7 +9,7 @@ void CHNMain(void)
 	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
 	struct FIFO32 sysfifo;
 	struct MOUSE_DECODE mdec;
-	struct SYSTEM system;
+
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
 	struct SHEET32 *sht_back, *sht_mouse;
 	struct WINDOWINFO *winfo1;
