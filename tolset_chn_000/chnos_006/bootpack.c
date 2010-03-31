@@ -14,6 +14,7 @@ void CHNMain(void)
 	struct SHEET32 *sht_back, *sht_mouse;
 	struct WINDOWINFO *winfo1;
 	int fifobuf[256], i = 0,mx = binfo->scrnx / 2, my = binfo->scrny / 2;
+	int scrool = 0;
 	volatile int time_tick;
 	unsigned int all_mem_size = memtest(0x00400000, 0xbffffffff);
 	unsigned int free_mem_size = 0;
@@ -86,7 +87,7 @@ void CHNMain(void)
 			io_sti();
 			if (decode_mouse(i) == 1) {
 			boxfill_i(buf_win, INT_MONITOR_LONG, 0x000000, 0,64,INT_MONITOR_LONG , 80);	
-			sprintf(s,"INT 2C(IRQ-12) : PS/2 Ï³½(%02X,%02X,%02X)",mdec.buf[0], mdec.buf[1], mdec.buf[2]);
+			sprintf(s,"INT 2C(IRQ-12) : PS/2 Ï³½(%02X,%02X,%02X,%02X)",mdec.buf[0], mdec.buf[1], mdec.buf[2], mdec.whinfo);
 			putfonts_asc_i(buf_win, INT_MONITOR_LONG, 0,64,0xffffff,s);
 			boxfill_i(buf_win, INT_MONITOR_LONG, 0x000000, 0,80,INT_MONITOR_LONG , 96);	
 			sprintf(s,"[lcr %4d %4d]",mdec.x, mdec.y);
@@ -103,7 +104,9 @@ void CHNMain(void)
 			
 			sheet_slide(sht_mouse, mx,my);
 			boxfill_i(buf_win, INT_MONITOR_LONG, 0x000000, 0,96,INT_MONITOR_LONG,112);	
-			sprintf(s,"(%4d,%4d)  %X",mx,my,vinfo->PhysBasePtr);
+			if(mdec.scrool == 0xffffffff) scrool++;
+			if(mdec.scrool == 0x00000001) scrool--;
+			sprintf(s,"(%4d,%4d)  %d,%X",mx,my,scrool,vinfo->PhysBasePtr,mdec.scrool);
 			putfonts_asc_i(buf_win, INT_MONITOR_LONG, 0,96,0xffffff,s);	
 			slide_window(winfo1, 0, 0);
 			}

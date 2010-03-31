@@ -150,8 +150,8 @@ struct SHTCTL {
 };
 
 struct MOUSE_DECODE {
-	unsigned int buf[3];
-	int x,y,btn;
+	unsigned int buf[4],scrool;
+	int x,y,btn,whinfo;
 	unsigned char phase; 
 
 };
@@ -418,6 +418,7 @@ void inthandler21(int *esp);
 void inthandler2c(int *esp);
 void init_mouse(struct FIFO32 *fifo, int data0, struct MOUSE_DECODE *mdec0);
 int decode_mouse (unsigned int dat);
+void sendto_mouse(int data);
 
 
 /*timer.c		タイマー関係*/
