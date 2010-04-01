@@ -25,23 +25,23 @@ void CHNMain(void)
 	io_sti();
 
 	system.io.memory.init(memman);
-//	memman_free(0x00001000,0x0009e000);/*ここのメモリは誰かが使用中のようだ。*/
-	memman_free(0x00400000,all_mem_size - 0x00400000);
 
-	init_pit();
-	fifo32_init(&sysfifo, 256, fifobuf);
-	init_keyboard(&sysfifo, SYSFIFO_KEYB);
-	init_mouse(&sysfifo, SYSFIFO_MOUSE, &mdec);
-	init_sheets(vinfo->PhysBasePtr,binfo->scrnx,binfo->scrny);
-//	init_windows();
+	system.io.memory.free(0x00400000,all_mem_size - 0x00400000);
+
+	system.io.timer.init();
+	system.data.fifo.init(&sysfifo, 256, fifobuf);
+	system.io.keyboard.init(&sysfifo, SYSFIFO_KEYB);
+	system.io.mouse.init(&sysfifo, SYSFIFO_MOUSE, &mdec);
+	system.draw.sheet.init(vinfo->PhysBasePtr,binfo->scrnx,binfo->scrny);
+
 	system.draw.window.init();
-	pit_beep_off();
-	init_serial();
+	system.io.beep.off();
+	system.io.serial.init();
 
 
-	sht_back = sheet_alloc();
-	sht_mouse = sheet_alloc();
-	buf_back = (unsigned int *) memman_alloc_4k(binfo->scrnx * binfo->scrny * 4);
+	sht_back = system.draw.sheet.alloc();
+	sht_mouse = system.draw.sheet.alloc();
+	buf_back = (unsigned int *) system.io.memory.alloc(binfo->scrnx * binfo->scrny * 4);
 	buf_win = (unsigned int *) memman_alloc_4k(INT_MONITOR_LONG * 150 * 4);
 	sheet_setbuf(sht_back, buf_back, binfo->scrnx, binfo->scrny, VOID_INV_COL32);
 	sheet_setbuf(sht_mouse, buf_mouse, 24, 24, INV_COL32);
