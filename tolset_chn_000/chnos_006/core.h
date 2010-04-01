@@ -110,6 +110,10 @@
 
 
 /*構造体宣言*/
+struct TIMERCTL {
+	unsigned int count;
+};
+
 struct WINDOWINFO {
 	unsigned char title[32];
 	unsigned int *buf_c;
@@ -255,7 +259,7 @@ struct SYSTEM {
 			void (*inthandler)(int *esp);
 		} keyboard;
 		struct TIMER {
-			void (*init)(void);
+			void (*init)(struct TIMERCTL *timctl);
 			void (*inthandler)(int *esp);
 		} timer;
 		struct MOUSE {
@@ -422,7 +426,7 @@ void sendto_mouse(int data);
 
 
 /*timer.c		タイマー関係*/
-void init_pit(void);
+void init_pit(struct TIMERCTL *timctl);
 void inthandler20(int *esp);
 
 /*fifo.c		FIFOバッファ関係*/

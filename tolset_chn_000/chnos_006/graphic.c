@@ -97,6 +97,7 @@ void point_i(unsigned int *vrami, int x, int y, unsigned int c, int xsize)
 void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1)
 {
 	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
+	y1 -= 1;
 	if(vinfo->BitsPerPixel == 8){
 	unsigned char *vram8 = (unsigned char *)vrami;
 	unsigned char c8 = rgb_int2char(c);
