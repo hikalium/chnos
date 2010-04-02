@@ -2,6 +2,8 @@
 
 struct SYSTEM system;
 
+void reboot(void);
+
 void CHNMain(void)
 {	
 	unsigned char s[24];
@@ -9,7 +11,7 @@ void CHNMain(void)
 	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
 	struct FIFO32 sysfifo;
 	struct MOUSE_DECODE mdec;
-	struct TIMERCTL timerctl;
+	static struct TIMERCTL timerctl;
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
 	struct SHEET32 *sht_back, *sht_mouse;
 	struct WINDOWINFO *winfo1;
@@ -81,7 +83,11 @@ void CHNMain(void)
 			system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,48,0xffffff,s);
 			system.io.serial.send(s);
 			system.draw.sheet.refresh(winfo1->center, 0,48,INT_MONITOR_LONG , 64);			
-			
+			switch(i){
+				case 0x13:
+					reboot();
+					break;
+			}			
 			system.draw.boxfill(buf_win, INT_MONITOR_LONG, 0x000000, 0,112,INT_MONITOR_LONG, 128);	
 			sprintf(s,"À²Ï° = %u",timerctl.count);
 			system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,112,0xffffff,s);
@@ -116,6 +122,14 @@ void CHNMain(void)
 			system.draw.sheet.refresh(winfo1->center, 0,64,INT_MONITOR_LONG , 112);
 			}
 		}
+	}
+}
+
+void reboot(void)
+{
+	system.io.out8(PORT_KEYCMD, 0xfe);
+	for(;;) {
+		system.io.hlt();
 	}
 }
 

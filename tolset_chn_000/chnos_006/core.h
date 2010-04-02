@@ -63,6 +63,8 @@
 
 #define MAX_WINDOWS	256
 
+#define MAX_TIMER	500
+
 #define SHT_FLAGS_VOID	0
 #define SHT_FLAGS_USE	1
 
@@ -110,8 +112,14 @@
 
 
 /*ç\ë¢ëÃêÈåæ*/
+struct TIMER {
+	unsigned int timeout, flags;
+	unsigned int data;
+};
+
 struct TIMERCTL {
 	unsigned int count;
+	struct TIMER timer[MAX_TIMER];
 };
 
 struct WINDOWINFO {
@@ -258,7 +266,7 @@ struct SYSTEM {
 			void (*init)(struct FIFO32 *fifo, int data0);
 			void (*inthandler)(int *esp);
 		} keyboard;
-		struct TIMER {
+		struct IO_TIMER {
 			void (*init)(struct TIMERCTL *timctl);
 			void (*inthandler)(int *esp);
 		} timer;
