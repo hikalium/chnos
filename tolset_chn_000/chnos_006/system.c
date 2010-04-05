@@ -67,6 +67,8 @@ void init_system(struct SYSTEM *system)
 	system->io.serial.init		= init_serial;
 	system->io.serial.send		= send_serial;
 
+	system->io.fdc.motor_on		= fdc_motor_on;
+	system->io.fdc.motor_off	= fdc_motor_off;
 
 	system->draw.circle		= circle_i;
 	system->draw.int2short		= rgb_int2short;

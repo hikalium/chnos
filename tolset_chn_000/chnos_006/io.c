@@ -54,3 +54,36 @@ void send_serial(unsigned char *s)
 	return;
 }
 
+void fdc_motor_on(unsigned char d)
+{
+	if(d == 0){
+		io_out8(0x3f2,io_in8(0x3f2) | 0x10);
+	} else if(d == 1){
+		io_out8(0x3f2,io_in8(0x3f2) | 0x20);
+	} else if(d == 2){
+		io_out8(0x3f2,io_in8(0x3f2) | 0x40);
+	} else if(d == 3){
+		io_out8(0x3f2,io_in8(0x3f2) | 0x80);
+	} 
+	return;
+}
+
+void fdc_motor_off(unsigned char d)
+{
+	if(d == 0){
+		io_out8(0x3f2,io_in8(0x3f2) & 0xef);
+	} else if(d == 1){
+		io_out8(0x3f2,io_in8(0x3f2) & 0xdf);
+	} else if(d == 2){
+		io_out8(0x3f2,io_in8(0x3f2) & 0xbf);
+	} else if(d == 3){
+		io_out8(0x3f2,io_in8(0x3f2) & 0x7f);
+	} else if(d == 4){
+		io_out8(0x3f2,io_in8(0x3f2) & 0xef);
+		io_out8(0x3f2,io_in8(0x3f2) & 0xdf);
+		io_out8(0x3f2,io_in8(0x3f2) & 0xbf);
+		io_out8(0x3f2,io_in8(0x3f2) & 0x7f);
+	}
+	return;
+}
+

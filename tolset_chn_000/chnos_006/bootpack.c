@@ -27,9 +27,9 @@ void CHNMain(void)
 	io_sti();
 
 	system.io.memory.init(memman);
-
 	system.io.memory.free(0x00400000,all_mem_size - 0x00400000);
 
+	system.io.fdc.motor_off(4);
 	system.io.timer.init(&timerctl);
 	system.data.fifo.init(&sysfifo, 256, fifobuf);
 	system.io.keyboard.init(&sysfifo, SYSFIFO_KEYB);

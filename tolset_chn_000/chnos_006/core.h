@@ -300,6 +300,10 @@ struct SYSTEM {
 			void (*init)(void);
 			void (*send)(unsigned char *s);
 		} serial;
+		struct FDC {
+			void (*motor_on)(unsigned char d);
+			void (*motor_off)(unsigned char d);
+		} fdc;
 	} io;
 	struct DRAW {
 		void (*circle)(unsigned int *vrami, int cx, int cy, unsigned int c, int xsize, int r);
@@ -387,6 +391,8 @@ void readrtc(unsigned char *t);
 void wait_KBC_sendready(void);
 void init_serial(void);
 void send_serial(unsigned char *s);
+void fdc_motor_on(unsigned char d);
+void fdc_motor_off(unsigned char d);
 
 /*int.c		Š„‚è‚İŠÖŒW‚o‚h‚b“™*/
 
