@@ -92,6 +92,10 @@ run :
 	$(COPY) chnos.img ..\z_tools\qemu\fdimage0.bin
 	$(MAKE) -C ../z_tools/qemu
 
+run_cd :
+	$(MAKE) iso
+	$(MAKE) -C ../z_tools/qemu_iso
+
 install :
 	$(MAKE) img
 	$(IMGTOL) w a: chnos.img
