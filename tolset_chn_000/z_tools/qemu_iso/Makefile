@@ -1,2 +1,2 @@
 default :
-	qemu-win.bat
+	qemu-x86_64.bat
