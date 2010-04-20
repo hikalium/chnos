@@ -460,6 +460,7 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 
 /*‘SF‘Î‰*/
 
+unsigned int mix_color(unsigned int c0, unsigned int c1);
 void circle_i(unsigned int *vrami, int cx, int cy, unsigned int c, int xsize, int r);
 unsigned short rgb_int2short (unsigned int c32);
 unsigned char rgb_int2char(unsigned int c32);

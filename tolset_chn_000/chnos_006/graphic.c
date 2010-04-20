@@ -39,6 +39,32 @@ static short rgb_char2short_list[16] = {
 	RGB16(0,33,17),
 	RGB16(17,33,17)
 	};
+	static char cursor[24][24] = {
+		"***.....................",
+		"*O**....................",
+		"*OO**...................",
+		"*OOO**..................",
+		"*OOOO**.................",
+		"*OOOOO**................",
+		"*OOOOOO**...............",
+		"*OOOOOOO**..............",
+		"*OOOOOOOO**.............",
+		"*OOOOOOOOO**............",
+		"*OOOOOOOOOO**...........",
+		"*OOOOOOOOOOO**..........",
+		"*OOOOOOOOOOOO**.........",
+		"*OOOOOOOOOOOOO**........",
+		"*OOOOOOOOOOOOOO**.......",
+		"*OOOOOOOOOOOOOOO**......",
+		"*OOOOOOOOOOOOOOOO**.....",
+		"*OOOOOO*************....",
+		"*OOOOO**................",
+		"*OOOO**.................",
+		"*OOO**..................",
+		"*OO**...................",
+		"*O**....................",
+		"***.....................",
+	};
 
 /*ägí£ëSÉÇÅ[ÉhëŒâûî≈*/
 void init_scrn_i(unsigned int *vrami, int xsize, int ysize, unsigned char bits, unsigned int *mousecur32)
@@ -60,7 +86,40 @@ void init_scrn_i(unsigned int *vrami, int xsize, int ysize, unsigned char bits, 
 	return;
 }
 
+unsigned int mix_color(unsigned int c0, unsigned int c1)
+{
+	float r0,g0,b0,r1,g1,b1,alpha;
+	unsigned int cc;
+	cc = c0 << 24;
+	b0 = (float)(cc >> 24);
+	cc = c0 << 16;
+	g0 = (float)(cc >> 24);
+	cc = c0 << 8;
+	r0 = (float)(cc >> 24);
 
+	cc = c1 << 24;
+	b1 = (float)(cc >> 24);
+	cc = c1 << 16;
+	g1 = (float)(c1 >> 24);
+	cc = c1 << 8;
+	r1 = (float)(c1 >> 24);
+
+	alpha = (float)(c1 >> 24);
+
+	r1 = r1 * (alpha / 255) + r0 * (1 - (alpha / 255));
+	g1 = g1 * (alpha / 255) + g0 * (1 - (alpha / 255));
+	b1 = b1 * (alpha / 255) + b0 * (1 - (alpha / 255));
+
+	c1 = (unsigned int) alpha;
+	c1 = c1 << 8;
+	c1 += (unsigned int) r1;
+	c1 = c1 << 8;
+	c1 += (unsigned int) g1;
+	c1 = c1 << 8;
+	c1 += (unsigned int) b1;
+
+	return c1;
+}
 
 void circle_i(unsigned int *vrami, int cx, int cy, unsigned int c, int xsize, int r)
 {
@@ -166,43 +225,59 @@ void col_pat_256safe(unsigned int *vrami, int xsize, int ysize)
 	int x,y;
 	x=0;
 	y=80;
-	boxfill_i(vrami,xsize,0x000000,x,y,x+40,y+40);
+	boxfill_i(vrami,xsize,0x000000,x,y,x+20,y+40);
+	boxfill_i(vrami,xsize,mix_color(0x000000,0x7fff0000),x+20,y,x+40,y+40);
 	x+=40;
-	boxfill_i(vrami,xsize,0xFF0000,x,y,x+40,y+40);
+	boxfill_i(vrami,xsize,0xFF0000,x,y,x+20,y+40);
+	boxfill_i(vrami,xsize,mix_color(0x7fff0000,0x7f00ff00),x+20,y,x+40,y+40);
 	x+=40;
-	boxfill_i(vrami,xsize,0x00FF00,x,y,x+40,y+40);
+	boxfill_i(vrami,xsize,0x00FF00,x,y,x+20,y+40);
+	boxfill_i(vrami,xsize,mix_color(0x7f00ff00,0x7fffff00),x+20,y,x+40,y+40);
 	x+=40;
-	boxfill_i(vrami,xsize,0xFFFF00,x,y,x+40,y+40);
+	boxfill_i(vrami,xsize,0xFFFF00,x,y,x+20,y+40);
+	boxfill_i(vrami,xsize,mix_color(0x7fffff00,0x7f0000ff),x+20,y,x+40,y+40);
 
 	y+=40;
 	x=0;
 	boxfill_i(vrami,xsize,0x0000FF,x,y,x+40,y+40);
+	boxfill_i(vrami,xsize,mix_color(0x7f0000ff,0x7fff00ff),x+20,y,x+40,y+40);
 	x+=40;
 	boxfill_i(vrami,xsize,0xFF00FF,x,y,x+40,y+40);
+	boxfill_i(vrami,xsize,mix_color(0x7fff00ff,0x7f00ffff),x+20,y,x+40,y+40);
 	x+=40;
 	boxfill_i(vrami,xsize,0x00FFFF,x,y,x+40,y+40);
+	boxfill_i(vrami,xsize,mix_color(0x7f00ffff,0x7fffffff),x+20,y,x+40,y+40);
 	x+=40;
-	boxfill_i(vrami,xsize,0xFFFFFe,x,y,x+40,y+40);
+	boxfill_i(vrami,xsize,0xFFFFFF,x,y,x+40,y+40);
+	boxfill_i(vrami,xsize,mix_color(0x7fffffff,0x7fc6c6c6),x+20,y,x+40,y+40);
 
 	y+=40;
 	x=0;
 	boxfill_i(vrami,xsize,0xC6C6C6,x,y,x+40,y+40);
+	boxfill_i(vrami,xsize,mix_color(0x7fc6c6c6,0x7fff0000),x+20,y,x+40,y+40);
 	x+=40;
 	boxfill_i(vrami,xsize,0x840000,x,y,x+40,y+40);
+	boxfill_i(vrami,xsize,mix_color(0x7fff0000,0x7f008400),x+20,y,x+40,y+40);
 	x+=40;
 	boxfill_i(vrami,xsize,0x008400,x,y,x+40,y+40);
+	boxfill_i(vrami,xsize,mix_color(0x7f008400,0x7f848400),x+20,y,x+40,y+40);
 	x+=40;
 	boxfill_i(vrami,xsize,0x848400,x,y,x+40,y+40);
+	boxfill_i(vrami,xsize,mix_color(0x7f848400,0x7f000084),x+20,y,x+40,y+40);
 
 	y+=40;
 	x=0;
 	boxfill_i(vrami,xsize,0x000084,x,y,x+40,y+40);
+	boxfill_i(vrami,xsize,mix_color(0x000000,0x7fff0000),x+20,y,x+40,y+40);
 	x+=40;
 	boxfill_i(vrami,xsize,0x840084,x,y,x+40,y+40);
+	boxfill_i(vrami,xsize,mix_color(0x7fff0000,0x7f840084),x+20,y,x+40,y+40);
 	x+=40;
 	boxfill_i(vrami,xsize,0x008484,x,y,x+40,y+40);
+	boxfill_i(vrami,xsize,mix_color(0x7f840084,0x7f008484),x+20,y,x+40,y+40);
 	x+=40;
 	boxfill_i(vrami,xsize,0x848484,x,y,x+40,y+40);
+	boxfill_i(vrami,xsize,mix_color(0x07f008484,0x7f848484),x+20,y,x+40,y+40);
 
 
 	return;
@@ -317,32 +392,6 @@ void putfonts8_asc(unsigned char *vram, int xsize, int x, int y, unsigned char c
 
 void init_mouse_cursor8(unsigned char *mouse, unsigned char bc)
 {
-	static char cursor[24][24] = {
-		"***.....................",
-		"*O**....................",
-		"*OO**...................",
-		"*OOO**..................",
-		"*OOOO**.................",
-		"*OOOOO**................",
-		"*OOOOOO**...............",
-		"*OOOOOOO**..............",
-		"*OOOOOOOO**.............",
-		"*OOOOOOOOO**............",
-		"*OOOOOOOOOO**...........",
-		"*OOOOOOOOOOO**..........",
-		"*OOOOOOOOOOOO**.........",
-		"*OOOOOOOOOOOOO**........",
-		"*OOOOOOOOOOOOOO**.......",
-		"*OOOOOOOOOOOOOOO**......",
-		"*OOOOOOOOOOOOOOOO**.....",
-		"*OOOOOO*************....",
-		"*OOOOO**................",
-		"*OOOO**.................",
-		"*OOO**..................",
-		"*OO**...................",
-		"*O**....................",
-		"***.....................",
-	};
 	int x, y;
 
 	for (y = 0; y < 24; y++) {
@@ -430,32 +479,6 @@ void putfonts16_asc(unsigned short *vram, int xsize, int x, int y, unsigned shor
 
 void init_mouse_cursor16(unsigned short *mouse, unsigned short bc)
 {
-	static char cursor[24][24] = {
-		"***.....................",
-		"*O**....................",
-		"*OO**...................",
-		"*OOO**..................",
-		"*OOOO**.................",
-		"*OOOOO**................",
-		"*OOOOOO**...............",
-		"*OOOOOOO**..............",
-		"*OOOOOOOO**.............",
-		"*OOOOOOOOO**............",
-		"*OOOOOOOOOO**...........",
-		"*OOOOOOOOOOO**..........",
-		"*OOOOOOOOOOOO**.........",
-		"*OOOOOOOOOOOOO**........",
-		"*OOOOOOOOOOOOOO**.......",
-		"*OOOOOOOOOOOOOOO**......",
-		"*OOOOOOOOOOOOOOOO**.....",
-		"*OOOOOO*************....",
-		"*OOOOO**................",
-		"*OOOO**.................",
-		"*OOO**..................",
-		"*OO**...................",
-		"*O**....................",
-		"***.....................",
-	};
 	int x, y;
 
 	for (y = 0; y < 24; y++) {
@@ -544,41 +567,15 @@ void putfonts32_asc(unsigned int *vram, int xsize, int x, int y, unsigned int c,
 
 void init_mouse_cursor32(unsigned int *mouse)
 {
-	static char cursor[24][24] = {
-		"***.....................",
-		"*O**....................",
-		"*OO**...................",
-		"*OOO**..................",
-		"*OOOO**.................",
-		"*OOOOO**................",
-		"*OOOOOO**...............",
-		"*OOOOOOO**..............",
-		"*OOOOOOOO**.............",
-		"*OOOOOOOOO**............",
-		"*OOOOOOOOOO**...........",
-		"*OOOOOOOOOOO**..........",
-		"*OOOOOOOOOOOO**.........",
-		"*OOOOOOOOOOOOO**........",
-		"*OOOOOOOOOOOOOO**.......",
-		"*OOOOOOOOOOOOOOO**......",
-		"*OOOOOOOOOOOOOOOO**.....",
-		"*OOOOOO*************....",
-		"*OOOOO**................",
-		"*OOOO**.................",
-		"*OOO**..................",
-		"*OO**...................",
-		"*O**....................",
-		"***.....................",
-	};
 	int x, y;
 
 	for (y = 0; y < 24; y++) {
 		for (x = 0; x < 24; x++) {
 			if (cursor[y][x] == '*') {
-				mouse[y * 24 + x] = 0x000000;
+				mouse[y * 24 + x] = 0x55000000;
 			}
 			if (cursor[y][x] == 'O') {
-				mouse[y * 24 + x] = 0xFFFFFF;
+				mouse[y * 24 + x] = 0x55FFFFFF;
 			}
 			if (cursor[y][x] == '.') {
 				mouse[y * 24 + x] = INV_COL32;
