@@ -7,26 +7,32 @@ void reboot(void);
 void CHNMain(void)
 {	
 	unsigned char s[24];
-	struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
-	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
+//	struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
+//	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
 	struct FIFO32 sysfifo;
 	struct MOUSE_DECODE mdec;
 	static struct TIMERCTL timerctl;
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
 	struct SHEET32 *sht_back, *sht_mouse;
 	struct WINDOWINFO *winfo1;
-	int fifobuf[256], i = 0,mx = binfo->scrnx / 2, my = binfo->scrny / 2;
+	int fifobuf[256], i = 0,mx , my;
 	int scrool = 0;
 	volatile int time_tick;
 	unsigned int all_mem_size = memtest(0x00400000, 0xbffffffff);
 	unsigned int free_mem_size = 0;
 	unsigned int *buf_back, buf_mouse[576], *buf_win;
+	int scrnx,scrny;
 
 
 	init_system(&system);
 	init_gdtidt();
 	init_pic();
 	io_sti();
+
+	scrnx = system.info.boot.scrnx;
+	scrny = system.info.boot.scrny ;
+	mx = scrnx/2;
+	my = scrny/2;
 
 	system.io.memory.init(memman);
 	system.io.memory.free(0x00400000,all_mem_size - 0x00400000);
@@ -36,23 +42,24 @@ void CHNMain(void)
 	system.data.fifo.init(&sysfifo, 256, fifobuf);
 	system.io.keyboard.init(&sysfifo, SYSFIFO_KEYB);
 	system.io.mouse.init(&sysfifo, SYSFIFO_MOUSE, &mdec);
-	system.draw.sheet.init(vinfo->PhysBasePtr,binfo->scrnx,binfo->scrny);
+	system.draw.sheet.init(system.info.vesa.PhysBasePtr,scrnx,scrny);
 
 	system.draw.window.init();
 	system.io.beep.off();
 	system.io.serial.init();
 
 
+
 	sht_back = system.draw.sheet.alloc();
 	sht_mouse = system.draw.sheet.alloc();
 
-	buf_back = (unsigned int *) system.io.memory.alloc(binfo->scrnx * binfo->scrny * 4);
+	buf_back = (unsigned int *) system.io.memory.alloc(scrnx * scrny * 4);
 	buf_win = (unsigned int *) system.io.memory.alloc(INT_MONITOR_LONG * 150 * 4);
 
-	system.draw.sheet.set(sht_back, buf_back, binfo->scrnx, binfo->scrny, VOID_INV_COL32);
+	system.draw.sheet.set(sht_back, buf_back, scrnx, scrny, VOID_INV_COL32);
 	system.draw.sheet.set(sht_mouse, buf_mouse, 24, 24, INV_COL32);
 
-	system.draw.init_scrn(buf_back, binfo->scrnx, binfo->scrny, vinfo->BitsPerPixel,buf_mouse);
+	system.draw.init_scrn(buf_back, scrnx, scrny, system.info.vesa.BitsPerPixel,buf_mouse);
 
 	system.draw.sheet.slide(sht_back, 0,0);
 	system.draw.sheet.slide(sht_mouse, mx, my);
@@ -63,7 +70,7 @@ void CHNMain(void)
 
 	system.draw.sheet.updown(sht_mouse, 6);
 
-//	system.draw.circle(buf_back, 100,100, 0xff0000, binfo->scrnx, 100);
+//	system.draw.circle(buf_back, 100,100, 0xff0000, scrnx, 100);
 
 	sprintf(s,"memory %d Byte(%d KB,%d MB) ",all_mem_size,all_mem_size/1024, all_mem_size/(1024*1024));
 	system.draw.boxfill(buf_win, INT_MONITOR_LONG, mix_color(0x0000ff00, 0x7fff0000), 0,0,INT_MONITOR_LONG,16);	
@@ -118,14 +125,14 @@ void CHNMain(void)
 			my += mdec.y;
 			if(mx < 0) mx = 0;
 			if(my < 0) my = 0;
-			if(mx > binfo->scrnx - 1) mx = binfo->scrnx - 1;
-			if(my > binfo->scrny - 1) my = binfo->scrny - 1;
+			if(mx > scrnx - 1) mx = scrnx - 1;
+			if(my > scrny - 1) my = scrny - 1;
 			
 			system.draw.sheet.slide(sht_mouse, mx,my);
 			system.draw.boxfill(buf_win, INT_MONITOR_LONG, 0x000000, 0,96,INT_MONITOR_LONG,112);	
 			if(mdec.scrool == 0xffffffff) scrool++;
 			if(mdec.scrool == 0x00000001) scrool--;
-			sprintf(s,"(%4d,%4d)  %d,%X",mx,my,scrool,vinfo->PhysBasePtr,mdec.scrool);
+			sprintf(s,"(%4d,%4d)  %d,%X",mx,my,scrool,system.info.vesa.PhysBasePtr,mdec.scrool);
 			system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,96,0xffffff,s);	
 			system.draw.sheet.refresh(winfo1->center, 0,64,INT_MONITOR_LONG , 112);
 			}

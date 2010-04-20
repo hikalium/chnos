@@ -272,15 +272,24 @@ vbecheck:
 
 scrn320:
 
-	lea	esi, [msg004]    ; 文字列があるところのアドレスをesiに代入する。
-	mov	ax, 0xB800
-	mov	es, ax		    ; esに0xB800を入れる。
-	mov	edi, 80*2*2*2	    ; 画面の二行目から始める。
-	call	printf
-	jmp	halthalt
+;	lea	esi, [msg004]    ; 文字列があるところのアドレスをesiに代入する。
+;	mov	ax, 0xB800
+;	mov	es, ax		    ; esに0xB800を入れる。
+;	mov	edi, 80*2*2*2	    ; 画面の二行目から始める。
+;	call	printf
+;	jmp	halthalt
 	mov	al,0x13
 	mov	ah,0x00
 	int	0x10
+
+	mov	ax,0xe0
+	mov	es,ax
+	mov	di,0
+	mov	word[es:di+0x12],320
+	mov	word[es:di+0x14],200
+	mov	byte[es:di+0x19],8
+	mov	dword[es:di+0x28],0x000a0000
+
 	mov	byte[VMODE],8
 	mov	word[SCRNX],320
 	mov	word[SCRNY],200
