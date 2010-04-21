@@ -1,4 +1,5 @@
 #include "core.h"
+#include <string.h>
 
 struct SYSTEM system;
 
@@ -22,6 +23,7 @@ void CHNMain(void)
 	unsigned int free_mem_size = 0;
 	unsigned int *buf_back, buf_mouse[576], *buf_win;
 	int scrnx,scrny;
+	unsigned char *diskimg;
 
 
 	init_system(&system);
@@ -33,6 +35,7 @@ void CHNMain(void)
 	scrny = system.info.boot.scrny ;
 	mx = scrnx/2;
 	my = scrny/2;
+	diskimg = ADR_DISKIMG;
 
 	system.io.memory.init(memman);
 	system.io.memory.free(0x00400000,all_mem_size - 0x00400000);
@@ -83,6 +86,10 @@ void CHNMain(void)
 	system.draw.boxfill(buf_win, INT_MONITOR_LONG, 0x000000, 0,16,INT_MONITOR_LONG,32);	
 	system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,16,0xffffff,s);
 	system.draw.sheet.refresh(winfo1->center, 0, 16, INT_MONITOR_LONG, 32);
+
+	system.draw.boxfill(buf_win, INT_MONITOR_LONG, mix_color(0x0000ff00, 0x7fff0000), 0,32,INT_MONITOR_LONG,48);	
+	system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,32,0xffffff,strncpy(s, (char *)(diskimg + 0x002600 + 0x20 * 0),23));
+	system.draw.sheet.refresh(winfo1->center, 0, 32, INT_MONITOR_LONG, 48);
 
 	for (;;){
 	system.io.cli();
