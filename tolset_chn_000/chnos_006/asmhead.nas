@@ -211,7 +211,7 @@ empty_8042_loop:
 	jz	no_output
 
 	call	delay
-	in	al, 0x60			    ; 読む
+;	in	al, 0x60			    ; 読む
 	jmp	empty_8042_loop
 
 no_output:
@@ -226,12 +226,138 @@ delay:
 	out	0x80, al
 	ret
 
-vbecheck:
+getc:
+	mov	ah,0x00
+	int	0x16
+	ret
 
+vbecheck:
+	lea	esi, [msg007]			;msg003のアドレスをesiに代入する。
+	mov	ax, 0xB800			;アドレスの指定。テキストモードは、0xB800から始まる。
+	mov	es, ax		    		;esに0xB800を入れる。esに直接代入はできないので。
+	mov	edi, 80*2*3		;画面の四行目から始める。
+	call	printf				;printfを呼び出す。
+
+	lea	esi, [msg008]			;msg003のアドレスをesiに代入する。
+	mov	ax, 0xB800			;アドレスの指定。テキストモードは、0xB800から始まる。
+	mov	es, ax		    		;esに0xB800を入れる。esに直接代入はできないので。
+	mov	edi, 80*2*4		;画面の四行目から始める。
+	call	printf				;printfを呼び出す。
+
+	lea	esi, [msg009]			;msg003のアドレスをesiに代入する。
+	mov	ax, 0xB800			;アドレスの指定。テキストモードは、0xB800から始まる。
+	mov	es, ax		    		;esに0xB800を入れる。esに直接代入はできないので。
+	mov	edi, 80*2*5		;画面の四行目から始める。
+	call	printf				;printfを呼び出す。
+
+	lea	esi, [msg010]			;msg003のアドレスをesiに代入する。
+	mov	ax, 0xB800			;アドレスの指定。テキストモードは、0xB800から始まる。
+	mov	es, ax		    		;esに0xB800を入れる。esに直接代入はできないので。
+	mov	edi, 80*2*6		;画面の四行目から始める。
+	call	printf				;printfを呼び出す。
+
+	call	getc
+
+	cmp	ah,0x02
+	je	vbe01
+	cmp	ah,0x03
+	je	vbe02
+	cmp	ah,0x04
+	je	vbe03
+	cmp	ah,0x05
+	je	vbe04
+	cmp	ah,0x06
+	je	vbe05
+	cmp	ah,0x07
+	je	vbe06
+	cmp	ah,0x08
+	je	vbe07
+	cmp	ah,0x09
+	je	vbe08
+	cmp	ah,0x0a
+	je	vbe09
+
+	cmp	ah,0x1e
+	je	vbe0a
+	cmp	ah,0x30
+	je	vbe0b
+	cmp	ah,0x2e
+	je	vbe0c
+	cmp	ah,0x20
+	je	vbe0d
+	cmp	ah,0x12
+	je	vbe0e
+	cmp	ah,0x21
+	je	vbe0f
+	cmp	ah,0x22
+	je	vbe0g
+	cmp	ah,0x23
+	je	vbe0h
+	cmp	ah,0x17
+	je	vbe0i
+
+	jmp	vbecheck
+
+vbe01:
+	mov	word[videomode],0x010f
+	jmp	vbesub
+vbe02:
+	mov	word[videomode],0x0112
+	jmp	vbesub
+vbe03:
+	mov	word[videomode],0x0115
+	jmp	vbesub
+vbe04:
+	mov	word[videomode],0x0118
+	jmp	vbesub
+vbe05:
+	mov	word[videomode],0x011b
+	jmp	vbesub
+vbe06:
+	mov	word[videomode],0x011f
+	jmp	vbesub
+vbe07:
+	mov	word[videomode],0x010e
+	jmp	vbesub
+vbe08:
+	mov	word[videomode],0x0111
+	jmp	vbesub
+vbe09:
+	mov	word[videomode],0x0114
+	jmp	vbesub
+vbe0a:
+	mov	word[videomode],0x0117
+	jmp	vbesub
+vbe0b:
+	mov	word[videomode],0x011a
+	jmp	vbesub
+vbe0c:
+	mov	word[videomode],0x011e
+	jmp	vbesub
+vbe0d:
+	mov	word[videomode],0x0100
+	jmp	vbesub
+vbe0e:
+	mov	word[videomode],0x0101
+	jmp	vbesub
+vbe0f:
+	mov	word[videomode],0x0103
+	jmp	vbesub
+vbe0g:
+	mov	word[videomode],0x0105
+	jmp	vbesub
+vbe0h:
+	mov	word[videomode],0x0107
+	jmp	vbesub
+vbe0i:
+	mov	word[videomode],0x011c
+	jmp	vbesub
+
+vbesub:
 	mov	ax,0xe0
 	mov	es,ax
 	mov	di,0
-	mov	cx,VBEMODE
+	mov	cx,[videomode]
 	mov	ax,0x4f01
 	int	0x10
 
@@ -245,20 +371,14 @@ vbecheck:
 	mov	ax,[es:di+4]
 	cmp	ax,0x0200
 	jb	scrn320
-	mov	cx,VBEMODE
+	mov	cx,[videomode]
 	mov	ax,0x4f01
 	int	0x10
 	cmp	ax,0x004f
 	jne	scrn320
-;	cmp	byte[es:di+0x19],16
-;	jne	scrn320
-;	cmp	byte[es:di+0x1b],6
-;	jne	scrn320
-;	mov	ax,[es:di+0x00]
-;	and	ax,0x0080
-;	jz	scrn320
 
-	mov	bx,VBEMODE+0x4000
+	mov	bx,[videomode]
+	add	bx,0x4000
 	mov	ax,0x4f02
 	int	0x10
 	mov	byte[VMODE],16
@@ -272,12 +392,12 @@ vbecheck:
 
 scrn320:
 
-;	lea	esi, [msg004]    ; 文字列があるところのアドレスをesiに代入する。
-;	mov	ax, 0xB800
-;	mov	es, ax		    ; esに0xB800を入れる。
-;	mov	edi, 80*2*2*2	    ; 画面の二行目から始める。
-;	call	printf
-;	jmp	halthalt
+	lea	esi, [msg004]    ; 文字列があるところのアドレスをesiに代入する。
+	mov	ax, 0xB800
+	mov	es, ax		    ; esに0xB800を入れる。
+	mov	edi, 80*2*2*2	    ; 画面の二行目から始める。
+	call	printf
+	jmp	halthalt
 	mov	al,0x13
 	mov	ah,0x00
 	int	0x10
@@ -414,8 +534,14 @@ msg002:	db	"A20GATE on .",0
 msg003:	db	"A20GATE filed .",0
 msg004:	db	"Video mode is not supported or invalid.",0
 msg005:	db	"Press the Enter key to shut down ...",0
-msg006:	db	"Sorry . Shutdown filed . Press power button ."
+msg006:	db	"Sorry . Shutdown filed . Press power button .",0
+msg007:	db	"Video Mode List. Please select the mode number.",0
+msg008:	db	"32bit--1:320x200--2:640x480--3:800x600--4:1024x768--5:1280x1024--6:1600x1200",0
+msg009:	db	"16bit--7:320x200--8:640x480--9:800x600--a:1024x768--b:1280x1024--c:1600x1200",0
+msg010:	db	" 8bit--d:640x400--e:640x480--f:800x600--g:1024x768--h:1280x1024--i:1600x1200",0
 backcc:	db	".",0
+
+videomode:	dw 0
 
 		alignb	16
 GDT0:
