@@ -256,7 +256,16 @@ vbecheck:
 	mov	edi, 80*2*6		;画面の四行目から始める。
 	call	printf				;printfを呼び出す。
 
+	lea	esi, [msg011]			;msg003のアドレスをesiに代入する。
+	mov	ax, 0xB800			;アドレスの指定。テキストモードは、0xB800から始まる。
+	mov	es, ax		    		;esに0xB800を入れる。esに直接代入はできないので。
+	mov	edi, 80*2*7		;画面の四行目から始める。
+	call	printf				;printfを呼び出す。
+
 	call	getc
+
+	cmp	ah,0x01
+	je	vbe00
 
 	cmp	ah,0x02
 	je	vbe01
@@ -297,6 +306,23 @@ vbecheck:
 	je	vbe0i
 
 	jmp	vbecheck
+
+vbe00:
+	mov	al,0x13
+	mov	ah,0x00
+	int	0x10
+	mov	ax,0xe0
+	mov	es,ax
+	mov	di,0
+	mov	word[es:di+0x12],320
+	mov	word[es:di+0x14],200
+	mov	byte[es:di+0x19],8
+	mov	dword[es:di+0x28],0x000a0000
+	mov	byte[VMODE],8
+	mov	word[SCRNX],320
+	mov	word[SCRNY],200
+	mov	dword[VRAM],0x000a0000
+	ret
 
 vbe01:
 	mov	word[videomode],0x010f
@@ -398,6 +424,7 @@ scrn320:
 	mov	edi, 80*2*2*2	    ; 画面の二行目から始める。
 	call	printf
 	jmp	halthalt
+
 	mov	al,0x13
 	mov	ah,0x00
 	int	0x10
@@ -539,6 +566,7 @@ msg007:	db	"Video Mode List. Please select the mode number.",0
 msg008:	db	"32bit--1:320x200--2:640x480--3:800x600--4:1024x768--5:1280x1024--6:1600x1200",0
 msg009:	db	"16bit--7:320x200--8:640x480--9:800x600--a:1024x768--b:1280x1024--c:1600x1200",0
 msg010:	db	" 8bit--d:640x400--e:640x480--f:800x600--g:1024x768--h:1280x1024--i:1600x1200",0
+msg011:	db	"Press ESC to start in VGA mode.",0
 backcc:	db	".",0
 
 videomode:	dw 0
