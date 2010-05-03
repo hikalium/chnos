@@ -319,7 +319,7 @@ struct SYSTEM {
 		void (*init_scrn)(unsigned int *vram, int xsize, int ysize, unsigned char bits, unsigned int *mousecur32);
 		void (*boxfill)(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
 		void (*col_pat_256safe)(unsigned int *vrami, int xsize, int ysize);
-		void (*putfonts)(unsigned int *vrami, int xsize, int x, int y, unsigned int ci, unsigned char *s);
+		void (*putfonts)(unsigned int *vrami, int xsize, int x, int y, unsigned int ci, const unsigned char *s);
 		void (*point)(unsigned int *vrami, int x, int y, unsigned int c32, int xsize);
 		struct DRAW_BITS8 {
 			void (*init)(void);
