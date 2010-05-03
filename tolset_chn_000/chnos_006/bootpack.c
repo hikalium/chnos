@@ -7,7 +7,7 @@ void reboot(void);
 
 void CHNMain(void)
 {	
-	unsigned char s[24];
+	unsigned char s[64];
 //	struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
 //	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
 	struct FIFO32 sysfifo;
@@ -24,6 +24,7 @@ void CHNMain(void)
 	unsigned int *buf_back, buf_mouse[576], *buf_win;
 	int scrnx,scrny;
 	unsigned char *diskimg;
+	struct TIMER *timerc;
 
 
 	init_system(&system);
@@ -75,21 +76,28 @@ void CHNMain(void)
 
 //	system.draw.circle(buf_back, 100,100, 0xff0000, scrnx, 100);
 
-	sprintf(s,"memory %d Byte(%d KB,%d MB) ",all_mem_size,all_mem_size/1024, all_mem_size/(1024*1024));
-	system.draw.boxfill(buf_win, INT_MONITOR_LONG, mix_color(0x0000ff00, 0x7fff0000), 0,0,INT_MONITOR_LONG,16);	
-	system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,0,0xffffff,s);
-	system.draw.sheet.refresh(winfo1->center, 0, 0, INT_MONITOR_LONG, 16);
+	sprintf(s,"memory %d Byte(%d KB,%d MB)",all_mem_size,all_mem_size/1024, all_mem_size/(1024*1024));
+	putfonts_asc_sht_i(winfo1->center, 0, 0, 0xffffff, mix_color(0x0000ff00, 0x7fff0000), s);
+//	system.draw.boxfill(buf_win, INT_MONITOR_LONG, mix_color(0x0000ff00, 0x7fff0000), 0,0,INT_MONITOR_LONG,16);	
+//	system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,0,0xffffff,s);
+//	system.draw.sheet.refresh(winfo1->center, 0, 0, INT_MONITOR_LONG, 16);
 
 	free_mem_size = system.io.memory.freesize();
 
 	sprintf(s,"free   %d Byte(%d KB,%d MB)",free_mem_size,free_mem_size/1024, free_mem_size/(1024*1024));
-	system.draw.boxfill(buf_win, INT_MONITOR_LONG, 0x000000, 0,16,INT_MONITOR_LONG,32);	
-	system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,16,0xffffff,s);
-	system.draw.sheet.refresh(winfo1->center, 0, 16, INT_MONITOR_LONG, 32);
+	putfonts_asc_sht_i(winfo1->center, 0, 16, 0xffffff, 0x000000, s);
+//	system.draw.boxfill(buf_win, INT_MONITOR_LONG, 0x000000, 0,16,INT_MONITOR_LONG,32);	
+//	system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,16,0xffffff,s);
+//	system.draw.sheet.refresh(winfo1->center, 0, 16, INT_MONITOR_LONG, 32);
 
-	system.draw.boxfill(buf_win, INT_MONITOR_LONG, mix_color(0x0000ff00, 0x7fff0000), 0,32,INT_MONITOR_LONG,48);	
-	system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,32,0xffffff,strncpy(s, (char *)(diskimg + 0x002600 + 0x20 * 0),23));
-	system.draw.sheet.refresh(winfo1->center, 0, 32, INT_MONITOR_LONG, 48);
+//	system.draw.boxfill(buf_win, INT_MONITOR_LONG, mix_color(0x0000ff00, 0x7fff0000), 0,32,INT_MONITOR_LONG,48);	
+//	system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,32,0xffffff,strncpy(s, (char *)(diskimg + 0x002600 + 0x20 * 0),23));
+//	system.draw.sheet.refresh(winfo1->center, 0, 32, INT_MONITOR_LONG, 48);
+	putfonts_asc_sht_i(winfo1->center, 0, 32, 0xffffff, 0x000000, strncpy(s, (char *)(diskimg + 0x002600 + 0x20 * 0),23));
+
+	timerc = timer_alloc();
+	timer_init(timerc, &sysfifo, SYSFIFO_TIMERC);
+	timer_settime(timerc, 50);
 
 	for (;;){
 	system.io.cli();
@@ -97,51 +105,68 @@ void CHNMain(void)
 		system.io.stihlt();
 	} else {
 		i = system.data.fifo.get(&sysfifo);
-	}
-	if( 256 <= i && i <=511) {
-		i -= SYSFIFO_KEYB;
-		system.io.sti();
-		system.draw.boxfill(buf_win, INT_MONITOR_LONG, 0x000000, 0,48,INT_MONITOR_LONG, 64);	
-		sprintf(s,"INT 21(IRQ-1) : PS/2 ·°ÎÞ°ÄÞ%02X",i);
-		system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,48,0xffffff,s);
-		system.io.serial.send(s);
-		system.draw.sheet.refresh(winfo1->center, 0,48,INT_MONITOR_LONG , 64);			
-		switch(i){
-			case 0x13:
-				reboot();
-				break;
-		}			
-		system.draw.boxfill(buf_win, INT_MONITOR_LONG, 0x000000, 0,112,INT_MONITOR_LONG, 128);	
-		sprintf(s,"À²Ï° = %u",timerctl.count);
-		system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,112,0xffffff,s);
-		system.draw.sheet.refresh(winfo1->center, 0,112,INT_MONITOR_LONG , 128);						
-	} else if(512 <= i && i <= 767) {
+		if(i == SYSFIFO_TIMERC) {
+			system.io.sti();
+			system.draw.boxfill(buf_win, INT_MONITOR_LONG, 0x000000, 0,130, 8, 146);	
+			system.draw.sheet.refresh(winfo1->center, 0, 130, 8, 146);
+			timer_init(timerc, &sysfifo, SYSFIFO_TIMERC + 1);
+			timer_settime(timerc, 50);			
+		}
+		else if(i == SYSFIFO_TIMERC + 1) {
+			system.io.sti();
+			system.draw.boxfill(buf_win, INT_MONITOR_LONG, 0xffffff, 0,130, 8, 146);	
+			system.draw.sheet.refresh(winfo1->center, 0, 130, 8, 146);
+			timer_init(timerc, &sysfifo, SYSFIFO_TIMERC);
+			timer_settime(timerc, 50);			
+		}else if( 256 <= i && i <=511) {
+			i -= SYSFIFO_KEYB;
+			system.io.sti();
+//			system.draw.boxfill(buf_win, INT_MONITOR_LONG, 0x000000, 0,48,INT_MONITOR_LONG, 64);	
+			sprintf(s,"INT 21(IRQ-1) : PS/2 ·°ÎÞ°ÄÞ%02X",i);
+			putfonts_asc_sht_i(winfo1->center, 0, 48, 0xffffff, 0x000000, s);
+//			system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,48,0xffffff,s);
+			system.io.serial.send(s);
+//			system.draw.sheet.refresh(winfo1->center, 0,48,INT_MONITOR_LONG , 64);			
+			switch(i){
+				case 0x13:
+					reboot();
+					break;
+			}			
+			system.draw.boxfill(buf_win, INT_MONITOR_LONG, 0x000000, 0,112,INT_MONITOR_LONG, 128);	
+			sprintf(s,"À²Ï° = %u",timerctl.count);
+			system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,112,0xffffff,s);
+			system.draw.sheet.refresh(winfo1->center, 0,112,INT_MONITOR_LONG , 128);						
+		} else if(512 <= i && i <= 767) {
 			i -= SYSFIFO_MOUSE;
 			system.io.sti();
 			if (system.io.mouse.decode(i) == 1) {
-			system.draw.boxfill(buf_win, INT_MONITOR_LONG, 0x000000, 0,64,INT_MONITOR_LONG , 80);	
-			sprintf(s,"INT 2C(IRQ-12) : PS/2 Ï³½(%02X,%02X,%02X,%02X)",mdec.buf[0], mdec.buf[1], mdec.buf[2], mdec.whinfo);
-			system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,64,0xffffff,s);
-			system.draw.boxfill(buf_win, INT_MONITOR_LONG, 0x000000, 0,80,INT_MONITOR_LONG , 96);	
-			sprintf(s,"[lcr %4d %4d]",mdec.x, mdec.y);
-			if((mdec.btn & 0x01) != 0) s[1] = 'L';
-			if((mdec.btn & 0x02) != 0) s[3] = 'R';
-			if((mdec.btn & 0x04) != 0) s[2] = 'C';
-			system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,80,0xffffff,s);
-			mx += mdec.x;
-			my += mdec.y;
-			if(mx < 0) mx = 0;
-			if(my < 0) my = 0;
-			if(mx > scrnx - 1) mx = scrnx - 1;
-			if(my > scrny - 1) my = scrny - 1;
-			
-			system.draw.sheet.slide(sht_mouse, mx,my);
-			system.draw.boxfill(buf_win, INT_MONITOR_LONG, 0x000000, 0,96,INT_MONITOR_LONG,112);	
-			if(mdec.scrool == 0xffffffff) scrool++;
-			if(mdec.scrool == 0x00000001) scrool--;
-			sprintf(s,"(%4d,%4d)  %d,%X",mx,my,scrool,system.info.vesa.PhysBasePtr,mdec.scrool);
-			system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,96,0xffffff,s);	
-			system.draw.sheet.refresh(winfo1->center, 0,64,INT_MONITOR_LONG , 112);
+//				system.draw.boxfill(buf_win, INT_MONITOR_LONG, 0x000000, 0,64,INT_MONITOR_LONG , 80);	
+				sprintf(s,"INT 2C(IRQ-12) : PS/2 Ï³½(%02X,%02X,%02X,%02X)",mdec.buf[0], mdec.buf[1], mdec.buf[2], mdec.whinfo);
+//				system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,64,0xffffff,s);
+				putfonts_asc_sht_i(winfo1->center, 0, 64, 0xffffff, 0x000000, s);
+//				system.draw.boxfill(buf_win, INT_MONITOR_LONG, 0x000000, 0,80,INT_MONITOR_LONG , 96);	
+				sprintf(s,"[lcr %4d %4d]",mdec.x, mdec.y);
+				if((mdec.btn & 0x01) != 0) s[1] = 'L';
+				if((mdec.btn & 0x02) != 0) s[3] = 'R';
+				if((mdec.btn & 0x04) != 0) s[2] = 'C';
+//				system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,80,0xffffff,s);
+				putfonts_asc_sht_i(winfo1->center, 0, 80, 0xffffff, 0x000000, s);
+				mx += mdec.x;
+				my += mdec.y;
+				if(mx < 0) mx = 0;
+				if(my < 0) my = 0;
+				if(mx > scrnx - 1) mx = scrnx - 1;
+				if(my > scrny - 1) my = scrny - 1;
+	
+				system.draw.sheet.slide(sht_mouse, mx,my);
+//				system.draw.boxfill(buf_win, INT_MONITOR_LONG, 0x000000, 0,96,INT_MONITOR_LONG,112);	
+				if(mdec.scrool == 0xffffffff) scrool++;
+				if(mdec.scrool == 0x00000001) scrool--;
+				sprintf(s,"(%4d,%4d)  %d,%X",mx,my,scrool,system.info.vesa.PhysBasePtr,mdec.scrool);
+//				system.draw.putfonts(buf_win, INT_MONITOR_LONG, 0,96,0xffffff,s);	
+//				system.draw.sheet.refresh(winfo1->center, 0,64,INT_MONITOR_LONG , 112);
+				putfonts_asc_sht_i(winfo1->center, 0, 96, 0xffffff, 0x000000, s);
+				}
 			}
 		}
 	}

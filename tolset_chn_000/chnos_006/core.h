@@ -65,12 +65,17 @@
 
 #define MAX_TIMER	500
 
+#define VOID_TIMER	0
+#define ALLOC_TIMER	1
+#define USING_TIMER	2
+
 #define SHT_FLAGS_VOID	0
 #define SHT_FLAGS_USE	1
 
 #define WIN_FLAGS_VOID	0
 #define WIN_FLAGS_USE	1
 
+#define SYSFIFO_TIMERC	0x0001
 #define SYSFIFO_KEYB	0x100			/*256~511=keycode*/
 #define SYSFIFO_MOUSE	0x200			/*512~767=mouse*/
 
@@ -114,12 +119,14 @@
 /*構造体宣言*/
 struct TIMER {
 	unsigned int timeout, flags;
+	struct FIFO32 *fifo;
 	unsigned int data;
 };
 
 struct TIMERCTL {
-	unsigned int count;
+	unsigned int count, next, using;
 	struct TIMER timer[MAX_TIMER];
+	struct TIMER *timers[MAX_TIMER];
 };
 
 struct WINDOWINFO {
@@ -442,6 +449,10 @@ void sendto_mouse(int data);
 /*timer.c		タイマー関係*/
 void init_pit(struct TIMERCTL *timctl);
 void inthandler20(int *esp);
+struct TIMER *timer_alloc(void);
+void timer_free(struct TIMER *timer);
+void timer_init(struct TIMER *timer, struct FIFO32 *fifo, unsigned int data);
+void timer_settime(struct TIMER *timer, unsigned int timeout);
 
 /*fifo.c		FIFOバッファ関係*/
 
@@ -460,6 +471,7 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 
 /*全色対応*/
 
+void putfonts_asc_sht_i(struct SHEET32 *sht, int x, int y, unsigned int c, unsigned int bc, const char *s);
 unsigned int mix_color(unsigned int c0, unsigned int c1);
 void circle_i(unsigned int *vrami, int cx, int cy, unsigned int c, int xsize, int r);
 unsigned short rgb_int2short (unsigned int c32);
@@ -467,7 +479,7 @@ unsigned char rgb_int2char(unsigned int c32);
 void init_scrn_i(unsigned int *vram, int xsize, int ysize, unsigned char bits, unsigned int *mousecur32);
 void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
 void col_pat_256safe(unsigned int *vrami, int xsize, int ysize);
-void putfonts_asc_i(unsigned int *vrami, int xsize, int x, int y, unsigned int ci, unsigned char *s);
+void putfonts_asc_i(unsigned int *vrami, int xsize, int x, int y, unsigned int ci, const unsigned char *s);
 void point_i(unsigned int *vrami, int x, int y, unsigned int c32, int xsize);
 
 /*8bits*/

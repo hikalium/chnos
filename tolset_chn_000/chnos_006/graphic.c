@@ -1,5 +1,6 @@
 #include "core.h"
 #include <math.h>
+#include <string.h>
 /*変換テーブル*/
 
 
@@ -67,6 +68,16 @@ static short rgb_char2short_list[16] = {
 	};
 
 /*拡張全モード対応版*/
+void putfonts_asc_sht_i(struct SHEET32 *sht, int x, int y, unsigned int c, unsigned int bc, const char *s)
+{
+	int l;
+	l = strlen(s);
+	boxfill_i(sht->buf, sht->bxsize, bc, x, y, x + l * 8, y + 16);
+	putfonts_asc_i(sht->buf, sht->bxsize, x, y, c, s);
+	sheet_refresh(sht, x, y, x + l * 8, y + 16);
+	return;
+}
+
 void init_scrn_i(unsigned int *vrami, int xsize, int ysize, unsigned char bits, unsigned int *mousecur32)
 {
 	if(bits == 8){
@@ -171,7 +182,7 @@ void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, i
 	return;
 }
 
-void putfonts_asc_i(unsigned int *vrami, int xsize, int x, int y, unsigned int ci, unsigned char *s)
+void putfonts_asc_i(unsigned int *vrami, int xsize, int x, int y, unsigned int ci, const unsigned char *s)
 {
 	extern char hankaku[4096];
 	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
