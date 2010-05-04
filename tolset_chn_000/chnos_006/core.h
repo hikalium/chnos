@@ -118,15 +118,16 @@
 
 /*\‘¢‘ÌéŒ¾*/
 struct TIMER {
+	struct TIMER *next_timer;
 	unsigned int timeout, flags;
 	struct FIFO32 *fifo;
 	unsigned int data;
 };
 
 struct TIMERCTL {
-	unsigned int count, next, using;
+	unsigned int count, next_count, using;
 	struct TIMER timer[MAX_TIMER];
-	struct TIMER *timers[MAX_TIMER];
+	struct TIMER *timers;
 };
 
 struct WINDOWINFO {

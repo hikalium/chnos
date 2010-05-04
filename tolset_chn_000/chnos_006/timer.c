@@ -4,38 +4,42 @@ struct TIMERCTL *tctl;
 
 void inthandler20(int *esp)
 {
-	int i, j;
+	struct TIMER *timer;
 	tctl->count++;
 	io_out8(PIC0_OCW2, 0x60);	/* IRQ-00受付完了をPICに通知 。0x60+番号。*/
-
-	if(tctl->next > tctl->count) return;
-	for(i = 0; i < tctl->using; i++){
-		if(tctl->timers[i]->timeout > tctl->count) break;
-		tctl->timers[i]->flags = ALLOC_TIMER;
-		fifo32_put(tctl->timers[i]->fifo, tctl->timers[i]->data);
+	if(tctl->next_count > tctl->count) return;
+	timer = tctl->timers;
+	for(;;){
+		if(timer->timeout > tctl->count) break;
+		timer->flags = ALLOC_TIMER;
+		fifo32_put(timer->fifo, timer->data);
+		timer = timer->next_timer;
 	}
-	tctl->using -= i;
-	for(j = 0; j < tctl->using; j++){
-		tctl->timers[j] = tctl->timers[i + j];
-	}
-	if(tctl->using > 0) tctl->next = tctl->timers[0]->timeout;
-	else tctl->next = 0xffffffff;
+	tctl->timers = timer;
+	tctl->next_count = timer->timeout;
 	return;
 }
 
 void init_pit(struct TIMERCTL *timctl)
 {
 	int i;
+	struct TIMER *watch;
+	for(i = 0; i < MAX_TIMER; i++) {
+		tctl->timer[i].flags = VOID_TIMER;
+	}
 	tctl = timctl;
-	tctl->count = 0;
-	tctl->next = 0xffffffff;
+	watch = timer_alloc();
+	watch->timeout = 0xffffffff;
+	watch->flags = USING_TIMER;
+	watch->next_timer = 0;
+	tctl->timers = watch;
+	tctl->next_count = 0xffffffff;
+	tctl->using = 1;
 	io_out8(PIT_CTRL, 0x34);
 	io_out8(PIT_CNT0, 0x9c);
 	io_out8(PIT_CNT0, 0x2e);
 	io_out8(PIC0_IMR, io_in8(PIC0_IMR) & 0xfe);
-	for(i = 0; i < MAX_TIMER; i++) {
-		tctl->timer[i].flags = VOID_TIMER;
-	}
+
 	return;
 }
 
@@ -66,22 +70,31 @@ void timer_init(struct TIMER *timer, struct FIFO32 *fifo, unsigned int data)
 
 void timer_settime(struct TIMER *timer, unsigned int timeout)
 {
-	int ef, i, j;
+	int ef;
+	struct TIMER *t, *s;
 	timer->timeout = timeout + tctl->count;
 	timer->flags = USING_TIMER;
 	ef = io_load_eflags();
 	io_cli();
-	for(i = 0; i < tctl->using; i++){
-		if(tctl->timers[i]->timeout >= timer->timeout) break;
-	}
-	for(j = tctl->using; j > i; j--){
-		tctl->timers[j] = tctl->timers[j - 1];
-	}
 	tctl->using++;
-	tctl->timers[i] = timer;
-	tctl->next = tctl->timers[0]->timeout;
-	io_store_eflags(ef);
-	return;
+	t = tctl->timers;
+	if(timer->timeout <= t->timeout){
+		tctl->timers = timer;
+		timer->next_timer = t;
+		tctl->next_count = timer->timeout;
+		io_store_eflags(ef);
+		return;
+	}
+	for(;;){
+		s = t;
+		t = t->next_timer;
+		if(timer->timeout <= t->timeout){
+			s->next_timer = timer;
+			timer->next_timer = t;
+			io_store_eflags(ef);
+			return;				
+		}
+	}
 }
 
 
