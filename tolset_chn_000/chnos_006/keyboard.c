@@ -3,6 +3,15 @@
 struct FIFO32 *keyfifo;
 int keydata0;
 
+char keytable1[0x54] = {
+	0  , 0  , '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0  , 0  ,
+	'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '@', '[', 0  , 0  , 'a', 's', 
+	'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', ':', 0  , 0  , ']', 'z', 'x', 'c', 'v',
+	'b', 'n', 'm', ',', '.', '/', 0  , '*', 0  , ' ', 0  , 0  , 0  , 0  , 0  , 0  ,      
+	0  , 0  , 0  , 0  , 0  , 0  , 0  , '7', '8', '9', '-', '4', '5', '6', '+', '1',
+	'2', '3', '0', '.'
+};
+
 void init_keyboard(struct FIFO32 *fifo, int data0)
 {
 	/* 書き込み先のFIFOバッファを記憶 */
@@ -26,3 +35,8 @@ void inthandler21(int *esp)
 	return;
 }
 
+char keycode(int keycode)
+{
+	if(keycode < 0 || keycode > 0x54) return 0x00;
+	return keytable1[keycode];
+}

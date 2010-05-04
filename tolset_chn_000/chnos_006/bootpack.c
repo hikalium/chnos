@@ -122,7 +122,8 @@ void CHNMain(void)
 		}else if( 256 <= i && i <=511) {
 			i -= SYSFIFO_KEYB;
 			system.io.sti();
-			sprintf(s,"INT 21(IRQ-1) : PS/2 ·°ÎÞ°ÄÞ%02X",i);
+			sprintf(s," INT 21(IRQ-1) : PS/2 ·°ÎÞ°ÄÞ%02X",i);
+			s[0] = keycode(i);
 			putfonts_asc_sht_i(winfo1->center, 0, 48, 0xffffff, 0x000000, s);
 			system.io.serial.send(s);
 			switch(i){

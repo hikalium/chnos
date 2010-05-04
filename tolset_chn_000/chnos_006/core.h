@@ -438,6 +438,7 @@ void sheet_refreshmap(int vx0, int vy0, int vx1, int vy1, int h0);
 /*keyboard.c	キーボード関係*/
 void init_keyboard(struct FIFO32 *fifo, int data0);
 void inthandler21(int *esp);
+char keycode(int keycode);
 
 /*mouse.c	マウス関係*/
 
