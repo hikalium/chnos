@@ -69,12 +69,12 @@ void CHNMain(void)
 
 	system.draw.sheet.updown(sht_back, 0);
 
-	winfo1 = system.draw.window.make(buf_win, "Ã½Ä³¨ÝÄÞ³", INT_MONITOR_LONG, 150, 200, 50, 1);	
+	winfo1 = system.draw.window.make(buf_win, "Ã½Ä³¨ÝÄÞ³", INT_MONITOR_LONG, 150, 10, 10, 1);	
 
 	system.draw.sheet.updown(sht_mouse, 6);
 
 	sprintf(s,"memory %d Byte(%d KB,%d MB)",all_mem_size,all_mem_size/1024, all_mem_size/(1024*1024));
-	putfonts_asc_sht_i(winfo1->center, 0, 0, 0xffffff, mix_color(0x0000ff00, 0x7fff0000), s);
+	putfonts_asc_sht_i(winfo1->center, 0, 0, 0xffffff, 0x00000000, s);
 
 	free_mem_size = system.io.memory.freesize();
 
