@@ -1,10 +1,22 @@
 #include "core.h"
 
 struct SHTCTL *ctl;
+void (*sheet_refreshsub)(int vx0, int vy0, int vx1, int vy1, int h0, int h1);
+void (*sheet_refreshmap)(int vx0, int vy0, int vx1, int vy1, int h0);
 
-void init_sheets(unsigned int *vram, int xsize, int ysize)
+void init_sheets(unsigned int *vram, int xsize, int ysize, unsigned char bits)
 {
 	int i;
+	switch(bits){
+		case 8:
+			sheet_refreshsub = sheet_refreshsub8;
+			sheet_refreshmap = sheet_refreshmap8;
+			break;
+		case 32:
+			sheet_refreshsub = sheet_refreshsub32;
+			sheet_refreshmap = sheet_refreshmap32;
+			break;
+	}	
 	ctl = (struct SHTCTL *)memman_alloc_4k(sizeof(struct SHTCTL));
 	if(ctl == 0) goto err;
 	ctl->map = (unsigned int *)memman_alloc_4k(xsize * ysize * 4);
@@ -125,7 +137,7 @@ void sheet_free(struct SHEET32 *sht)
 	return;
 }
 
-void sheet_refreshsub(int vx0, int vy0, int vx1, int vy1, int h0, int h1)
+void sheet_refreshsub32(int vx0, int vy0, int vx1, int vy1, int h0, int h1)
 {
 	int h, bx, by, vx, vy, bx0, by0, bx1, by1;
 	unsigned int *buf, *vram = ctl->vram, *map = ctl->map,sid;
@@ -157,7 +169,40 @@ void sheet_refreshsub(int vx0, int vy0, int vx1, int vy1, int h0, int h1)
 	return;
 }
 
-void sheet_refreshmap(int vx0, int vy0, int vx1, int vy1, int h0)
+void sheet_refreshsub8(int vx0, int vy0, int vx1, int vy1, int h0, int h1)
+{
+	int h, bx, by, vx, vy, bx0, by0, bx1, by1;
+	unsigned int *buf, *map = ctl->map,sid;
+	unsigned char *vram = (unsigned char *)ctl->vram;
+	struct SHEET32 *sht;
+	if(vx0 < 0) vx0 = 0;
+	if(vy0 < 0) vy0 = 0;
+	if(vx1 > ctl->xsize) vx1 = ctl->xsize;
+	if(vy1 > ctl->ysize) vy1 = ctl->ysize;
+	for(h = 0; h <= ctl->top; h++){
+		sht = ctl->sheets[h];
+		buf = sht->buf;
+		sid = sht - ctl->sheets0;
+		bx0 = vx0 - sht->vx0;
+		by0 = vy0 - sht->vy0;
+		bx1 = vx1 - sht->vx0;
+		by1 = vy1 - sht->vy0;
+		if(bx0 < 0) bx0 = 0;
+		if(by0 < 0) by0 = 0;
+		if(bx1 > sht->bxsize) bx1 = sht->bxsize;
+		if(by1 > sht->bysize) by1 = sht->bysize;
+		for(by = by0; by < by1; by++){
+			vy = sht->vy0 + by;
+			for(bx = bx0; bx < bx1; bx++){
+				vx = sht->vx0 + bx;
+				if(map[vy * ctl->xsize + vx] == sid) vram[vy * ctl->xsize + vx] = (unsigned char)buf[by * sht->bxsize + bx];
+			}
+		}
+	}
+	return;
+}
+
+void sheet_refreshmap32(int vx0, int vy0, int vx1, int vy1, int h0)
 {
 	int h, bx, by, vx, vy, bx0, by0, bx1, by1;
 	unsigned int *buf, sid, *map = ctl->map;
@@ -182,10 +227,41 @@ void sheet_refreshmap(int vx0, int vy0, int vx1, int vy1, int h0)
 			vy = sht->vy0 + by;
 			for(bx = bx0; bx < bx1; bx++){
 				vx = sht->vx0 + bx;
-				if(buf[by * sht->bxsize + bx] != sht->col_inv) map[vy * ctl->xsize + vx] = sid;
+				if(buf[by * sht->bxsize + bx] != INV_COL32) map[vy * ctl->xsize + vx] = sid;
 			}
 		}
 	}
 	return;
 }
 
+void sheet_refreshmap8(int vx0, int vy0, int vx1, int vy1, int h0)
+{
+	int h, bx, by, vx, vy, bx0, by0, bx1, by1;
+	unsigned int *buf, sid, *map = ctl->map;
+	struct SHEET32 *sht;
+	if(vx0 < 0) vx0 = 0;
+	if(vy0 < 0) vy0 = 0;
+	if(vx1 > ctl->xsize) vx1 = ctl->xsize;
+	if(vy1 > ctl->ysize) vy1 = ctl->ysize;
+	for(h = 0; h <= ctl->top; h++){
+		sht = ctl->sheets[h];
+		sid = sht - ctl->sheets0;
+		buf = sht->buf;
+		bx0 = vx0 - sht->vx0;
+		by0 = vy0 - sht->vy0;
+		bx1 = vx1 - sht->vx0;
+		by1 = vy1 - sht->vy0;
+		if(bx0 < 0) bx0 = 0;
+		if(by0 < 0) by0 = 0;
+		if(bx1 > sht->bxsize) bx1 = sht->bxsize;
+		if(by1 > sht->bysize) by1 = sht->bysize;
+		for(by = by0; by < by1; by++){
+			vy = sht->vy0 + by;
+			for(bx = bx0; bx < bx1; bx++){
+				vx = sht->vx0 + bx;
+				if(buf[by * sht->bxsize + bx] != (unsigned int)INV_COL8) map[vy * ctl->xsize + vx] = sid;
+			}
+		}
+	}
+	return;
+}

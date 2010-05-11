@@ -78,20 +78,15 @@ void putfonts_asc_sht_i(struct SHEET32 *sht, int x, int y, unsigned int c, unsig
 	return;
 }
 
-void init_scrn_i(unsigned int *vrami, int xsize, int ysize, unsigned char bits, unsigned int *mousecur32)
+void init_scrn_i(unsigned int *vrami, int xsize, int ysize, unsigned char bits, unsigned int *mousecur)
 {
 	if(bits == 8){
-	unsigned char *mousecur8 = (unsigned char *)mousecur32;
-	unsigned char *vram8 = (unsigned char *)vrami;
 	init_palette();
-	init_scrn8(vram8, xsize, ysize ,mousecur8);
+	init_scrn8(vrami, xsize, ysize ,mousecur);
 	} else if(bits == 16){
-	unsigned short *mousecur16 = (unsigned short *)mousecur32;
-	unsigned short *vram16 = (unsigned short *)vrami;
-	init_scrn16(vram16, xsize, ysize ,mousecur16);
+	init_scrn16(vrami, xsize, ysize ,mousecur);
 	} else if(bits == 32){
-
-	init_scrn32(vrami, xsize, ysize ,mousecur32);
+	init_scrn32(vrami, xsize, ysize ,mousecur);
 	}
 	col_pat_256safe(vrami,xsize,ysize);
 	return;
@@ -151,13 +146,11 @@ void circle_i(unsigned int *vrami, int cx, int cy, unsigned int c, int xsize, in
 void point_i(unsigned int *vrami, int x, int y, unsigned int c, int xsize)
 {	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
 	if(vinfo->BitsPerPixel == 8){
-	unsigned char *vram8 = (unsigned char *)vrami;
 	unsigned char c8 = rgb_int2char(c);
-	vram8[y * xsize + x] = c8;
+	vrami[y * xsize + x] = (unsigned int)c8;
 	} else if(vinfo->BitsPerPixel == 16){
-	unsigned short *vram16 = (unsigned short *)vrami;
 	unsigned short c16 = rgb_int2short(c);
-	vram16[y * xsize + x] = c16;
+	vrami[y * xsize + x] = (unsigned int)c16;
 	} else if(vinfo->BitsPerPixel == 32){
 	vrami[y * xsize + x] = c;
 	}
@@ -169,13 +162,11 @@ void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, i
 	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
 	y1 -= 1;
 	if(vinfo->BitsPerPixel == 8){
-	unsigned char *vram8 = (unsigned char *)vrami;
 	unsigned char c8 = rgb_int2char(c);
-	boxfill8(vram8, xsize, c8, x0, y0, x1, y1);	
+	boxfill8(vrami, xsize, c8, x0, y0, x1, y1);	
 	} else if(vinfo->BitsPerPixel == 16){
-	unsigned short *vram16 = (unsigned short *)vrami;
 	unsigned short c16 = rgb_int2short(c);
-	boxfill16(vram16, xsize, c16, x0, y0, x1, y1);
+	boxfill16(vrami, xsize, c16, x0, y0, x1, y1);
 	} else if(vinfo->BitsPerPixel == 32){
 	boxfill32(vrami, xsize, c, x0, y0, x1, y1);
 	}
@@ -187,18 +178,16 @@ void putfonts_asc_i(unsigned int *vrami, int xsize, int x, int y, unsigned int c
 	extern char hankaku[4096];
 	struct VESAINFO *vinfo = (struct VESAINFO *) ADR_VESAINFO;
 	if(vinfo->BitsPerPixel == 8){
-	unsigned char *vram8 = (unsigned char *)vrami;
 	unsigned char c8 = rgb_int2char(ci);
 	for (; *s != 0x00; s++) {
-		putfont8(vram8, xsize, x, y, c8, hankaku + *s * 16);
+		putfont8(vrami, xsize, x, y, c8, hankaku + *s * 16);
 		x += 8;
 	}
 	return;
 	} else if(vinfo->BitsPerPixel == 16){
-	unsigned short *vram16 = (unsigned short *)vrami;
 	unsigned short c16 = rgb_int2short(ci);
 	for (; *s != 0x00; s++) {
-		putfont16(vram16, xsize, x, y, c16, hankaku + *s * 16);
+		putfont16(vrami, xsize, x, y, c16, hankaku + *s * 16);
 		x += 8;
 	}
 	return;
@@ -213,13 +202,13 @@ void putfonts_asc_i(unsigned int *vrami, int xsize, int x, int y, unsigned int c
 
 unsigned char rgb_int2char (unsigned int c32)
 {
-unsigned char i ;
-for(i = 0;i < 15; i++) {
-	if(rgb_int2char_list[i] == c32) {
-		return i;
+	unsigned char i ;
+	for(i = 0;i < 15; i++) {
+		if(rgb_int2char_list[i] == c32) {
+			return i;
 		}
 	}
-return 7;
+	return 7;
 }
 
 unsigned short rgb_int2short (unsigned int c32)
@@ -350,48 +339,48 @@ void set_palette(int start, int end, unsigned char *rgb)
 	return;
 }
 
-void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1)
+void boxfill8(unsigned int *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1)
 {
 	int x, y;
 	for (y = y0; y <= y1; y++) {
 		for (x = x0; x <= x1; x++)
-			vram[y * xsize + x] = c;
+			vram[y * xsize + x] = (unsigned int)c;
 	}
 	return;
 }
 
-void init_scrn8(unsigned char *vram, int xsize, int ysize, unsigned char *mousecur)
+void init_scrn8(unsigned int *vram, int xsize, int ysize, unsigned int *mousecur)
 {
 	boxfill8(vram,xsize,DESKTOP_COL8,0,0,xsize,ysize);
 	boxfill8(vram,xsize,TASKBAR_COL8,0,ysize-TASKBAR_HEIGHT,xsize,ysize);
 	putfonts8_asc(vram, xsize, 8, 8, COL8_FFFFFF, "welcome to CHNOSProject! on 8bit video mode .");
 	putfonts8_asc(vram, xsize, 8, 24, COL8_FFFFFF, "Ö³º¿ CHNOSÌßÛ¼Þª¸ÄÍ!");
 	putfonts8_asc(vram, xsize, 8, 40, COL8_FFFFFF, "¶ÀºÄÃÞ½¶Þ ÆÎÝºÞ¶Þ ¶¹ÙÖ³Æ ÅØÏ¼À");
-	init_mouse_cursor8(mousecur, DESKTOP_COL8);
-	putblock8_8(vram, xsize,24, 24, xsize/2, ysize/2, mousecur, 24);
+	init_mouse_cursor8(mousecur);
 	return;
 }
 
-void putfont8(unsigned char *vram, int xsize, int x, int y, unsigned char c, unsigned char *font)
+void putfont8(unsigned int *vram, int xsize, int x, int y, unsigned char c, unsigned char *font)
 {
 	int i;
-	char *p, d /* data */;
+	char d /* data */;
+	unsigned int *p;
 	for (i = 0; i < 16; i++) {
 		p = vram + (y + i) * xsize + x;
 		d = font[i];
-		if ((d & 0x80) != 0) { p[0] = c; }
-		if ((d & 0x40) != 0) { p[1] = c; }
-		if ((d & 0x20) != 0) { p[2] = c; }
-		if ((d & 0x10) != 0) { p[3] = c; }
-		if ((d & 0x08) != 0) { p[4] = c; }
-		if ((d & 0x04) != 0) { p[5] = c; }
-		if ((d & 0x02) != 0) { p[6] = c; }
-		if ((d & 0x01) != 0) { p[7] = c; }
+		if ((d & 0x80) != 0) { p[0] = (unsigned int)c; }
+		if ((d & 0x40) != 0) { p[1] = (unsigned int)c; }
+		if ((d & 0x20) != 0) { p[2] = (unsigned int)c; }
+		if ((d & 0x10) != 0) { p[3] = (unsigned int)c; }
+		if ((d & 0x08) != 0) { p[4] = (unsigned int)c; }
+		if ((d & 0x04) != 0) { p[5] = (unsigned int)c; }
+		if ((d & 0x02) != 0) { p[6] = (unsigned int)c; }
+		if ((d & 0x01) != 0) { p[7] = (unsigned int)c; }
 	}
 	return;
 }
 
-void putfonts8_asc(unsigned char *vram, int xsize, int x, int y, unsigned char c, unsigned char *s)
+void putfonts8_asc(unsigned int *vram, int xsize, int x, int y, unsigned char c, unsigned char *s)
 {
 	extern char hankaku[4096];
 	for (; *s != 0x00; s++) {
@@ -401,27 +390,27 @@ void putfonts8_asc(unsigned char *vram, int xsize, int x, int y, unsigned char c
 	return;
 }
 
-void init_mouse_cursor8(unsigned char *mouse, unsigned char bc)
+void init_mouse_cursor8(unsigned int *mouse)
 {
 	int x, y;
 
 	for (y = 0; y < 24; y++) {
 		for (x = 0; x < 24; x++) {
 			if (cursor[y][x] == '*') {
-				mouse[y * 24 + x] = COL8_000000;
+				mouse[y * 24 + x] = (unsigned int)COL8_000000;
 			}
 			if (cursor[y][x] == 'O') {
-				mouse[y * 24 + x] = COL8_FFFFFF;
+				mouse[y * 24 + x] = (unsigned int)COL8_FFFFFF;
 			}
 			if (cursor[y][x] == '.') {
-				mouse[y * 24 + x] = bc;
+				mouse[y * 24 + x] = (unsigned int)INV_COL8;
 			}
 		}
 	}
 	return;
 }
 
-void putblock8_8(unsigned char *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned char *buf, int bxsize)
+void putblock8_8(unsigned int *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned int *buf, int bxsize)
 {
 	int x, y;
 	for (y = 0; y < pysize; y++) {
@@ -435,50 +424,49 @@ void putblock8_8(unsigned char *vram, int vxsize, int pxsize,int pysize, int px0
 /*16bits*/
 
 
-void boxfill16(unsigned short *vram, int xsize, unsigned short c, int x0, int y0, int x1, int y1)
+void boxfill16(unsigned int *vram, int xsize, unsigned short c, int x0, int y0, int x1, int y1)
 {
 	int x, y;
 	for (y = y0;y <= y1;y++) {
 		for (x = x0; x <= x1; x++)
-		vram[y * xsize + x] = c;
+		vram[y * xsize + x] = (unsigned int)c;
 	}
 	return;
 }
 
-void init_scrn16(unsigned short *vram, int xsize, int ysize ,unsigned short *mousecur)
+void init_scrn16(unsigned int *vram, int xsize, int ysize ,unsigned int *mousecur)
 {
 	boxfill16(vram,xsize,DESKTOP_COL16,0,0,xsize,ysize);
 	boxfill16(vram,xsize,TASKBAR_COL16,0,ysize-TASKBAR_HEIGHT,xsize,ysize);
 	putfonts16_asc(vram, xsize, 8, 8, RGB16(31,62,31), "welcome to CHNOSProject! on 16bit video mode .");
 	putfonts16_asc(vram, xsize, 8, 24, RGB16(31,62,31), "Ö³º¿ CHNOSÌßÛ¼Þª¸ÄÍ!");
 	putfonts16_asc(vram, xsize, 8, 40, RGB16(31,62,31), "¶ÀºÄÃÞ½¶Þ ÆÎÝºÞ¶Þ ¶¹ÙÖ³Æ ÅØÏ¼À");
-	init_mouse_cursor16(mousecur, DESKTOP_COL16);
-	putblock16_16(vram, xsize, 24, 24, xsize/2, ysize/2, mousecur, 24);
+	init_mouse_cursor16(mousecur);
 	return;
 
 }
 
-void putfont16(unsigned short *vram, int xsize, int x, int y, unsigned short c, unsigned char *font)
+void putfont16(unsigned int *vram, int xsize, int x, int y, unsigned short c, unsigned char *font)
 {
 	int i;
-	short *p;
+	unsigned int *p;
 	char d /* data */;
 	for (i = 0; i < 16; i++) {
 		p = vram + (y + i) * xsize + x;
 		d = font[i];
-		if ((d & 0x80) != 0) { p[0] = c; }
-		if ((d & 0x40) != 0) { p[1] = c; }
-		if ((d & 0x20) != 0) { p[2] = c; }
-		if ((d & 0x10) != 0) { p[3] = c; }
-		if ((d & 0x08) != 0) { p[4] = c; }
-		if ((d & 0x04) != 0) { p[5] = c; }
-		if ((d & 0x02) != 0) { p[6] = c; }
-		if ((d & 0x01) != 0) { p[7] = c; }
+		if ((d & 0x80) != 0) { p[0] = (unsigned int)c; }
+		if ((d & 0x40) != 0) { p[1] = (unsigned int)c; }
+		if ((d & 0x20) != 0) { p[2] = (unsigned int)c; }
+		if ((d & 0x10) != 0) { p[3] = (unsigned int)c; }
+		if ((d & 0x08) != 0) { p[4] = (unsigned int)c; }
+		if ((d & 0x04) != 0) { p[5] = (unsigned int)c; }
+		if ((d & 0x02) != 0) { p[6] = (unsigned int)c; }
+		if ((d & 0x01) != 0) { p[7] = (unsigned int)c; }
 	}
 	return;
 }
 
-void putfonts16_asc(unsigned short *vram, int xsize, int x, int y, unsigned short c, unsigned char *s)
+void putfonts16_asc(unsigned int *vram, int xsize, int x, int y, unsigned short c, unsigned char *s)
 {
 	extern char hankaku[4096];
 	for (; *s != 0x00; s++) {
@@ -488,27 +476,27 @@ void putfonts16_asc(unsigned short *vram, int xsize, int x, int y, unsigned shor
 	return;
 }
 
-void init_mouse_cursor16(unsigned short *mouse, unsigned short bc)
+void init_mouse_cursor16(unsigned int *mouse)
 {
 	int x, y;
 
 	for (y = 0; y < 24; y++) {
 		for (x = 0; x < 24; x++) {
 			if (cursor[y][x] == '*') {
-				mouse[y * 24 + x] = RGB16(0,0,0);
+				mouse[y * 24 + x] = (unsigned int)RGB16(0,0,0);
 			}
 			if (cursor[y][x] == 'O') {
-				mouse[y * 24 + x] = RGB16(31,62,31);
+				mouse[y * 24 + x] = (unsigned int)RGB16(31,62,31);
 			}
 			if (cursor[y][x] == '.') {
-				mouse[y * 24 + x] = bc;
+				mouse[y * 24 + x] = (unsigned int)INV_COL16;
 			}
 		}
 	}
 	return;
 }
 
-void putblock16_16(unsigned short *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned short *buf, int bxsize)
+void putblock16_16(unsigned int *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned int *buf, int bxsize)
 {
 	int x, y;
 	for (y = 0; y < pysize; y++) {

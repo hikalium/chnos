@@ -114,8 +114,6 @@ void init_system(struct SYSTEM *system)
 	system->draw.sheet.refresh	= sheet_refresh;
 	system->draw.sheet.slide	= sheet_slide;
 	system->draw.sheet.free		= sheet_free;
-	system->draw.sheet.refsub	= sheet_refreshsub;
-	system->draw.sheet.refmap	= sheet_refreshmap;
  
 	system->data.fifo.init		= fifo32_init;
 	system->data.fifo.put		= fifo32_put;

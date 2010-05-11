@@ -45,7 +45,7 @@ void CHNMain(void)
 	system.data.fifo.init(&sysfifo, 256, fifobuf);
 	system.io.keyboard.init(&sysfifo, SYSFIFO_KEYB);
 	system.io.mouse.init(&sysfifo, SYSFIFO_MOUSE, &mdec);
-	system.draw.sheet.init(system.info.vesa.PhysBasePtr,scrnx,scrny);
+	system.draw.sheet.init(system.info.vesa.PhysBasePtr,scrnx,scrny,system.info.vesa.BitsPerPixel);
 
 	system.draw.window.init();
 	system.io.beep.off();
