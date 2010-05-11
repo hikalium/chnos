@@ -154,6 +154,7 @@ void CHNMain(void)
 				if(my > scrny - 1) my = scrny - 1;
 	
 				system.draw.sheet.slide(sht_mouse, mx,my);
+				if((mdec.btn & 0x01) != 0) system.draw.window.slide(winfo1, mx, my);
 				if(mdec.scrool == 0xffffffff) scrool++;
 				if(mdec.scrool == 0x00000001) scrool--;
 				sprintf(s,"(%4d,%4d)  %d,%X",mx,my,scrool,system.info.vesa.PhysBasePtr,mdec.scrool);
