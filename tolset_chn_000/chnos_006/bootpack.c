@@ -2,8 +2,12 @@
 #include <string.h>
 
 struct SYSTEM system;
+struct TSS32 tss_a, tss_b;
+int task_b_esp;
 
 void reboot(void);
+void init_tss(void);
+void task_b_main(void);
 
 void CHNMain(void)
 {	
@@ -26,10 +30,14 @@ void CHNMain(void)
 	struct TIMER *timerc, *timer3, *timer10;
 
 
+
+
 	init_system(&system);
 	init_gdtidt();
 	init_pic();
 	io_sti();
+
+	init_tss();
 
 	scrnx = system.info.boot.scrnx;
 	scrny = system.info.boot.scrny ;
@@ -119,6 +127,7 @@ void CHNMain(void)
 		}else if(i == 0x04){
 			sprintf(s,"¶³ÝÀ = %d", count);
 			putfonts_asc_sht_i(winfo1->center, 10, 130, 0xffffff, 0x000000, s);
+			system.io.farjmp(0, 4 * 8);
 		}else if( 256 <= i && i <=511) {
 			i -= SYSFIFO_KEYB;
 			system.io.sti();
@@ -171,5 +180,48 @@ void reboot(void)
 	for(;;) {
 		system.io.hlt();
 	}
+}
+
+void init_tss(void)
+{
+
+	struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) ADR_SEG_DESC;
+	tss_a.ldtr = 0;
+	tss_a.iomap = 0x40000000;
+	tss_b.ldtr = 0;
+	tss_b.iomap = 0x40000000;
+
+	task_b_esp = system.io.memory.alloc(64 * 1024) + 64 * 1024;
+
+	system.io.interrupt.set_segment(gdt + 3, 103, (int)&tss_a, AR_TSS32);
+	system.io.interrupt.set_segment(gdt + 4, 103, (int)&tss_b, AR_TSS32);
+	system.io.tr.load(3 * 8);
+
+	tss_b.eip = (int)&task_b_main;
+	tss_b.eflags = 0x00000202;
+	tss_b.eax = 0;
+	tss_b.ecx = 0;
+	tss_b.edx = 0;
+	tss_b.ebx = 0;
+	tss_b.esp = task_b_esp;
+	tss_b.ebp = 0;
+	tss_b.esi = 0;
+	tss_b.edi = 0;
+	tss_b.es = 1 * 8;
+	tss_b.cs = 2 * 8;
+	tss_b.ss = 1 * 8;
+	tss_b.ds = 1 * 8;
+	tss_b.fs = 1 * 8;
+	tss_b.gs = 1 * 8;
+
+
+
+//	system.io.farjmp(0, 4 * 8);
+
+}
+
+void task_b_main(void)
+{
+	for(;;){ system.io.hlt(); }
 }
 

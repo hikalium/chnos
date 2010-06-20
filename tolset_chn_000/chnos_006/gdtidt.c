@@ -5,43 +5,24 @@ void init_gdtidt(void)
 	struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) ADR_SEG_DESC;
 	struct GATE_DESCRIPTOR *idt = (struct GATE_DESCRIPTOR *) ADR_GATE_DESC;
 	int i;
-
+	struct INTERRUPT *intr = &system.io.interrupt;
+	
 	for(i=0;i <= LIMIT_GDT /8;i++) {
-		set_segmdesc(gdt+i,0,0,0);
+		intr->set_segment(gdt+i,0,0,0);
 	}
-	set_segmdesc(gdt+1,0xffffffff,0x00000000,AR_DATA32_RW);
-	set_segmdesc(gdt+2,LIMIT_BOTPAK,ADR_BOTPAK,AR_CODE32_ER);
-	/*
-	set_segmとset_gateの各第四引数は、アクセス権の設定。
-	上位二桁は、Ｇビットとセグメントのモードにより変化。
-	Ｇビット=0,モード=32ビット >>>>>40
-	Ｇビット=1,モード=32ビット >>>>>C0
-	Ｇビット=0,モード=16ビット >>>>>00
-	Ｇビット=1,モード=16ビット >>>>>80
-	(Ｇビット１＝リミットを4KBページとして解釈する。
-	ゼロの時は、バイト単位。)
-	下位二桁は、以下の通り
-	未使用			0x00
-	システム読み書き可能実行不可	0x92
-	システム読み実行可能書き不可	0x9a
-	アプリ読み書き可能実行不可	0xf2
-	アプリ読み実行可能書き不可	0xfa
-
-	第二引数は、リミット。
-	第三引数は、ベース。
-	第三引数は、それぞれgdt+番号、idt+番号。
-	*/
+	intr->set_segment(gdt+1,0xffffffff,0x00000000,AR_DATA32_RW);
+	intr->set_segment(gdt+2,LIMIT_BOTPAK,ADR_BOTPAK,AR_CODE32_ER);
 	load_gdtr(LIMIT_GDT,ADR_SEG_DESC);
 	
 	for(i =0;i <= LIMIT_IDT / 8;i++) {
-		set_gatedesc(idt+i,0,0,0);
+		intr->set_gate(idt+i,0,0,0);
 
 	}
 	load_idtr(LIMIT_IDT, ADR_GATE_DESC);
-	set_gatedesc(idt+0x20, (int) asm_inthandler20, 2 * 8, AR_INTGATE32);
-	set_gatedesc(idt+0x21, (int) asm_inthandler21, 2 * 8, AR_INTGATE32);
-	set_gatedesc(idt+0x27, (int) asm_inthandler27, 2 * 8, AR_INTGATE32);
-	set_gatedesc(idt+0x2c, (int) asm_inthandler2c, 2 * 8, AR_INTGATE32);
+	intr->set_gate(idt+0x20, (int) asm_inthandler20, 2 * 8, AR_INTGATE32);
+	intr->set_gate(idt+0x21, (int) asm_inthandler21, 2 * 8, AR_INTGATE32);
+	intr->set_gate(idt+0x27, (int) asm_inthandler27, 2 * 8, AR_INTGATE32);
+	intr->set_gate(idt+0x2c, (int) asm_inthandler2c, 2 * 8, AR_INTGATE32);
 	return;
 
 }

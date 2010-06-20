@@ -220,11 +220,19 @@ struct VESAINFO {/*0xe00--->512byte 標準*/
 	unsigned int *PhysBasePtr;
 };
 
+struct TSS32 {
+	int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
+	int eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
+	int es, cs, ss, ds, fs, gs;
+	int ldtr, iomap;
+};
+
 struct SEGMENT_DESCRIPTOR { /*0x270000~0x27ffff 標準*/
 	short limit_low,base_low;
 	char base_mid,access_right;
 	char limit_high,base_high;
 };
+
 struct GATE_DESCRIPTOR { /*0x26f800~0x26ffff 標準*/
 	short offset_low,selector;
 	char dw_count,access_right;
@@ -385,6 +393,8 @@ struct SYSTEM {
 	struct SHEET32 *sht_back;
 };
 
+extern struct SYSTEM system;
+
 /*関数宣言*/
 
 
@@ -470,7 +480,9 @@ void init_gdtidt(void);
 void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
 void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 
-/*graphic.h	グラフィック関係*/
+/*graphic.c grap_08.c grap_16.c grap_32.c	グラフィック関係*/
+
+extern char cursor[24][24];
 
 /*全色対応*/
 void putfonts_asc_sht_i(struct SHEET32 *sht, int x, int y, unsigned int c, unsigned int bc, const char *s);
