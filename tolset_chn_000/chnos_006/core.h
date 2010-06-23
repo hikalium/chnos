@@ -417,6 +417,40 @@ void fdc_motor_off(unsigned char d);
 void init_pic(void);
 void inthandler27(int *esp);
 
+void inthandler00(int *esp);
+void inthandler01(int *esp);
+void inthandler02(int *esp);
+void inthandler03(int *esp);
+void inthandler04(int *esp);
+void inthandler05(int *esp);
+void inthandler06(int *esp);
+void inthandler07(int *esp);
+void inthandler08(int *esp);
+void inthandler09(int *esp);
+void inthandler0a(int *esp);
+void inthandler0b(int *esp);
+void inthandler0c(int *esp);
+void inthandler0d(int *esp);
+void inthandler0e(int *esp);
+void inthandler0f(int *esp);
+void inthandler10(int *esp);
+void inthandler11(int *esp);
+void inthandler12(int *esp);
+void inthandler13(int *esp);
+void inthandler14(int *esp);
+void inthandler15(int *esp);
+void inthandler16(int *esp);
+void inthandler17(int *esp);
+void inthandler18(int *esp);
+void inthandler19(int *esp);
+void inthandler1a(int *esp);
+void inthandler1b(int *esp);
+void inthandler1c(int *esp);
+void inthandler1d(int *esp);
+void inthandler1e(int *esp);
+void inthandler1f(int *esp);
+
+
 /*memory.c	ƒƒ‚ƒŠŠÇ—ŠÖŒW*/
 
 unsigned int memtest(unsigned int start, unsigned int end);
@@ -556,5 +590,36 @@ void asm_inthandler21(void);
 void asm_inthandler20(void);
 void asm_inthandler2c(void);
 void asm_inthandler27(void);
-
+void asm_inthandler00(void);
+void asm_inthandler01(void);
+void asm_inthandler02(void);
+void asm_inthandler03(void);
+void asm_inthandler04(void);
+void asm_inthandler05(void);
+void asm_inthandler06(void);
+void asm_inthandler07(void);
+void asm_inthandler08(void);
+void asm_inthandler09(void);
+void asm_inthandler0a(void);
+void asm_inthandler0b(void);
+void asm_inthandler0c(void);
+void asm_inthandler0d(void);
+void asm_inthandler0e(void);
+void asm_inthandler0f(void);
+void asm_inthandler10(void);
+void asm_inthandler11(void);
+void asm_inthandler12(void);
+void asm_inthandler13(void);
+void asm_inthandler14(void);
+void asm_inthandler15(void);
+void asm_inthandler16(void);
+void asm_inthandler17(void);
+void asm_inthandler18(void);
+void asm_inthandler19(void);
+void asm_inthandler1a(void);
+void asm_inthandler1b(void);
+void asm_inthandler1c(void);
+void asm_inthandler1d(void);
+void asm_inthandler1e(void);
+void asm_inthandler1f(void);
 

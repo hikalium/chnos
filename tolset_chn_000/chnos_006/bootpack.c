@@ -35,9 +35,10 @@ void CHNMain(void)
 	init_system(&system);
 	init_gdtidt();
 	init_pic();
+	init_tss();
 	io_sti();
 
-	init_tss();
+
 
 	scrnx = system.info.boot.scrnx;
 	scrny = system.info.boot.scrny ;
@@ -61,21 +62,21 @@ void CHNMain(void)
 
 
 
-	sht_back = system.draw.sheet.alloc();
+	system.sht_back = system.draw.sheet.alloc();
 	sht_mouse = system.draw.sheet.alloc();
 
 	buf_back = (unsigned int *) system.io.memory.alloc(scrnx * scrny * 4);
 	buf_win = (unsigned int *) system.io.memory.alloc(INT_MONITOR_LONG * 150 * 4);
 
-	system.draw.sheet.set(sht_back, buf_back, scrnx, scrny, VOID_INV_COL32);
+	system.draw.sheet.set(system.sht_back, buf_back, scrnx, scrny, VOID_INV_COL32);
 	system.draw.sheet.set(sht_mouse, buf_mouse, 24, 24, INV_COL32);
 
 	system.draw.init_scrn(buf_back, scrnx, scrny, system.info.vesa.BitsPerPixel,buf_mouse);
 
-	system.draw.sheet.slide(sht_back, 0,0);
+	system.draw.sheet.slide(system.sht_back, 0,0);
 	system.draw.sheet.slide(sht_mouse, mx, my);
 
-	system.draw.sheet.updown(sht_back, 0);
+	system.draw.sheet.updown(system.sht_back, 0);
 
 	winfo1 = system.draw.window.make(buf_win, "Ã½Ä³¨ÝÄÞ³", INT_MONITOR_LONG, 150, 10, 10, 1);	
 
@@ -104,10 +105,9 @@ void CHNMain(void)
 	timer_settime(timer10, 1000);
 
 	for (;;){
-	count++;
-//	system.io.cli();
+	system.io.cli();
 	if(system.data.fifo.status(&sysfifo) == 0) {
-//		system.io.stihlt();
+		system.io.stihlt();
 	} else {
 		i = system.data.fifo.get(&sysfifo);
 		if(i == SYSFIFO_TIMERC) {
@@ -125,8 +125,7 @@ void CHNMain(void)
 		}else if(i == 0x03){
 			count = 0;
 		}else if(i == 0x04){
-			sprintf(s,"¶³ÝÀ = %d", count);
-			putfonts_asc_sht_i(winfo1->center, 10, 130, 0xffffff, 0x000000, s);
+			system.io.serial.send("timer10-taskswitch-a2b");
 			system.io.farjmp(0, 4 * 8);
 		}else if( 256 <= i && i <=511) {
 			i -= SYSFIFO_KEYB;
@@ -195,7 +194,6 @@ void init_tss(void)
 
 	system.io.interrupt.set_segment(gdt + 3, 103, (int)&tss_a, AR_TSS32);
 	system.io.interrupt.set_segment(gdt + 4, 103, (int)&tss_b, AR_TSS32);
-	system.io.tr.load(3 * 8);
 
 	tss_b.eip = (int)&task_b_main;
 	tss_b.eflags = 0x00000202;
@@ -214,7 +212,8 @@ void init_tss(void)
 	tss_b.fs = 1 * 8;
 	tss_b.gs = 1 * 8;
 
-
+	system.io.tr.load(3 * 8);
+	return;
 
 //	system.io.farjmp(0, 4 * 8);
 
@@ -222,6 +221,6 @@ void init_tss(void)
 
 void task_b_main(void)
 {
-	for(;;){ system.io.hlt(); }
+	system.io.farjmp(0, 3 * 8);
 }
 

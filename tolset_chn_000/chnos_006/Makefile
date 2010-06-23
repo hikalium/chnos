@@ -91,6 +91,11 @@ run :
 	$(MAKE) img
 	$(COPY) chnos.img ..\z_tools\qemu\fdimage0.bin
 	$(MAKE) -C ../z_tools/qemu
+run_b :
+	$(MAKE) img
+	$(COPY) chnos.img ..\z_tools\bochs\fdimage0.bin
+	$(MAKE) -C ../z_tools/bochs
+
 
 run_cd :
 	$(MAKE) iso
