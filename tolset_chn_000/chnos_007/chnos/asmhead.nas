@@ -1,6 +1,0 @@
-
-[INSTRSET "i486p"]
-
-	VBEMODE equ	0x0115
-
-	BOTPAK
