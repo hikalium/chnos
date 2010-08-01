@@ -1,9 +1,14 @@
-void io_hlt(void);
+#include "core.h"
+
+struct SYSTEM system;
 
 void CHNMain(void)
 {
+	init_system();
+
+
 	for(;;){
-		io_hlt();
+		system.io.hlt();
 	}
 }
 

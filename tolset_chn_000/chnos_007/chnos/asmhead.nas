@@ -1,37 +1,37 @@
 
 [INSTRSET "i486p"]
-VBEMODE equ             0x0115  ;標準は0x0115
-;画面モード一覧
-;0x0100  640x400  256
-;0x0101  640x480  256
-;0x0102  800x600  16  *
-;0x0103  800x600  256
-;0x0104  1024x768  16  *
-;0x0105  1024x768  256
-;0x0106  1280x1024  16  *
-;0x0107  1280x1024  256  *
-;0x010D  320x200  約32000色(1:5:5:5)  *
-;0x010E  320x200  約65000色(5:6:5)  *
-;0x010F  320x200  約1678万色(8:8:8)  *
-;0x0110  640x480  約32000色(1:5:5:5)  ?
-;0x0111  640x480  約65000色(5:6:5)
-;0x0112  640x480  約1678万色(8:8:8)
-;0x0113  800x600  約32000色(1:5:5:5) ?
-;0x0114  800x600  約65000色(5:6:5)
-;0x0115  800x600  約1678万色(8:8:8)
-;0x0116  1024x768  約32000色(1:5:5:5)?
-;0x0117  1024x768  約65000色(5:6:5)
-;0x0118  1024x768  約1678万色(8:8:8)
-;0x0119  1280x1024  約32000色(1:5:5:5)*
-;0x011A  1280x1024  約65000色(5:6:5) *
-;0x011B  1280x1024  約1678万色(8:8:8)  *
+VBEMODE equ             0x0115  ;0x0115
+;Graphic Modes
+;0x0100		640x400  	256
+;0x0101		640x480  	256
+;0x0102		800x600  	16
+;0x0103		800x600  	256
+;0x0104		1024x768  	16
+;0x0105		1024x768  	256
+;0x0106		1280x1024  	16
+;0x0107		1280x1024  	256
+;0x010D		320x200		32768		(1:5:5:5)
+;0x010E		320x200		65536		(0:5:6:5)
+;0x010F		320x200		16777216	(8:8:8:8)
+;0x0110		640x480  	32768		(1:5:5:5)
+;0x0111		640x480  	65536		(0:5:6:5)
+;0x0112		640x480  	16777216	(8:8:8:8)
+;0x0113		800x600  	32768		(1:5:5:5)
+;0x0114		800x600  	65536		(0:5:6:5)
+;0x0115		800x600  	16777216	(8:8:8:8)
+;0x0116		1024x768  	32768		(1:5:5:5)
+;0x0117		1024x768  	65536		(0:5:6:5)
+;0x0118		1024x768  	16777216	(8:8:8:8)
+;0x0119		1280x1024  	32768		(1:5:5:5)
+;0x011A		1280x1024  	65536		(0:5:6:5) 
+;0x011B		1280x1024  	16777216	(8:8:8:8) 
 
 
 BOTPAK  equ             0x00280000
 DSKCAC  equ             0x00100000
 DSKCAC0 equ             0x00008000
 
-; BOOT_INFO関係
+; BOOT_INFO
 CYLS    equ             0x0ff0
 LEDS    equ             0x0ff1
 VMODE   equ             0x0ff2
@@ -50,16 +50,14 @@ asmhead:
         mov     es, ax
 
         call    backc
+
         lea     esi, [msg001]
-        mov     ax, 0xB800
-        mov     es, ax
         mov     edi, 0
         call    printf
 
         call    a20_try_loop
+
         lea     esi, [msg002]
-        mov     ax, 0xB800
-        mov     es, ax
         mov     edi, 80*2
         call    printf
 
@@ -81,13 +79,15 @@ halthalt:
 
 printf:
         push    eax
+        mov     ax, 0xB800
+        mov     es, ax
 printf_loop:
         mov     al, byte [esi]
         mov     byte [es:edi], al
         or      al, al
         jz      printf_end
         inc     edi
-        mov     byte [es:edi], 0x06
+        mov     byte [es:edi], 0x03
         inc     esi
         inc     edi
         jmp     printf_loop
@@ -159,8 +159,6 @@ a20_fast_wait_loop:
 
 a20_die:
         lea     esi, [msg003]    
-        mov     ax, 0xB800
-        mov     es, ax              
         mov     edi, 80*2          
         call    printf
         jmp     halthalt
@@ -230,31 +228,22 @@ getc:
 
 vbecheck:
         lea     esi, [msg007]
-        mov     ax, 0xB800
-        mov     es, ax
         mov     edi, 80*2*3             
         call    printf
+
         lea     esi, [msg008]
-        mov     ax, 0xB800
-        mov     es, ax
         mov     edi, 80*2*4
         call    printf
 
         lea     esi, [msg009]
-        mov     ax, 0xB800
-        mov     es, ax
         mov     edi, 80*2*5
         call    printf
 
         lea     esi, [msg010]
-        mov     ax, 0xB800
-        mov     es, ax
         mov     edi, 80*2*6
         call    printf
 
         lea     esi, [msg011]
-        mov     ax, 0xB800
-        mov     es, ax
         mov     edi, 80*2*7
         call    printf
 
@@ -273,7 +262,6 @@ vbecheck:
         je      vbe04
         cmp     ah,0x06
         je      vbe05
-
         cmp     ah,0x07
         je      vbe06
         cmp     ah,0x08
@@ -415,30 +403,11 @@ vbesub:
 
 scrn320:
 
-        lea     esi, [msg004]    
-        mov     ax, 0xB800
-        mov     es, ax              
+        lea     esi, [msg004]            
         mov     edi, 80*2*2*2       
         call    printf
-        jmp     halthalt
-
-        mov     al,0x13
-        mov     ah,0x00
-        int     0x10
-
-        mov     ax,0xe0
-        mov     es,ax
-        mov     di,0
-        mov     word[es:di+0x12],320
-        mov     word[es:di+0x14],200
-        mov     byte[es:di+0x19],8
-        mov     dword[es:di+0x28],0x000a0000
-
-        mov     byte[VMODE],8
-        mov     word[SCRNX],320
-        mov     word[SCRNY],200
-        mov     dword[VRAM],0x000a0000
-        ret
+	call	entkeywait
+        jmp     vbecheck
 
 keyled:
         mov     ah,0x02
@@ -552,7 +521,7 @@ thend2:
         hlt
         jmp     thend2
 
-;データ
+;data
 
 msg001: db      "Welcome to chnos project .",0
 msg002: db      "A20GATE on .",0
@@ -565,7 +534,7 @@ msg008: db      "32bit--1:320x200--2:640x480--3:800x600--4:1024x768--5:1280x1024
 msg009: db      "16bit--7:320x200--8:640x480--9:800x600--a:1024x768--b:1280x1024--c:1600x1200",0
 msg010: db      " 8bit--d:640x400--e:640x480--f:800x600--g:1024x768--h:1280x1024--i:1600x1200",0
 msg011: db      "Press ESC to start in VGA mode.",0
-backcc: db      ".",0
+backcc: db      ".",0x03
 
 videomode:      dw 0
 

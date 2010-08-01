@@ -15,7 +15,7 @@
 		GLOBAL	_farjmp, _farcall
 		GLOBAL	_start_app
 		GLOBAL  _asm_osselect_third
-		GLOBAL  _clts, _fnsave, _frstor
+		GLOBAL  _clts, _fnsave, _frstore
 		GLOBAL	_pit_beep_on, _pit_beep_off
 
 
@@ -50,7 +50,7 @@ _fnsave:        ; void fnsave(int *addr);
         FNSAVE  [EAX]
         RET
 
-_frstor:        ; void frstor(int *addr);
+_frstore:        ; void frstore(int *addr);
         MOV     EAX,[ESP+4]     ; addr
         FRSTOR  [EAX]
         RET
