@@ -34,8 +34,8 @@
 #define DESKTOP_COL16	RGB16(17,33,17)		/*初期値：10,20,10*/
 #define TASKBAR_COL16	RGB16(20,40,30)		/*初期値：20,40,30*/
 
-#define DESKTOP_COL32	0xC6C6C6
-#define TASKBAR_COL32	0x0000FF
+#define DESKTOP_COL32	0x34FF1E
+#define TASKBAR_COL32	0x5EC1E8
 
 #define TASKBAR_HEIGHT	40
 
@@ -219,6 +219,20 @@ struct SYSTEM {
 			void (*off)(void);
 		} beep;
 	} io;
+	struct SYS_DRAW {
+		void (*putfonts_sht)(struct SHEET32 *sht, int x, int y, unsigned int c, unsigned int bc, const char *s);
+		void (*init_screen)(unsigned int *vrami, int xsize, int ysize, unsigned char bits, unsigned int *mousecur);
+		void (*circle)(unsigned int *vrami, int cx, int cy, unsigned int c, int xsize, int r);
+		void (*point)(unsigned int *vrami, int x, int y, unsigned int c, int xsize);
+		void (*boxfill)(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
+		void (*putfonts)(unsigned int *vrami, int xsize, int x, int y, unsigned int ci, const unsigned char *s);		
+		struct SYS_COLOR {
+			unsigned int (*mix)(unsigned int c0, unsigned int c1);
+			unsigned char (*int2char) (unsigned int c32);
+			unsigned short (*int2short) (unsigned int c32);
+			void (*pattern)(unsigned int *vrami, int xsize, int ysize);		
+		} color;
+	} draw;
 	struct SYS_INFOS {
 		struct BOOTINFO	boot;
 		struct VESAINFO vesa;	
@@ -248,7 +262,7 @@ void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, i
 void putfonts_asc_i(unsigned int *vrami, int xsize, int x, int y, unsigned int ci, const unsigned char *s);
 unsigned char rgb_int2char (unsigned int c32);
 unsigned short rgb_int2short (unsigned int c32);
-void col_pat_256safe(unsigned int *vrami, int xsize, int ysize);
+void col_pat(unsigned int *vrami, int xsize, int ysize);
 
 /*8bits*/
 void init_palette(void);

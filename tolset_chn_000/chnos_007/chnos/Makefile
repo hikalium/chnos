@@ -1,6 +1,6 @@
 
 #OBJS_BOOTPACK = naskfunc.obj hankaku.obj graphic.obj grap_08.obj grap_16.obj grap_32.obj gdtidt.obj int.obj io.obj fifo.obj keyboard.obj timer.obj mouse.obj memory.obj sheet.obj window.obj system.obj bootpack.obj
-OBJS_BOOTPACK = naskfunc.obj grap_08.obj grap_16.obj grap_32.obj graphic.obj system.obj bootpack.obj
+OBJS_BOOTPACK = naskfunc.obj hankaku.obj grap_08.obj grap_16.obj grap_32.obj graphic.obj system.obj bootpack.obj
 TOOLPATH = ../../z_tools/
 INCPATH  = ../../z_tools/CHNOSProject/
 

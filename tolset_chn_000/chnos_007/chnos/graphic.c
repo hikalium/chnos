@@ -87,7 +87,7 @@ void init_scrn_i(unsigned int *vrami, int xsize, int ysize, unsigned char bits, 
 	} else if(bits == 32){
 	init_scrn32(vrami, xsize, ysize ,mousecur);
 	}
-	col_pat_256safe(vrami,xsize,ysize);
+	col_pat(vrami,xsize,ysize);
 	return;
 }
 
@@ -217,7 +217,7 @@ unsigned short rgb_int2short (unsigned int c32)
 	return c16;
 }
 
-void col_pat_256safe(unsigned int *vrami, int xsize, int ysize)
+void col_pat(unsigned int *vrami, int xsize, int ysize)
 {
 	int x,y;
 	x=0;

@@ -39,6 +39,17 @@ void init_system(void)
 	system.io.beep.on				= pit_beep_on;
 	system.io.beep.off				= pit_beep_off;
 
+	system.draw.putfonts_sht			= putfonts_asc_sht_i;
+	system.draw.init_screen				= init_scrn_i;
+	system.draw.circle				= circle_i;
+	system.draw.point				= point_i;
+	system.draw.boxfill				= boxfill_i;
+	system.draw.putfonts				= putfonts_asc_i;
+	system.draw.color.mix				= mix_color;
+	system.draw.color.int2char			= rgb_int2char;
+	system.draw.color.int2short			= rgb_int2short;
+	system.draw.color.pattern			= col_pat;
+
 	system.info.vesa				= *vesa;
 	system.info.boot				= *boot;
 
