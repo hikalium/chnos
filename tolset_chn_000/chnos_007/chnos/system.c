@@ -22,7 +22,19 @@ void init_system(void)
 	system.io.farjmp				= farjmp;
 	system.io.farcall				= farcall;
 
+	system.io.mem.init				= sys_memman_init;
+	system.io.mem.free_total			= sys_memman_free_total;
+	system.io.mem.alloc				= sys_memman_alloc;
+	system.io.mem.free				= sys_memman_free;
+	system.io.mem.test				= memtest;
 	system.io.mem.test_sub				= memtest_sub;
+
+	system.io.mem.org.init				= memman_init;
+	system.io.mem.org.free_total			= memman_free_total;
+	system.io.mem.org.alloc				= memman_alloc;
+	system.io.mem.org.free				= memman_free;
+	system.io.mem.org.alloc_4k			= memman_alloc_4k;
+	system.io.mem.org.free_4k			= memman_free_4k;
 
 	system.io.tr.load				= load_tr;
 
@@ -55,5 +67,12 @@ void init_system(void)
 
 	system.app.start				= start_app;
 	system.app.end					= asm_end_app;
+
+	system.sys.memtotal				= system.io.mem.test(0x00400000, 0xbfffffff);
+	system.sys.vram					= system.info.vesa.PhysBasePtr;
+	system.sys.xsize				= system.info.boot.scrnx;
+	system.sys.ysize				= system.info.boot.scrny;
+	system.sys.bpp					= system.info.vesa.BitsPerPixel;
+
 	return;
 }

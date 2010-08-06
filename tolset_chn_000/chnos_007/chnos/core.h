@@ -43,13 +43,16 @@
 #define ADR_VESAINFO	0x00000e00
 #define ADR_DISKIMG	0x00100000
 
-#define MEMMAN_FREES	4090
+#define MEMMAN_FREES	4096
 
 #define MAX_SHEETS	1024
 
 #define MAX_WINDOWS	256
 
-#define MAX_TIMER	500
+#define MAX_TIMER	512
+
+#define EFLAGS_AC_BIT	0x00040000
+#define CR0_CACHE_DISABLE	0x60000000
 
 /*structures*/
 
@@ -195,7 +198,20 @@ struct SYSTEM {
 		void (*farjmp)(int eip, int cs);
 		void (*farcall)(int eip, int cs);
 		struct SYS_MEMORY {
+			void (*init)(void);
+			unsigned int (*free_total)(void);
+			unsigned int (*alloc)(unsigned int size);
+			int (*free)(unsigned int addr, unsigned int size);
+			unsigned int (*test)(unsigned int start, unsigned int end);
 			unsigned int (*test_sub)(unsigned int start, unsigned int end);
+			struct SYS_MEMORY_ORG {
+				void (*init)(struct MEMMAN *man);
+				unsigned int (*free_total)(struct MEMMAN *man);
+				unsigned int (*alloc)(struct MEMMAN *man, unsigned int size);
+				int (*free)(struct MEMMAN *man, unsigned int addr, unsigned int size);
+				unsigned int (*alloc_4k)(struct MEMMAN *man, unsigned int size);
+				int (*free_4k)(struct MEMMAN *man, unsigned int addr, unsigned int size);
+			} org;
 		} mem;
 		struct SYS_TR {
 			void (*load)(int tr);
@@ -241,6 +257,15 @@ struct SYSTEM {
 		void (*start)(int eip, int cs, int esp, int ds, int *tss_esp0);
 		void (*end)(void);
 	} app;
+	struct SYS_SYS {
+		struct MEMMAN memman;
+		unsigned int memtotal;
+		unsigned int mousecursor[24][24];
+		unsigned int *vram;
+		unsigned int xsize;
+		unsigned int ysize;
+		unsigned char bpp;
+	} sys;
 };
 
 extern struct SYSTEM system;
@@ -249,6 +274,19 @@ extern struct SYSTEM system;
 
 /*system.c*/
 void init_system(void);
+
+/*memory.c*/
+void sys_memman_init(void);
+unsigned int sys_memman_free_total(void);
+unsigned int sys_memman_alloc(unsigned int size);
+int sys_memman_free(unsigned int addr, unsigned int size);
+unsigned int memtest(unsigned int start, unsigned int end);
+void memman_init(struct MEMMAN *man);
+unsigned int memman_free_total(struct MEMMAN *man);
+unsigned int memman_alloc(struct MEMMAN *man, unsigned int size);
+int memman_free(struct MEMMAN *man, unsigned int addr, unsigned int size);
+unsigned int memman_alloc_4k(struct MEMMAN *man, unsigned int size);
+int memman_free_4k(struct MEMMAN *man, unsigned int addr, unsigned int size);
 
 /*graphic.c grap_08.c grap_16.c grap_32.c*/
 
