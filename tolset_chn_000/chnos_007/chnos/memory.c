@@ -11,12 +11,12 @@ unsigned int sys_memman_free_total(void)
 	return memman_free_total(&system.sys.memman);
 }
 
-unsigned int sys_memman_alloc(unsigned int size)
+void *sys_memman_alloc(unsigned int size)
 {
 	return memman_alloc_4k(&system.sys.memman, size);
 }
 
-int sys_memman_free(unsigned int addr, unsigned int size)
+int sys_memman_free(void *addr, unsigned int size)
 {
 	return memman_free_4k(&system.sys.memman, addr, size);
 }
@@ -67,7 +67,7 @@ unsigned int memman_free_total(struct MEMMAN *man)
 	return t;
 }
 
-unsigned int memman_alloc(struct MEMMAN *man, unsigned int size)
+void *memman_alloc(struct MEMMAN *man, unsigned int size)
 {
 	unsigned int i,a;
 	for(i = 0; i < man->frees; i++) {
@@ -81,15 +81,17 @@ unsigned int memman_alloc(struct MEMMAN *man, unsigned int size)
 				man->free[i] = man->free[i+1];
 				}
 			}
-			return a;
+			return (void *)a;
 		}
 	}
 	return 0;
 }
 
-int memman_free(struct MEMMAN *man, unsigned int addr, unsigned int size)
+int memman_free(struct MEMMAN *man, void *addr0, unsigned int size)
 {
 	int i, j;
+	unsigned int addr;
+	addr = (unsigned int)addr0;
 	for(i = 0; i < man->frees; i++){
 		if(man->free[i].addr > addr) break;
 	}
@@ -132,15 +134,15 @@ int memman_free(struct MEMMAN *man, unsigned int addr, unsigned int size)
 	return -1;
 }
 
-unsigned int memman_alloc_4k(struct MEMMAN *man, unsigned int size)
+void *memman_alloc_4k(struct MEMMAN *man, unsigned int size)
 {
-	unsigned int a;
+	void *a;
 	size = (size + 0xfff) & 0xfffff000;
 	a = memman_alloc(man, size);
 	return a;
 }
 
-int memman_free_4k(struct MEMMAN *man, unsigned int addr, unsigned int size)
+int memman_free_4k(struct MEMMAN *man, void *addr, unsigned int size)
 {
 	int i;
 	size = (size + 0xfff) & 0xfffff000;

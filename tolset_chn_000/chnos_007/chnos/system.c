@@ -62,17 +62,37 @@ void init_system(void)
 	system.draw.color.int2short			= rgb_int2short;
 	system.draw.color.pattern			= col_pat;
 
+	system.draw.sht.init				= init_sheets;
+	system.draw.sht.alloc				= sheet_alloc;
+	system.draw.sht.set				= sheet_setbuf;
+	system.draw.sht.updown				= sheet_updown;
+	system.draw.sht.refresh				= sheet_refresh;
+	system.draw.sht.slide				= sheet_slide;
+	system.draw.sht.free				= sheet_free;
+
 	system.info.vesa				= *vesa;
 	system.info.boot				= *boot;
 
 	system.app.start				= start_app;
 	system.app.end					= asm_end_app;
 
-	system.sys.memtotal				= system.io.mem.test(0x00400000, 0xbfffffff);
 	system.sys.vram					= system.info.vesa.PhysBasePtr;
 	system.sys.xsize				= system.info.boot.scrnx;
 	system.sys.ysize				= system.info.boot.scrny;
 	system.sys.bpp					= system.info.vesa.BitsPerPixel;
 
+// system init
+	system.sys.memtotal				= system.io.mem.test(0x00400000, 0xbfffffff);
+	system.io.mem.init();
+	system.io.mem.free((void *)0x00400000, system.sys.memtotal - 0x00400000);
+
+	system.draw.sht.init(system.sys.vram, system.sys.xsize, system.sys.ysize, system.sys.bpp);
+
+	system.sys.sht.desktop				= system.draw.sht.alloc();
+	system.sys.sht.mouse				= system.draw.sht.alloc();
+	system.sys.sht.desktop_buf			= system.io.mem.alloc(system.sys.xsize * system.sys.ysize * (system.sys.bpp / 8));
+
+	system.draw.sht.set(system.sys.sht.desktop, system.sys.sht.desktop_buf, system.sys.xsize, system.sys.ysize, INV_COL);
+	system.draw.sht.set(system.sys.sht.mouse, *system.sys.sht.mouse_buf, 24, 24, INV_COL);
 	return;
 }

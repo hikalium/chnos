@@ -10,13 +10,14 @@ void CHNMain(void)
 
 	init_system();
 
-	system.io.mem.init();
-	system.io.mem.free(0x00400000, system.sys.memtotal - 0x00400000);
+	system.draw.init_screen(system.sys.sht.desktop_buf, system.sys.xsize, system.sys.ysize, system.sys.bpp, (unsigned int *)system.sys.sht.mouse_buf);
+	sprintf(s, "“”ÿ∞: %dMB ±∑: %dKB", system.sys.memtotal / (1024 * 1024), system.io.mem.free_total() / 1024);
+	putfonts_asc_i(system.sys.sht.desktop_buf, system.sys.xsize, 8, 168, 0xFFFFFF, s);	
+	system.draw.sht.slide(system.sys.sht.desktop, 0, 0);
+	system.draw.sht.updown(system.sys.sht.desktop, 1);
+	system.draw.sht.slide(system.sys.sht.mouse,system.sys.xsize / 2, system.sys.ysize / 2);
+	system.draw.sht.updown(system.sys.sht.mouse, 2);	
 
-	system.draw.init_screen(system.sys.vram, system.sys.xsize, system.sys.ysize, system.sys.bpp, (unsigned int *)system.sys.mousecursor);
-
-	sprintf(s, "“”ÿ∞ %dMB ±∑ %dKB", system.sys.memtotal, system.io.mem.free_total);
-	system.draw.putfonts(system.sys.vram, system.sys.xsize, 0, 32, s);	
 
 	for(;;){
 		system.io.hlt();

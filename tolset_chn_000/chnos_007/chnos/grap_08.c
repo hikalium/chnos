@@ -17,9 +17,9 @@ void init_scrn8(unsigned int *vram, int xsize, int ysize, unsigned int *mousecur
 {
 	boxfill8(vram,xsize,DESKTOP_COL8,0,0,xsize,ysize);
 	boxfill8(vram,xsize,TASKBAR_COL8,0,ysize-TASKBAR_HEIGHT,xsize,ysize);
-	putfonts8_asc(vram, xsize, 8, 8, COL8_FFFFFF, "welcome to CHNOSProject! on 8bit video mode .");
-	putfonts8_asc(vram, xsize, 8, 24, COL8_FFFFFF, "Ö³º¿ CHNOSÌßÛ¼Þª¸ÄÍ!");
-	putfonts8_asc(vram, xsize, 8, 40, COL8_FFFFFF, "¶ÀºÄÃÞ½¶Þ ÆÎÝºÞ¶Þ ¶¹ÙÖ³Æ ÅØÏ¼À");
+	putfonts8_asc(vram, xsize, 168, 8, COL8_FFFFFF, "welcome to CHNOSProject! on 8bit video mode .");
+	putfonts8_asc(vram, xsize, 168, 24, COL8_FFFFFF, "Ö³º¿ CHNOSÌßÛ¼Þª¸ÄÍ!");
+	putfonts8_asc(vram, xsize, 168, 40, COL8_FFFFFF, "¶ÀºÄÃÞ½¶Þ ÆÎÝºÞ¶Þ ¶¹ÙÖ³Æ ÅØÏ¼À");
 	init_mouse_cursor8(mousecur);
 	return;
 
@@ -68,7 +68,7 @@ void init_mouse_cursor8(unsigned int *mouse)
 				mouse[y * 24 + x] = (unsigned int)COL8_FFFFFF;
 			}
 			if (cursor[y][x] == '.') {
-				mouse[y * 24 + x] = (unsigned int)INV_COL8;
+				mouse[y * 24 + x] = INV_COL;
 			}
 		}
 	}

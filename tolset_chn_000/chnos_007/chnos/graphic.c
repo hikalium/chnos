@@ -67,7 +67,7 @@ char cursor[24][24] = {
 	"***.....................",
 };
 
-void putfonts_asc_sht_i(struct SHEET32 *sht, int x, int y, unsigned int c, unsigned int bc, const char *s)
+void putfonts_asc_sht_i(struct SHEET32 *sht, int x, int y, unsigned int c, unsigned int bc, const unsigned char *s)
 {
 	int l;
 	l = strlen(s);
@@ -221,7 +221,7 @@ void col_pat(unsigned int *vrami, int xsize, int ysize)
 {
 	int x,y;
 	x=0;
-	y=80;
+	y=0;
 	boxfill_i(vrami,xsize,0x000000,x,y,x+20,y+40);
 	boxfill_i(vrami,xsize,mix_color(0x000000,0x7fff0000),x+20,y,x+40,y+40);
 	x+=40;

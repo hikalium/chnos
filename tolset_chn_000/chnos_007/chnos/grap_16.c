@@ -16,9 +16,9 @@ void init_scrn16(unsigned int *vram, int xsize, int ysize ,unsigned int *mousecu
 {
 	boxfill16(vram,xsize,DESKTOP_COL16,0,0,xsize,ysize);
 	boxfill16(vram,xsize,TASKBAR_COL16,0,ysize-TASKBAR_HEIGHT,xsize,ysize);
-	putfonts16_asc(vram, xsize, 8, 8, RGB16(31,62,31), "welcome to CHNOSProject! on 16bit video mode .");
-	putfonts16_asc(vram, xsize, 8, 24, RGB16(31,62,31), "Ö³º¿ CHNOSÌßÛ¼Þª¸ÄÍ!");
-	putfonts16_asc(vram, xsize, 8, 40, RGB16(31,62,31), "¶ÀºÄÃÞ½¶Þ ÆÎÝºÞ¶Þ ¶¹ÙÖ³Æ ÅØÏ¼À");
+	putfonts16_asc(vram, xsize, 168, 8, RGB16(31,62,31), "welcome to CHNOSProject! on 16bit video mode .");
+	putfonts16_asc(vram, xsize, 168, 24, RGB16(31,62,31), "Ö³º¿ CHNOSÌßÛ¼Þª¸ÄÍ!");
+	putfonts16_asc(vram, xsize, 168, 40, RGB16(31,62,31), "¶ÀºÄÃÞ½¶Þ ÆÎÝºÞ¶Þ ¶¹ÙÖ³Æ ÅØÏ¼À");
 	init_mouse_cursor16(mousecur);
 	return;
 
@@ -67,7 +67,7 @@ void init_mouse_cursor16(unsigned int *mouse)
 				mouse[y * 24 + x] = (unsigned int)RGB16(31,62,31);
 			}
 			if (cursor[y][x] == '.') {
-				mouse[y * 24 + x] = (unsigned int)INV_COL16;
+				mouse[y * 24 + x] = INV_COL;
 			}
 		}
 	}

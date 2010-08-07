@@ -24,9 +24,7 @@
 #define COL8_008484		14
 #define COL8_848484		15
 
-#define INV_COL32	0xFFFFFFFF
-#define INV_COL16	0xFFFF
-#define INV_COL8	0xFF
+#define INV_COL		0xFFFFFFFF
 
 #define DESKTOP_COL8	COL8_C6C6C6
 #define TASKBAR_COL8	COL8_0000FF
@@ -38,6 +36,9 @@
 #define TASKBAR_COL32	0x5EC1E8
 
 #define TASKBAR_HEIGHT	40
+
+#define SHT_FLAGS_VOID	0
+#define SHT_FLAGS_USE	1
 
 #define ADR_BOOTINFO	0x00000ff0
 #define ADR_VESAINFO	0x00000e00
@@ -200,17 +201,17 @@ struct SYSTEM {
 		struct SYS_MEMORY {
 			void (*init)(void);
 			unsigned int (*free_total)(void);
-			unsigned int (*alloc)(unsigned int size);
-			int (*free)(unsigned int addr, unsigned int size);
+			void *(*alloc)(unsigned int size);
+			int (*free)(void * addr, unsigned int size);
 			unsigned int (*test)(unsigned int start, unsigned int end);
 			unsigned int (*test_sub)(unsigned int start, unsigned int end);
 			struct SYS_MEMORY_ORG {
 				void (*init)(struct MEMMAN *man);
 				unsigned int (*free_total)(struct MEMMAN *man);
-				unsigned int (*alloc)(struct MEMMAN *man, unsigned int size);
-				int (*free)(struct MEMMAN *man, unsigned int addr, unsigned int size);
-				unsigned int (*alloc_4k)(struct MEMMAN *man, unsigned int size);
-				int (*free_4k)(struct MEMMAN *man, unsigned int addr, unsigned int size);
+				void *(*alloc)(struct MEMMAN *man, unsigned int size);
+				int (*free)(struct MEMMAN *man, void *addr, unsigned int size);
+				void *(*alloc_4k)(struct MEMMAN *man, unsigned int size);
+				int (*free_4k)(struct MEMMAN *man, void *addr, unsigned int size);
 			} org;
 		} mem;
 		struct SYS_TR {
@@ -236,7 +237,7 @@ struct SYSTEM {
 		} beep;
 	} io;
 	struct SYS_DRAW {
-		void (*putfonts_sht)(struct SHEET32 *sht, int x, int y, unsigned int c, unsigned int bc, const char *s);
+		void (*putfonts_sht)(struct SHEET32 *sht, int x, int y, unsigned int c, unsigned int bc, const unsigned char *s);
 		void (*init_screen)(unsigned int *vrami, int xsize, int ysize, unsigned char bits, unsigned int *mousecur);
 		void (*circle)(unsigned int *vrami, int cx, int cy, unsigned int c, int xsize, int r);
 		void (*point)(unsigned int *vrami, int x, int y, unsigned int c, int xsize);
@@ -248,6 +249,15 @@ struct SYSTEM {
 			unsigned short (*int2short) (unsigned int c32);
 			void (*pattern)(unsigned int *vrami, int xsize, int ysize);		
 		} color;
+		struct SYS_SHEET {
+			void (*init)(unsigned int *vram, int xsize, int ysize, unsigned char bits);
+			struct SHEET32 *(*alloc)(void);
+			void (*set)(struct SHEET32 *sht,unsigned int *buf,int xsize, int ysize, unsigned int col_inv );
+			void (*updown)(struct SHEET32 *sht,int height);
+			void (*refresh)(struct SHEET32 *sht, int bx0, int by0, int bx1, int by1);
+			void (*slide)(struct SHEET32 *sht, int vx0, int vy0);
+			void (*free)(struct SHEET32 *sht);
+		} sht;
 	} draw;
 	struct SYS_INFOS {
 		struct BOOTINFO	boot;
@@ -258,9 +268,14 @@ struct SYSTEM {
 		void (*end)(void);
 	} app;
 	struct SYS_SYS {
+		struct SYS_SYS_SHT {
+			struct SHEET32 *desktop;
+			struct SHEET32 *mouse;
+			unsigned int *desktop_buf;
+			unsigned int mouse_buf[24][24];
+		} sht;
 		struct MEMMAN memman;
 		unsigned int memtotal;
-		unsigned int mousecursor[24][24];
 		unsigned int *vram;
 		unsigned int xsize;
 		unsigned int ysize;
@@ -278,20 +293,33 @@ void init_system(void);
 /*memory.c*/
 void sys_memman_init(void);
 unsigned int sys_memman_free_total(void);
-unsigned int sys_memman_alloc(unsigned int size);
-int sys_memman_free(unsigned int addr, unsigned int size);
+void *sys_memman_alloc(unsigned int size);
+int sys_memman_free(void *addr, unsigned int size);
 unsigned int memtest(unsigned int start, unsigned int end);
 void memman_init(struct MEMMAN *man);
 unsigned int memman_free_total(struct MEMMAN *man);
-unsigned int memman_alloc(struct MEMMAN *man, unsigned int size);
-int memman_free(struct MEMMAN *man, unsigned int addr, unsigned int size);
-unsigned int memman_alloc_4k(struct MEMMAN *man, unsigned int size);
-int memman_free_4k(struct MEMMAN *man, unsigned int addr, unsigned int size);
+void *memman_alloc(struct MEMMAN *man, unsigned int size);
+int memman_free(struct MEMMAN *man, void *addr, unsigned int size);
+void *memman_alloc_4k(struct MEMMAN *man, unsigned int size);
+int memman_free_4k(struct MEMMAN *man, void *addr, unsigned int size);
+
+/*sheet.c*/
+void init_sheets(unsigned int *vram, int xsize, int ysize, unsigned char bits);
+struct SHEET32 *sheet_alloc(void);
+void sheet_setbuf(struct SHEET32 *sht,unsigned int *buf,int xsize, int ysize, unsigned int col_inv );
+void sheet_updown(struct SHEET32 *sht,int height);
+void sheet_refresh(struct SHEET32 *sht, int bx0, int by0, int bx1, int by1);
+void sheet_slide(struct SHEET32 *sht, int vx0, int vy0);
+void sheet_free(struct SHEET32 *sht);
+void sheet_refreshsub32(int vx0, int vy0, int vx1, int vy1, int h0, int h1);
+void sheet_refreshsub8(int vx0, int vy0, int vx1, int vy1, int h0, int h1);
+void sheet_refreshmap32(int vx0, int vy0, int vx1, int vy1, int h0);
+void sheet_refreshmap8(int vx0, int vy0, int vx1, int vy1, int h0);
 
 /*graphic.c grap_08.c grap_16.c grap_32.c*/
 
 /*All*/
-void putfonts_asc_sht_i(struct SHEET32 *sht, int x, int y, unsigned int c, unsigned int bc, const char *s);
+void putfonts_asc_sht_i(struct SHEET32 *sht, int x, int y, unsigned int c, unsigned int bc, const unsigned char *s);
 void init_scrn_i(unsigned int *vrami, int xsize, int ysize, unsigned char bits, unsigned int *mousecur);
 unsigned int mix_color(unsigned int c0, unsigned int c1);
 void circle_i(unsigned int *vrami, int cx, int cy, unsigned int c, int xsize, int r);

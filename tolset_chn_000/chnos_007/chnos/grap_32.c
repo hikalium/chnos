@@ -18,9 +18,9 @@ void init_scrn32(unsigned int *vram, int xsize, int ysize, unsigned int *mousecu
 	boxfill32(vram,xsize,TASKBAR_COL32,0,ysize-TASKBAR_HEIGHT,xsize,ysize);
 	boxfill32(vram,xsize,0xFFFFFF, 0, ysize-TASKBAR_HEIGHT,xsize,ysize-TASKBAR_HEIGHT+1);
 	boxfill32(vram,xsize,0xFFFFFF, xsize-2, ysize-TASKBAR_HEIGHT, xsize, ysize);
-	putfonts32_asc(vram, xsize, 8, 8, 0xFFFFFF, "welcome to CHNOSProject! on 32bit video mode .");
-	putfonts32_asc(vram, xsize, 8, 24, 0xFFFFFF, "Ö³º¿ CHNOSÌßÛ¼Þª¸ÄÍ!");
-	putfonts32_asc(vram, xsize, 8, 40, 0xFFFFFF, "¶ÀºÄÃÞ½¶Þ ÆÎÝºÞ¶Þ ¶¹ÙÖ³Æ ÅØÏ¼À");
+	putfonts32_asc(vram, xsize, 168, 8, 0xFFFFFF, "welcome to CHNOSProject! on 32bit video mode .");
+	putfonts32_asc(vram, xsize, 168, 24, 0xFFFFFF, "Ö³º¿ CHNOSÌßÛ¼Þª¸ÄÍ!");
+	putfonts32_asc(vram, xsize, 168, 40, 0xFFFFFF, "¶ÀºÄÃÞ½¶Þ ÆÎÝºÞ¶Þ ¶¹ÙÖ³Æ ÅØÏ¼À");
 	init_mouse_cursor32(mousecur);
 	return;
 }
@@ -68,7 +68,7 @@ void init_mouse_cursor32(unsigned int *mouse)
 				mouse[y * 24 + x] = 0x55FFFFFF;
 			}
 			if (cursor[y][x] == '.') {
-				mouse[y * 24 + x] = INV_COL32;
+				mouse[y * 24 + x] = INV_COL;
 			}
 		}
 	}
