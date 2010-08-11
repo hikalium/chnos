@@ -74,7 +74,7 @@ void putfonts_asc_sht_i(struct SHEET32 *sht, int x, int y, unsigned int c, unsig
 	l = strlen(s);
 	boxfill_i(sht->buf, sht->bxsize, bc, x, y, x + l * 8, y + 16);
 	putfonts_asc_i(sht->buf, sht->bxsize, x, y, c, s);
-//	sheet_refresh(sht, x, y, x + l * 8, y + 16);
+	sheet_refresh(sht, x, y, x + l * 8, y + 16);
 	return;
 }
 
