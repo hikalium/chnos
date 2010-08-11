@@ -70,6 +70,11 @@ void init_system(void)
 	system.draw.sht.slide				= sheet_slide;
 	system.draw.sht.free				= sheet_free;
 
+	system.data.fifo.init				= fifo32_init;
+	system.data.fifo.put				= fifo32_put;
+	system.data.fifo.get				= fifo32_get;
+	system.data.fifo.status				= fifo32_status;
+
 	system.info.vesa				= *vesa;
 	system.info.boot				= *boot;
 

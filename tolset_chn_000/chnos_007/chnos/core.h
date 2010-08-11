@@ -55,6 +55,8 @@
 #define EFLAGS_AC_BIT	0x00040000
 #define CR0_CACHE_DISABLE	0x60000000
 
+#define FIFO32_PUT_OVER 0x0001
+
 /*structures*/
 
 extern char cursor[24][24];
@@ -259,6 +261,14 @@ struct SYSTEM {
 			void (*free)(struct SHEET32 *sht);
 		} sht;
 	} draw;
+	struct SYS_DATA {
+		struct SYS_FIFO {
+			void (*init)(struct FIFO32 *fifo, int size, unsigned int *buf);
+			int (*put)(struct FIFO32 *fifo, unsigned int data);
+			int (*get)(struct FIFO32 *fifo);
+			int (*status)(struct FIFO32 *fifo);
+		} fifo;
+	} data;
 	struct SYS_INFOS {
 		struct BOOTINFO	boot;
 		struct VESAINFO vesa;	
@@ -289,6 +299,12 @@ extern struct SYSTEM system;
 
 /*system.c*/
 void init_system(void);
+
+/*fifo.c*/
+void fifo32_init(struct FIFO32 *fifo, int size, unsigned int *buf);
+int fifo32_put(struct FIFO32 *fifo, unsigned int data);
+int fifo32_get(struct FIFO32 *fifo);
+int fifo32_status(struct FIFO32 *fifo);
 
 /*memory.c*/
 void sys_memman_init(void);
