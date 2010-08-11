@@ -1,3 +1,4 @@
+
 [INSTRSET "i486p"]
 
 		org		0x7c00			; ‚±‚ÌƒvƒƒOƒ‰ƒ€‚ª‚Ç‚±‚É“Ç‚Ýž‚Ü‚ê‚é‚Ì‚©
