@@ -297,7 +297,7 @@ extern struct SYSTEM system;
 
 /*functions*/
 
-/*system.c*/
+/*init.c*/
 void init_system(void);
 
 /*fifo.c*/
