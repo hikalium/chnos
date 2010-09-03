@@ -13,6 +13,10 @@ void init_sheets(unsigned int *vram, int xsize, int ysize, unsigned char bits)
 			sheet_refreshsub = sheet_refreshsub8;
 			sheet_refreshmap = sheet_refreshmap8;
 			break;
+		case 16:
+			sheet_refreshsub = sheet_refreshsub16;
+			sheet_refreshmap = sheet_refreshmap16;
+			break;
 		case 32:
 			sheet_refreshsub = sheet_refreshsub32;
 			sheet_refreshmap = sheet_refreshmap32;
@@ -117,6 +121,17 @@ void sheet_refresh(struct SHEET32 *sht, int bx0, int by0, int bx1, int by1)
 	return;
 }
 
+void sheet_refresh_full_alpha(struct SHEET32 *sht)
+{
+	sheet_refreshmap(sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, sht->height);
+	sheet_refresh_full(sht);
+}
+
+void sheet_refresh_full(struct SHEET32 *sht)
+{
+	sheet_refresh(sht, 0, 0, sht->bxsize, sht->bysize);
+}
+
 void sheet_slide(struct SHEET32 *sht, int vx0, int vy0)
 {
 	int old_vx0 = sht->vx0, old_vy0 = sht->vy0;
@@ -164,6 +179,39 @@ void sheet_refreshsub32(int vx0, int vy0, int vx1, int vy1, int h0, int h1)
 			for(bx = bx0; bx < bx1; bx++){
 				vx = sht->vx0 + bx;
 				if(map[vy * ctl->xsize + vx] == sid) vram[vy * ctl->xsize + vx] = buf[by * sht->bxsize + bx];
+			}
+		}
+	}
+	return;
+}
+
+void sheet_refreshsub16(int vx0, int vy0, int vx1, int vy1, int h0, int h1)
+{
+	int h, bx, by, vx, vy, bx0, by0, bx1, by1;
+	unsigned int *buf, *map = ctl->map,sid;
+	unsigned short *vram = (unsigned short *)ctl->vram;
+	struct SHEET32 *sht;
+	if(vx0 < 0) vx0 = 0;
+	if(vy0 < 0) vy0 = 0;
+	if(vx1 > ctl->xsize) vx1 = ctl->xsize;
+	if(vy1 > ctl->ysize) vy1 = ctl->ysize;
+	for(h = 0; h <= ctl->top; h++){
+		sht = ctl->sheets[h];
+		buf = sht->buf;
+		sid = sht - ctl->sheets0;
+		bx0 = vx0 - sht->vx0;
+		by0 = vy0 - sht->vy0;
+		bx1 = vx1 - sht->vx0;
+		by1 = vy1 - sht->vy0;
+		if(bx0 < 0) bx0 = 0;
+		if(by0 < 0) by0 = 0;
+		if(bx1 > sht->bxsize) bx1 = sht->bxsize;
+		if(by1 > sht->bysize) by1 = sht->bysize;
+		for(by = by0; by < by1; by++){
+			vy = sht->vy0 + by;
+			for(bx = bx0; bx < bx1; bx++){
+				vx = sht->vx0 + bx;
+				if(map[vy * ctl->xsize + vx] == sid) vram[vy * ctl->xsize + vx] = (unsigned short)buf[by * sht->bxsize + bx];
 			}
 		}
 	}
@@ -228,7 +276,39 @@ void sheet_refreshmap32(int vx0, int vy0, int vx1, int vy1, int h0)
 			vy = sht->vy0 + by;
 			for(bx = bx0; bx < bx1; bx++){
 				vx = sht->vx0 + bx;
-				if(buf[by * sht->bxsize + bx] != INV_COL) map[vy * ctl->xsize + vx] = sid;
+				if(buf[by * sht->bxsize + bx] != INV_COL32) map[vy * ctl->xsize + vx] = sid;
+			}
+		}
+	}
+	return;
+}
+
+void sheet_refreshmap16(int vx0, int vy0, int vx1, int vy1, int h0)
+{
+	int h, bx, by, vx, vy, bx0, by0, bx1, by1;
+	unsigned int *buf, sid, *map = ctl->map;
+	struct SHEET32 *sht;
+	if(vx0 < 0) vx0 = 0;
+	if(vy0 < 0) vy0 = 0;
+	if(vx1 > ctl->xsize) vx1 = ctl->xsize;
+	if(vy1 > ctl->ysize) vy1 = ctl->ysize;
+	for(h = 0; h <= ctl->top; h++){
+		sht = ctl->sheets[h];
+		sid = sht - ctl->sheets0;
+		buf = sht->buf;
+		bx0 = vx0 - sht->vx0;
+		by0 = vy0 - sht->vy0;
+		bx1 = vx1 - sht->vx0;
+		by1 = vy1 - sht->vy0;
+		if(bx0 < 0) bx0 = 0;
+		if(by0 < 0) by0 = 0;
+		if(bx1 > sht->bxsize) bx1 = sht->bxsize;
+		if(by1 > sht->bysize) by1 = sht->bysize;
+		for(by = by0; by < by1; by++){
+			vy = sht->vy0 + by;
+			for(bx = bx0; bx < bx1; bx++){
+				vx = sht->vx0 + bx;
+				if(buf[by * sht->bxsize + bx] != (unsigned int)INV_COL16) map[vy * ctl->xsize + vx] = sid;
 			}
 		}
 	}
@@ -260,7 +340,7 @@ void sheet_refreshmap8(int vx0, int vy0, int vx1, int vy1, int h0)
 			vy = sht->vy0 + by;
 			for(bx = bx0; bx < bx1; bx++){
 				vx = sht->vx0 + bx;
-				if(buf[by * sht->bxsize + bx] != (unsigned int)INV_COL) map[vy * ctl->xsize + vx] = sid;
+				if(buf[by * sht->bxsize + bx] != (unsigned int)INV_COL8) map[vy * ctl->xsize + vx] = sid;
 			}
 		}
 	}

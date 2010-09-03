@@ -52,7 +52,7 @@ void init_system(void)
 	system.io.beep.off				= pit_beep_off;
 
 	system.draw.putfonts_sht			= putfonts_asc_sht_i;
-	system.draw.init_screen				= init_scrn_i;
+	system.draw.init_screen				= init_screen_i;
 	system.draw.circle				= circle_i;
 	system.draw.point				= point_i;
 	system.draw.boxfill				= boxfill_i;
@@ -95,9 +95,22 @@ void init_system(void)
 
 	system.sys.sht.desktop				= system.draw.sht.alloc();
 	system.sys.sht.mouse				= system.draw.sht.alloc();
-	system.sys.sht.desktop_buf			= system.io.mem.alloc(system.sys.xsize * system.sys.ysize * (system.sys.bpp / 8));
+	system.sys.sht.taskbar				= system.draw.sht.alloc();
 
-	system.draw.sht.set(system.sys.sht.desktop, system.sys.sht.desktop_buf, system.sys.xsize, system.sys.ysize, INV_COL);
-	system.draw.sht.set(system.sys.sht.mouse, *system.sys.sht.mouse_buf, 24, 24, INV_COL);
+	system.sys.sht.desktop_buf			= system.io.mem.alloc(system.sys.xsize * system.sys.ysize * (system.sys.bpp / 8));
+	system.sys.sht.taskbar_buf			= system.io.mem.alloc(system.sys.xsize * TASKBAR_HEIGHT * (system.sys.bpp / 8));
+
+	system.draw.sht.set(system.sys.sht.desktop, system.sys.sht.desktop_buf, system.sys.xsize, system.sys.ysize, INV_COL32);
+	system.draw.sht.set(system.sys.sht.mouse, *system.sys.sht.mouse_buf, 24, 24, INV_COL32);
+	system.draw.sht.set(system.sys.sht.taskbar, system.sys.sht.taskbar_buf, system.sys.xsize, system.sys.ysize, INV_COL32);
+
+	system.draw.sht.slide(system.sys.sht.desktop, 0, 0);
+	system.draw.sht.updown(system.sys.sht.desktop, 1);
+	system.draw.sht.slide(system.sys.sht.taskbar, 0, system.sys.ysize - TASKBAR_HEIGHT);
+	system.draw.sht.updown(system.sys.sht.taskbar, 2);
+	system.draw.sht.slide(system.sys.sht.mouse, system.sys.xsize / 2, system.sys.ysize / 2);
+	system.draw.sht.updown(system.sys.sht.mouse, 3);	
+	
+	
 	return;
 }

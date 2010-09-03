@@ -12,19 +12,28 @@ void boxfill16(unsigned int *vram, int xsize, unsigned short c, int x0, int y0, 
 	}
 	return;
 }
-
-void init_scrn16(unsigned int *vram, int xsize, int ysize ,unsigned int *mousecur)
+void init_desktop16(unsigned int *vram)
 {
+	unsigned int xsize = system.sys.xsize;
+	unsigned int ysize = system.sys.ysize;
+
 	boxfill16(vram,xsize,DESKTOP_COL16,0,0,xsize,ysize);
-	boxfill16(vram,xsize,TASKBAR_COL16,0,ysize-TASKBAR_HEIGHT,xsize,ysize);
 	putfonts16_asc(vram, xsize, 168, 8, RGB16(31,62,31), "welcome to CHNOSProject! on 16bit video mode .");
 	putfonts16_asc(vram, xsize, 168, 24, RGB16(31,62,31), "Ö³º¿ CHNOSÌßÛ¼Þª¸ÄÍ!");
 	putfonts16_asc(vram, xsize, 168, 40, RGB16(31,62,31), "¶ÀºÄÃÞ½¶Þ ÆÎÝºÞ¶Þ ¶¹ÙÖ³Æ ÅØÏ¼À");
-	init_mouse_cursor16(mousecur);
-	return;
 
+	return;	
 }
 
+void init_taskbar16(unsigned int *vram)
+{
+	unsigned int xsize = system.sys.xsize;
+	boxfill16(vram, xsize, TASKBAR_COL16, 0, 0, xsize, TASKBAR_HEIGHT);
+	boxfill16(vram, xsize, RGB16(31,62,31), 0, 0, xsize, 1);
+	boxfill16(vram, xsize, RGB16(31,62,31), xsize-2, 0, xsize, TASKBAR_HEIGHT);
+
+	return;
+}
 void putfont16(unsigned int *vram, int xsize, int x, int y, unsigned short c, unsigned char *font)
 {
 	int i;
@@ -68,7 +77,7 @@ void init_mouse_cursor16(unsigned int *mouse)
 				mouse[y * 24 + x] = (unsigned int)RGB16(31,62,31);
 			}
 			if (cursor[y][x] == '.') {
-				mouse[y * 24 + x] = INV_COL;
+				mouse[y * 24 + x] = INV_COL16;
 			}
 		}
 	}

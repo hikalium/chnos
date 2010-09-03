@@ -24,7 +24,9 @@
 #define COL8_008484		14
 #define COL8_848484		15
 
-#define INV_COL		0xFFFFFFFF
+#define INV_COL32	0xFFFFFFFF
+#define INV_COL16	0xFFFF
+#define INV_COL8	0xFF
 
 #define DESKTOP_COL8	COL8_C6C6C6
 #define TASKBAR_COL8	COL8_0000FF
@@ -240,7 +242,7 @@ struct SYSTEM {
 	} io;
 	struct SYS_DRAW {
 		void (*putfonts_sht)(struct SHEET32 *sht, int x, int y, unsigned int c, unsigned int bc, const unsigned char *s);
-		void (*init_screen)(unsigned int *vrami, int xsize, int ysize, unsigned char bits, unsigned int *mousecur);
+		void (*init_screen)(unsigned int *desktop, unsigned int *taskbar, unsigned int *mousecursor);
 		void (*circle)(unsigned int *vrami, int cx, int cy, unsigned int c, int xsize, int r);
 		void (*point)(unsigned int *vrami, int x, int y, unsigned int c, int xsize);
 		void (*boxfill)(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
@@ -281,8 +283,10 @@ struct SYSTEM {
 		struct SYS_SYS_SHT {
 			struct SHEET32 *desktop;
 			struct SHEET32 *mouse;
+			struct SHEET32 *taskbar;
 			unsigned int *desktop_buf;
 			unsigned int mouse_buf[24][24];
+			unsigned int *taskbar_buf;
 		} sht;
 		struct MEMMAN memman;
 		unsigned int memtotal;
@@ -325,18 +329,25 @@ struct SHEET32 *sheet_alloc(void);
 void sheet_setbuf(struct SHEET32 *sht,unsigned int *buf,int xsize, int ysize, unsigned int col_inv );
 void sheet_updown(struct SHEET32 *sht,int height);
 void sheet_refresh(struct SHEET32 *sht, int bx0, int by0, int bx1, int by1);
+void sheet_refresh_full_alpha(struct SHEET32 *sht);
+void sheet_refresh_full(struct SHEET32 *sht);
 void sheet_slide(struct SHEET32 *sht, int vx0, int vy0);
 void sheet_free(struct SHEET32 *sht);
 void sheet_refreshsub32(int vx0, int vy0, int vx1, int vy1, int h0, int h1);
+void sheet_refreshsub16(int vx0, int vy0, int vx1, int vy1, int h0, int h1);
 void sheet_refreshsub8(int vx0, int vy0, int vx1, int vy1, int h0, int h1);
 void sheet_refreshmap32(int vx0, int vy0, int vx1, int vy1, int h0);
+void sheet_refreshmap16(int vx0, int vy0, int vx1, int vy1, int h0);
 void sheet_refreshmap8(int vx0, int vy0, int vx1, int vy1, int h0);
 
 /*graphic.c grap_08.c grap_16.c grap_32.c*/
 
 /*All*/
 void putfonts_asc_sht_i(struct SHEET32 *sht, int x, int y, unsigned int c, unsigned int bc, const unsigned char *s);
-void init_scrn_i(unsigned int *vrami, int xsize, int ysize, unsigned char bits, unsigned int *mousecur);
+void init_screen_i(unsigned int *desktop, unsigned int *taskbar, unsigned int *mousecursor);
+void init_desktop_i(unsigned int *vrami);
+void init_taskbar_i(unsigned int *vrami);
+void init_mousecursor_i(unsigned int *vrami);
 unsigned int mix_color(unsigned int c0, unsigned int c1);
 void circle_i(unsigned int *vrami, int cx, int cy, unsigned int c, int xsize, int r);
 void point_i(unsigned int *vrami, int x, int y, unsigned int c, int xsize);
@@ -350,7 +361,8 @@ void col_pat(unsigned int *vrami, int xsize, int ysize);
 void init_palette(void);
 void set_palette(int start, int end, unsigned char *rgb);
 void boxfill8(unsigned int *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1);
-void init_scrn8(unsigned int *vram, int xsize, int ysize, unsigned int *mousecur);
+void init_desktop8(unsigned int *vram);
+void init_taskbar8(unsigned int *vram);
 void putfont8(unsigned int *vram, int xsize, int x, int y, unsigned char c, unsigned char *font);
 void putfonts8_asc(unsigned int *vram, int xsize, int x, int y, unsigned char c, unsigned char *s);
 void init_mouse_cursor8(unsigned int *mouse);
@@ -358,7 +370,8 @@ void putblock8_8(unsigned int *vram, int vxsize, int pxsize,int pysize, int px0,
 
 /*16bits*/
 void boxfill16(unsigned int *vram, int xsize, unsigned short c, int x0, int y0, int x1, int y1);
-void init_scrn16(unsigned int *vram, int xsize, int ysize ,unsigned int *mousecur);
+void init_desktop16(unsigned int *vram);
+void init_taskbar16(unsigned int *vram);
 void putfont16(unsigned int *vram, int xsize, int x, int y, unsigned short c, unsigned char *font);
 void putfonts16_asc(unsigned int *vram, int xsize, int x, int y, unsigned short c, unsigned char *s);
 void init_mouse_cursor16(unsigned int *mouse);
@@ -366,7 +379,8 @@ void putblock16_16(unsigned int *vram, int vxsize, int pxsize,int pysize, int px
 
 /*32bits*/
 void boxfill32(unsigned int *vram, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
-void init_scrn32(unsigned int *vram, int xsize, int ysize, unsigned int *mousecur);
+void init_desktop32(unsigned int *vram);
+void init_taskbar32(unsigned int *vram);
 void putfont32(unsigned int *vram, int xsize, int x, int y, unsigned int c, unsigned char *font);
 void putfonts32_asc(unsigned int *vram, int xsize, int x, int y, unsigned int c, unsigned char *s);
 void init_mouse_cursor32(unsigned int *mouse);

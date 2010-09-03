@@ -78,18 +78,53 @@ void putfonts_asc_sht_i(struct SHEET32 *sht, int x, int y, unsigned int c, unsig
 	return;
 }
 
-void init_scrn_i(unsigned int *vrami, int xsize, int ysize, unsigned char bits, unsigned int *mousecur)
+void init_screen_i(unsigned int *desktop, unsigned int *taskbar, unsigned int *mousecursor)
 {
-	if(bits == 8){
-	init_palette();
-	init_scrn8(vrami, xsize, ysize ,mousecur);
-	} else if(bits == 16){
-	init_scrn16(vrami, xsize, ysize ,mousecur);
-	} else if(bits == 32){
-	init_scrn32(vrami, xsize, ysize ,mousecur);
+	if(system.sys.bpp == 8){
+		init_palette();
 	}
-	col_pat(vrami,xsize,ysize);
-	return;
+
+	init_desktop_i(desktop);
+	init_taskbar_i(taskbar);
+	init_mousecursor_i(mousecursor);
+
+	col_pat(desktop,system.sys.xsize, system.sys.ysize);
+}
+
+void init_desktop_i(unsigned int *vrami)
+{
+	if(system.sys.bpp == 8){
+		init_desktop8(vrami);
+	} else if(system.sys.bpp == 16){
+		init_desktop16(vrami);
+	} else if(system.sys.bpp == 32){
+		init_desktop32(vrami);
+	}
+	return;	
+}
+
+void init_taskbar_i(unsigned int *vrami)
+{
+	if(system.sys.bpp == 8){
+		init_taskbar8(vrami);
+	} else if(system.sys.bpp == 16){
+		init_taskbar16(vrami);
+	} else if(system.sys.bpp == 32){
+		init_taskbar32(vrami);
+	}
+	return;	
+}
+
+void init_mousecursor_i(unsigned int *vrami)
+{
+	if(system.sys.bpp == 8){
+		init_mouse_cursor8(vrami);
+	} else if(system.sys.bpp == 16){
+		init_mouse_cursor16(vrami);
+	} else if(system.sys.bpp == 32){
+		init_mouse_cursor32(vrami);
+	}
+	return;	
 }
 
 unsigned int mix_color(unsigned int c0, unsigned int c1)

@@ -13,16 +13,27 @@ void boxfill8(unsigned int *vram, int xsize, unsigned char c, int x0, int y0, in
 	return;
 }
 
-void init_scrn8(unsigned int *vram, int xsize, int ysize, unsigned int *mousecur)
+void init_desktop8(unsigned int *vram)
 {
+	unsigned int xsize = system.sys.xsize;
+	unsigned int ysize = system.sys.ysize;
+
 	boxfill8(vram,xsize,DESKTOP_COL8,0,0,xsize,ysize);
-	boxfill8(vram,xsize,TASKBAR_COL8,0,ysize-TASKBAR_HEIGHT,xsize,ysize);
 	putfonts8_asc(vram, xsize, 168, 8, COL8_FFFFFF, "welcome to CHNOSProject! on 8bit video mode .");
 	putfonts8_asc(vram, xsize, 168, 24, COL8_FFFFFF, "Ö³º¿ CHNOSÌßÛ¼Þª¸ÄÍ!");
 	putfonts8_asc(vram, xsize, 168, 40, COL8_FFFFFF, "¶ÀºÄÃÞ½¶Þ ÆÎÝºÞ¶Þ ¶¹ÙÖ³Æ ÅØÏ¼À");
-	init_mouse_cursor8(mousecur);
-	return;
 
+	return;	
+}
+
+void init_taskbar8(unsigned int *vram)
+{
+	unsigned int xsize = system.sys.xsize;
+	boxfill8(vram, xsize, TASKBAR_COL8, 0, 0, xsize, TASKBAR_HEIGHT);
+	boxfill8(vram, xsize, COL8_FFFFFF, 0, 0, xsize, 1);
+	boxfill8(vram, xsize, COL8_FFFFFF, xsize-2, 0, xsize, TASKBAR_HEIGHT);
+
+	return;
 }
 
 void putfont8(unsigned int *vram, int xsize, int x, int y, unsigned char c, unsigned char *font)
@@ -68,7 +79,7 @@ void init_mouse_cursor8(unsigned int *mouse)
 				mouse[y * 24 + x] = (unsigned int)COL8_FFFFFF;
 			}
 			if (cursor[y][x] == '.') {
-				mouse[y * 24 + x] = INV_COL;
+				mouse[y * 24 + x] = INV_COL8;
 			}
 		}
 	}

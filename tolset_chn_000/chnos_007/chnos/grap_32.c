@@ -13,16 +13,26 @@ void boxfill32(unsigned int *vram, int xsize, unsigned int c, int x0, int y0, in
 	return;
 }
 
-void init_scrn32(unsigned int *vram, int xsize, int ysize, unsigned int *mousecur)
+void init_desktop32(unsigned int *vram)
 {
+	unsigned int xsize = system.sys.xsize;
+	unsigned int ysize = system.sys.ysize;
+
 	boxfill32(vram,xsize,DESKTOP_COL32,0,0,xsize,ysize);
-	boxfill32(vram,xsize,TASKBAR_COL32,0,ysize-TASKBAR_HEIGHT,xsize,ysize);
-	boxfill32(vram,xsize,0xFFFFFF, 0, ysize-TASKBAR_HEIGHT,xsize,ysize-TASKBAR_HEIGHT+1);
-	boxfill32(vram,xsize,0xFFFFFF, xsize-2, ysize-TASKBAR_HEIGHT, xsize, ysize);
 	putfonts32_asc(vram, xsize, 168, 8, 0xFFFFFF, "welcome to CHNOSProject! on 32bit video mode .");
 	putfonts32_asc(vram, xsize, 168, 24, 0xFFFFFF, "Ö³º¿ CHNOSÌßÛ¼Þª¸ÄÍ!");
 	putfonts32_asc(vram, xsize, 168, 40, 0xFFFFFF, "¶ÀºÄÃÞ½¶Þ ÆÎÝºÞ¶Þ ¶¹ÙÖ³Æ ÅØÏ¼À");
-	init_mouse_cursor32(mousecur);
+
+	return;	
+}
+
+void init_taskbar32(unsigned int *vram)
+{
+	unsigned int xsize = system.sys.xsize;
+	boxfill32(vram, xsize, TASKBAR_COL32, 0, 0, xsize, TASKBAR_HEIGHT);
+	boxfill32(vram, xsize, 0xFFFFFF, 0, 0, xsize, 1);
+	boxfill32(vram, xsize, 0xFFFFFF, xsize-2, 0, xsize, TASKBAR_HEIGHT);
+
 	return;
 }
 
@@ -69,7 +79,7 @@ void init_mouse_cursor32(unsigned int *mouse)
 				mouse[y * 24 + x] = 0x55FFFFFF;
 			}
 			if (cursor[y][x] == '.') {
-				mouse[y * 24 + x] = INV_COL;
+				mouse[y * 24 + x] = INV_COL32;
 			}
 		}
 	}
