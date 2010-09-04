@@ -76,7 +76,7 @@ void init_system(void)
 	system.data.fifo.status				= fifo32_status;
 
 	system.info.vesa				= *vesa;
-	system.info.boot				= *boot;
+	system.info.boot				= *boot;					/* 0x0ff0-0x0fff*/
 
 	system.app.start				= start_app;
 	system.app.end					= asm_end_app;
@@ -85,8 +85,11 @@ void init_system(void)
 	system.sys.xsize				= system.info.boot.scrnx;
 	system.sys.ysize				= system.info.boot.scrny;
 	system.sys.bpp					= system.info.vesa.BitsPerPixel;
+	system.sys.gdt					= (struct SEGMENT_DESCRIPTOR *)0x00270000;	/*0x270000-0x27ffff*/
+	system.sys.idt					= (struct GATE_DESCRIPTOR *)0x0026f800;		/*0x26f800-0x26ffff*/
 
 // system init
+	init_gdtidt();
 	system.sys.memtotal				= system.io.mem.test(0x00400000, 0xbfffffff);
 	system.io.mem.init();
 	system.io.mem.free((void *)0x00400000, system.sys.memtotal - 0x00400000);

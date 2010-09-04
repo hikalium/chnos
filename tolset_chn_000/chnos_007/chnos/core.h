@@ -129,19 +129,19 @@ struct TSS32 {
 	int ldtr, iomap;
 };
 
-struct SEGMENT_DESCRIPTOR { /*0x270000~0x27ffff ïWèÄ*/
+struct SEGMENT_DESCRIPTOR { 
 	short limit_low,base_low;
 	char base_mid,access_right;
 	char limit_high,base_high;
 };
 
-struct GATE_DESCRIPTOR { /*0x26f800~0x26ffff ïWèÄ*/
+struct GATE_DESCRIPTOR { 
 	short offset_low,selector;
 	char dw_count,access_right;
 	short offset_high;
 };
 
-struct BOOTINFO { /* 0x0ff0-0x0fff*/
+struct BOOTINFO { 
 	char cyls; 
 	char leds; 
 	char vmode; 
@@ -294,6 +294,8 @@ struct SYSTEM {
 		unsigned int xsize;
 		unsigned int ysize;
 		unsigned char bpp;
+		struct SEGMENT_DESCRIPTOR *gdt;
+		struct GATE_DESCRIPTOR *idt;
 	} sys;
 };
 
@@ -385,6 +387,12 @@ void putfont32(unsigned int *vram, int xsize, int x, int y, unsigned int c, unsi
 void putfonts32_asc(unsigned int *vram, int xsize, int x, int y, unsigned int c, unsigned char *s);
 void init_mouse_cursor32(unsigned int *mouse);
 void putblock32_32(unsigned int *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned int *buf, int bxsize);
+
+/*gdtidt.c*/
+void init_gdtidt(void);
+void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
+void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
+
 
 /* naskfunc.nas */
 void pit_beep_on(void);
