@@ -112,8 +112,11 @@ void init_system(void)
 	system.draw.sht.slide(system.sys.sht.taskbar, 0, system.sys.ysize - TASKBAR_HEIGHT);
 	system.draw.sht.updown(system.sys.sht.taskbar, 2);
 	system.draw.sht.slide(system.sys.sht.mouse, system.sys.xsize / 2, system.sys.ysize / 2);
-	system.draw.sht.updown(system.sys.sht.mouse, 3);	
-	
+	system.draw.sht.updown(system.sys.sht.mouse, 3);
+
+	init_pic();
+	init_keyboard();	
+	init_mouse();
 	
 	return;
 }

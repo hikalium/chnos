@@ -46,6 +46,18 @@
 #define ADR_VESAINFO	0x00000e00
 #define ADR_DISKIMG	0x00100000
 
+#define ADR_IDT		0x0026f800
+#define LIMIT_IDT	0x000007ff
+#define ADR_GDT		0x00270000
+#define LIMIT_GDT	0x0000ffff
+#define ADR_BOTPAK	0x00280000
+#define LIMIT_BOTPAK	0x0007ffff
+#define AR_DATA32_RW	0x4092
+#define AR_CODE32_ER	0x409a
+#define AR_LDT		0x0082
+#define AR_TSS32	0x0089
+#define AR_INTGATE32	0x008e
+
 #define MEMMAN_FREES	4096
 
 #define MAX_SHEETS	1024
@@ -58,6 +70,29 @@
 #define CR0_CACHE_DISABLE	0x60000000
 
 #define FIFO32_PUT_OVER 0x0001
+
+#define PIC0_ICW1	0x0020
+#define PIC0_OCW2	0x0020
+#define PIC0_IMR	0x0021
+#define PIC0_ICW2	0x0021
+#define PIC0_ICW3	0x0021
+#define PIC0_ICW4	0x0021
+#define PIC1_ICW1	0x00a0
+#define PIC1_OCW2	0x00a0
+#define PIC1_IMR	0x00a1
+#define PIC1_ICW2	0x00a1
+#define PIC1_ICW3	0x00a1
+#define PIC1_ICW4	0x00a1
+
+#define KEYB_DATA	0x0060
+#define PORT_KEYSTA	0x0064
+#define KEYSTA_SEND_NOTREADY	0x02
+#define KEYCMD_WRITE_MODE	0x60
+#define KBC_MODE	0x47
+#define PORT_KEYCMD	0x0064
+#define KEYCMD_SENDTO_MOUSE	0xd4
+#define MOUSECMD_ENABLE	0xf4
+
 
 /*structures*/
 
@@ -303,6 +338,56 @@ extern struct SYSTEM system;
 
 /*functions*/
 
+/*timer.c*/
+void inthandler20(int *esp);
+
+/*keyboard.c*/
+void init_keyboard(void);
+void inthandler21(int *esp);
+void wait_KBC_sendready(void);
+
+/*mouse.c*/
+void init_mouse(void);
+void inthandler2c(int *esp);
+void sendto_mouse(int data);
+
+/*int.c*/
+void init_pic(void);
+void inthandler27(int *esp);
+
+void inthandler00(int *esp);
+void inthandler01(int *esp);
+void inthandler02(int *esp);
+void inthandler03(int *esp);
+void inthandler04(int *esp);
+void inthandler05(int *esp);
+void inthandler06(int *esp);
+void inthandler07(int *esp);
+void inthandler08(int *esp);
+void inthandler09(int *esp);
+void inthandler0a(int *esp);
+void inthandler0b(int *esp);
+void inthandler0c(int *esp);
+void inthandler0d(int *esp);
+void inthandler0e(int *esp);
+void inthandler0f(int *esp);
+void inthandler10(int *esp);
+void inthandler11(int *esp);
+void inthandler12(int *esp);
+void inthandler13(int *esp);
+void inthandler14(int *esp);
+void inthandler15(int *esp);
+void inthandler16(int *esp);
+void inthandler17(int *esp);
+void inthandler18(int *esp);
+void inthandler19(int *esp);
+void inthandler1a(int *esp);
+void inthandler1b(int *esp);
+void inthandler1c(int *esp);
+void inthandler1d(int *esp);
+void inthandler1e(int *esp);
+void inthandler1f(int *esp);
+
 /*init.c*/
 void init_system(void);
 
@@ -423,3 +508,40 @@ void farjmp(int eip, int cs);
 void farcall(int eip, int cs);
 void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);
 void asm_end_app(void);
+
+void asm_inthandler21(void);
+void asm_inthandler20(void);
+void asm_inthandler2c(void);
+void asm_inthandler27(void);
+void asm_inthandler00(void);
+void asm_inthandler01(void);
+void asm_inthandler02(void);
+void asm_inthandler03(void);
+void asm_inthandler04(void);
+void asm_inthandler05(void);
+void asm_inthandler06(void);
+void asm_inthandler07(void);
+void asm_inthandler08(void);
+void asm_inthandler09(void);
+void asm_inthandler0a(void);
+void asm_inthandler0b(void);
+void asm_inthandler0c(void);
+void asm_inthandler0d(void);
+void asm_inthandler0e(void);
+void asm_inthandler0f(void);
+void asm_inthandler10(void);
+void asm_inthandler11(void);
+void asm_inthandler12(void);
+void asm_inthandler13(void);
+void asm_inthandler14(void);
+void asm_inthandler15(void);
+void asm_inthandler16(void);
+void asm_inthandler17(void);
+void asm_inthandler18(void);
+void asm_inthandler19(void);
+void asm_inthandler1a(void);
+void asm_inthandler1b(void);
+void asm_inthandler1c(void);
+void asm_inthandler1d(void);
+void asm_inthandler1e(void);
+void asm_inthandler1f(void);

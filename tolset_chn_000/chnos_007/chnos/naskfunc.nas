@@ -19,8 +19,591 @@
 		GLOBAL  _clts, _fnsave, _frstore
 		GLOBAL	_pit_beep_on, _pit_beep_off
 
+		GLOBAL	_asm_inthandler00, _asm_inthandler01, _asm_inthandler02, _asm_inthandler03, _asm_inthandler04, _asm_inthandler05, _asm_inthandler06, _asm_inthandler07, _asm_inthandler08, _asm_inthandler09, _asm_inthandler0a, _asm_inthandler0b, _asm_inthandler0c, _asm_inthandler0d, _asm_inthandler0e, _asm_inthandler0f, _asm_inthandler10, _asm_inthandler11, _asm_inthandler12, _asm_inthandler13, _asm_inthandler14, _asm_inthandler15, _asm_inthandler16, _asm_inthandler17, _asm_inthandler18, _asm_inthandler19, _asm_inthandler1a, _asm_inthandler1b, _asm_inthandler1c, _asm_inthandler1d, _asm_inthandler1e, _asm_inthandler1f
+		GLOBAL	_asm_inthandler21, _asm_inthandler20, _asm_inthandler2c, _asm_inthandler27
+		
+		EXTERN	_inthandler21, _inthandler20, _inthandler2c, _inthandler27
+		EXTERN	_inthandler00, _inthandler01, _inthandler02, _inthandler03, _inthandler04, _inthandler05, _inthandler06, _inthandler07, _inthandler08, _inthandler09, _inthandler0a, _inthandler0b, _inthandler0c, _inthandler0d, _inthandler0e, _inthandler0f, _inthandler10, _inthandler11, _inthandler12, _inthandler13, _inthandler14, _inthandler15, _inthandler16, _inthandler17, _inthandler18, _inthandler19, _inthandler1a, _inthandler1b, _inthandler1c, _inthandler1d, _inthandler1e, _inthandler1f
 
 [SECTION .text]
+
+_asm_inthandler00:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler00
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler01:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler01
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler02:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler02
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler03:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler03
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler04:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler04
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler05:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler05
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler06:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler06
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler07:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler07
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler08:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler08
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler09:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler09
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler0a:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler0a
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler0b:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler0b
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler0c:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler0c
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler0d:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler0d
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler0e:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler0e
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler0f:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler0f
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler10:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler10
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler11:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler11
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler12:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler12
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler13:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler13
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler14:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler14
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler15:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler15
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler16:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler16
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler17:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler17
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler18:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler18
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler19:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler19
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler1a:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler1a
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler1b:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler1b
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler1c:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler1c
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler1d:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler1d
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler1e:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler1e
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler1f:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler1f
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+
+_asm_inthandler27:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler27
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+
+_asm_inthandler21:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler21
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler20:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler20
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_inthandler2c:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler2c
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
 
 _pit_beep_on:
 	in	al,0x61

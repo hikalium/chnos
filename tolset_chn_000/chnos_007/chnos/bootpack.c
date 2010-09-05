@@ -19,7 +19,7 @@ void CHNMain(void)
 	putfonts_asc_sht_i(system.sys.sht.desktop, 8, 168, 0xFFFFFF, 0x000000, s);	
 
 	for(;;){
-		system.io.hlt();
+		system.io.stihlt();
 	}
 }
 
