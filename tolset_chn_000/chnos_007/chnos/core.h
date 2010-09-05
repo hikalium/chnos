@@ -1,6 +1,6 @@
 
 /*include files*/
-
+#include<stdio.h>
 /*definefunctions*/
 
 #define RGB16(r,g,b) ((r)<<11|(g)<<5|(b))
