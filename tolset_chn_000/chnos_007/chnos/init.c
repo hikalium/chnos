@@ -114,6 +114,8 @@ void init_system(void)
 	system.draw.sht.slide(system.sys.sht.mouse, system.sys.xsize / 2, system.sys.ysize / 2);
 	system.draw.sht.updown(system.sys.sht.mouse, 3);
 
+	system.data.fifo.init(&system.sys.fifo, SYS_FIFOSIZE, system.sys.fifo_buf);
+
 	init_pic();
 	init_keyboard();	
 	init_mouse();

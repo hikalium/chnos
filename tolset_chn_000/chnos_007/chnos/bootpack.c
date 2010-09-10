@@ -7,7 +7,7 @@ struct SYSTEM system;
 void CHNMain(void)
 {
 	unsigned char s[64];	
-
+	int i;
 	init_system();
 
 	system.draw.init_screen(system.sys.sht.desktop_buf, system.sys.sht.taskbar_buf, *system.sys.sht.mouse_buf);
@@ -19,7 +19,13 @@ void CHNMain(void)
 	putfonts_asc_sht_i(system.sys.sht.desktop, 8, 168, 0xFFFFFF, 0x000000, s);	
 
 	for(;;){
-		system.io.stihlt();
+		system.io.cli();
+		if(system.data.fifo.status(&system.sys.fifo) == 0){
+			system.io.stihlt();
+		} else {
+			i = system.data.fifo.get(&system.sys.fifo);
+			if()
+		}
 	}
 }
 

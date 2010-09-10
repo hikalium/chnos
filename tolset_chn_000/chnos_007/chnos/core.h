@@ -93,6 +93,8 @@
 #define KEYCMD_SENDTO_MOUSE	0xd4
 #define MOUSECMD_ENABLE	0xf4
 
+#define SYS_FIFOSIZE	256
+
 
 /*structures*/
 
@@ -331,6 +333,8 @@ struct SYSTEM {
 		unsigned char bpp;
 		struct SEGMENT_DESCRIPTOR *gdt;
 		struct GATE_DESCRIPTOR *idt;
+		struct FIFO32 fifo;
+		unsigned int fifo_buf[SYS_FIFOSIZE];
 	} sys;
 };
 
