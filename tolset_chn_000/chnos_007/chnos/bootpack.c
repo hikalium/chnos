@@ -6,6 +6,7 @@ struct SYSTEM system;
 
 void CHNMain(void)
 {
+	struct KEYINFO dec_key;
 	unsigned char s[64];	
 	int i;
 	init_system();
@@ -24,7 +25,12 @@ void CHNMain(void)
 			system.io.stihlt();
 		} else {
 			i = system.data.fifo.get(&system.sys.fifo);
-			if()
+			if(256 <= i && i <=511){
+				decode_key(&dec_key, i - 256);
+				sprintf(s, "INT:21 IRQ:01 PS/2·°ÎÞ°ÄÞ   ");
+				s[26] = dec_key.c;
+				putfonts_asc_sht_i(system.sys.sht.desktop, 8, 184, 0xFFFFFF, 0x000000, s);
+			}
 		}
 	}
 }

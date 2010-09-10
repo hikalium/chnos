@@ -1,6 +1,14 @@
 
 /*include files*/
 #include<stdio.h>
+
+/*new object types*/
+
+typedef enum _bool { false, true } bool;
+typedef enum _color_8 { black, red, green, yellow, 
+			blue, pink, light_blue, white, 
+			gray, brown, dark_green, gold, 
+			navy_blue, purple, dark_cyan, dark_gray} color_8;
 /*definefunctions*/
 
 #define RGB16(r,g,b) ((r)<<11|(g)<<5|(b))
@@ -99,6 +107,12 @@
 /*structures*/
 
 extern char cursor[24][24];
+
+struct KEYINFO {
+	char c;
+	int keycode;
+	bool make;
+}; 
 
 struct TIMER {
 	struct TIMER *next_timer;
@@ -346,8 +360,9 @@ extern struct SYSTEM system;
 void inthandler20(int *esp);
 
 /*keyboard.c*/
-void init_keyboard(void);
+void init_keyboard(int data0);
 void inthandler21(int *esp);
+struct KEYINFO *decode_key(struct KEYINFO *info, int data);
 void wait_KBC_sendready(void);
 
 /*mouse.c*/

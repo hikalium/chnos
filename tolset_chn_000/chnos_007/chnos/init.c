@@ -117,7 +117,7 @@ void init_system(void)
 	system.data.fifo.init(&system.sys.fifo, SYS_FIFOSIZE, system.sys.fifo_buf);
 
 	init_pic();
-	init_keyboard();	
+	init_keyboard(256);	
 	init_mouse();
 	
 	return;
