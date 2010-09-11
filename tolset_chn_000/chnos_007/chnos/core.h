@@ -349,6 +349,8 @@ struct SYSTEM {
 		struct GATE_DESCRIPTOR *idt;
 		struct FIFO32 fifo;
 		unsigned int fifo_buf[SYS_FIFOSIZE];
+		struct KEYINFO keyinfo;
+		struct MOUSE_DECODE mouse_decode;
 	} sys;
 };
 
@@ -362,13 +364,14 @@ void inthandler20(int *esp);
 /*keyboard.c*/
 void init_keyboard(int data0);
 void inthandler21(int *esp);
-struct KEYINFO *decode_key(struct KEYINFO *info, int data);
+int decode_key(struct KEYINFO *info, int data);
 void wait_KBC_sendready(void);
 
 /*mouse.c*/
-void init_mouse(void);
+void init_mouse(int data0);
 void inthandler2c(int *esp);
 void sendto_mouse(int data);
+int decode_mouse(int data);
 
 /*int.c*/
 void init_pic(void);

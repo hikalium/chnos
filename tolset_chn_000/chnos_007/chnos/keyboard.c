@@ -167,7 +167,7 @@ void inthandler21(int *esp)
 	return;
 }
 
-struct KEYINFO *decode_key(struct KEYINFO *info, int data)
+int decode_key(struct KEYINFO *info, int data)
 {
 	if(data >= 0x00 && data <= 0x7f){
 		info->make = true;
@@ -177,7 +177,7 @@ struct KEYINFO *decode_key(struct KEYINFO *info, int data)
 	}
 	info->c = keytable1[data];
 	info->keycode = data;
-	return info;
+	return 0;
 }
 
 void wait_KBC_sendready(void)
