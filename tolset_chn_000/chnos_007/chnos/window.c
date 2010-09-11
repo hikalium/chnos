@@ -85,11 +85,11 @@ struct WINDOWINFO *make_window32(unsigned char *title, int xsize, int ysize, int
 //	sheet_setbuf(winfo->head, winfo->buf_head, winfo->xsize, 24,INV_COL32);
 
 	boxfill_i(winfo->buf, winfo->winxsize, 0xFFFFFF, winfo->origin.x, winfo->origin.y, winfo->origin.x + xsize, winfo->origin.y + ysize);
-	boxfill_i(winfo->buf, winfo->winxsize, 0x00FF00, 0, 0, winfo->winxsize, 24);	
-	boxfill_i(winfo->buf, winfo->winxsize, 0x00FF00, 0, 0, 4, winfo->winysize);
-	boxfill_i(winfo->buf, winfo->winxsize, 0x00FF00, winfo->winxsize - 4, 0, winfo->winxsize, winfo->winysize);
-	boxfill_i(winfo->buf, winfo->winxsize, 0x00FF00, 0, winfo->winysize - 4, winfo->winxsize, winfo->winysize);
-	putfonts_asc_sht_i(winfo->win, 4, 4, 0xffffff, 0x00FF00, winfo->title);
+	boxfill_i(winfo->buf, winfo->winxsize, WINDOW_COL32, 0, 0, winfo->winxsize, 24);	
+	boxfill_i(winfo->buf, winfo->winxsize, WINDOW_COL32, 0, 0, 4, winfo->winysize);
+	boxfill_i(winfo->buf, winfo->winxsize, WINDOW_COL32, winfo->winxsize - 4, 0, winfo->winxsize, winfo->winysize);
+	boxfill_i(winfo->buf, winfo->winxsize, WINDOW_COL32, 0, winfo->winysize - 4, winfo->winxsize, winfo->winysize);
+	putfonts_asc_sht_i(winfo->win, 4, 4, 0xffffff, WINDOW_COL32, winfo->title);
 	for(y = 0; y < 16; y++){
 		for(x = 0; x < 40; x++){
 			c = closebtn[y][x];

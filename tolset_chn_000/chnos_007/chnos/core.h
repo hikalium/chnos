@@ -9,7 +9,7 @@ typedef enum _color_8 { black, red, green, yellow,
 			blue, pink, light_blue, white, 
 			gray, brown, dark_green, gold, 
 			navy_blue, purple, dark_cyan, dark_gray} color_8;
-typedef enum _state_alloc { none, initialized, configured, allocated} state_alloc;
+typedef enum _state_alloc { none, initialized, allocated, configured, inuse} state_alloc;
 /*definefunctions*/
 
 #define RGB16(r,g,b) ((r)<<11|(g)<<5|(b))
@@ -32,6 +32,8 @@ typedef enum _state_alloc { none, initialized, configured, allocated} state_allo
 #define COL8_840084		13
 #define COL8_008484		14
 #define COL8_848484		15
+
+#define WINDOW_COL32	0x5EC1E8
 
 #define INV_COL32	0xFFFFFFFF
 #define INV_COL16	0xFFFF
@@ -71,6 +73,9 @@ typedef enum _state_alloc { none, initialized, configured, allocated} state_allo
 #define MAX_WINDOWS	256
 
 #define MAX_TIMER	512
+
+#define PIT_CTRL	0x0043
+#define PIT_CNT0	0x0040
 
 #define EFLAGS_AC_BIT	0x00040000
 #define CR0_CACHE_DISABLE	0x60000000
@@ -118,9 +123,10 @@ struct KEYINFO {
 
 struct TIMER {
 	struct TIMER *next_timer;
-	unsigned int timeout, flags;
+	unsigned int timeout;
 	struct FIFO32 *fifo;
 	unsigned int data;
+	state_alloc flags;
 };
 
 struct TIMERCTL {
@@ -344,6 +350,7 @@ struct SYSTEM {
 			unsigned int *taskbar_buf;
 		} sht;
 		struct MEMMAN memman;
+		struct TIMERCTL timctl;
 		unsigned int memtotal;
 		unsigned int *vram;
 		unsigned int xsize;
@@ -362,14 +369,27 @@ extern struct SYSTEM system;
 
 /*functions*/
 
+/*io.c*/
+void readrtc(unsigned char *t);
+void init_serial(void);
+void send_serial(unsigned char *s);
+void fdc_motor_on(unsigned char d);
+void fdc_motor_off(unsigned char d);
+
 /*timer.c*/
 void inthandler20(int *esp);
+void init_pit(void);
+struct TIMER *timer_alloc(void);
+void timer_free(struct TIMER *timer);
+void timer_init(struct TIMER *timer, struct FIFO32 *fifo, unsigned int data);
+void timer_settime(struct TIMER *timer, unsigned int timeout);
 
 /*keyboard.c*/
 void init_keyboard(int data0);
 void inthandler21(int *esp);
 int decode_key(struct KEYINFO *info, int data);
 void wait_KBC_sendready(void);
+
 
 /*mouse.c*/
 void init_mouse(int data0);

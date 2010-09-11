@@ -119,6 +119,10 @@ void init_system(void)
 	init_pic();
 	init_keyboard(256);	
 	init_mouse(512);
+	init_serial();
+	init_pit();
+
+	fdc_motor_off(4);
 
 	init_windows();
 	
