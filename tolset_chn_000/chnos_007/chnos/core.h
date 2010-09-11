@@ -9,6 +9,7 @@ typedef enum _color_8 { black, red, green, yellow,
 			blue, pink, light_blue, white, 
 			gray, brown, dark_green, gold, 
 			navy_blue, purple, dark_cyan, dark_gray} color_8;
+typedef enum _state_alloc { none, initialized, configured, allocated} state_alloc;
 /*definefunctions*/
 
 #define RGB16(r,g,b) ((r)<<11|(g)<<5|(b))
@@ -46,9 +47,6 @@ typedef enum _color_8 { black, red, green, yellow,
 #define TASKBAR_COL32	0x5EC1E8
 
 #define TASKBAR_HEIGHT	40
-
-#define SHT_FLAGS_VOID	0
-#define SHT_FLAGS_USE	1
 
 #define ADR_BOOTINFO	0x00000ff0
 #define ADR_VESAINFO	0x00000e00
@@ -108,6 +106,10 @@ typedef enum _color_8 { black, red, green, yellow,
 
 extern char cursor[24][24];
 
+struct POSITION_2D {
+	int x, y;
+};
+
 struct KEYINFO {
 	char c;
 	int keycode;
@@ -128,12 +130,13 @@ struct TIMERCTL {
 };
 
 struct WINDOWINFO {
-	unsigned char title[32];
-	unsigned int *buf_c;
-	struct SHEET32 *head, *center, *sideL, *sideR, *bottom; 
-	unsigned int *buf_head, *buf_L, *buf_R, *buf_bottom; 
-	int xsize,ysize,bxsize,bysize,px,py;
-	unsigned int flags;
+	char title[32];
+	struct SHEET32 *win;
+	unsigned int *buf;
+	int winxsize, winysize, xsize, ysize;
+	struct POSITION_2D position;
+	struct POSITION_2D origin;
+	state_alloc flags;
 };
 
 struct WINCTL {
@@ -151,7 +154,8 @@ struct MEMMAN {
 
 struct SHEET32 {
 	unsigned int *buf,col_inv;
-	int bxsize,bysize,vx0,vy0,height,flags;
+	int bxsize,bysize,vx0,vy0,height;
+	state_alloc flags; 
 };
 
 struct FIFO32 {
@@ -412,6 +416,13 @@ void inthandler1f(int *esp);
 
 /*init.c*/
 void init_system(void);
+
+/*window.c*/
+void init_windows(void);
+struct WINDOWINFO *window_alloc(void);
+struct WINDOWINFO *make_window32(unsigned char *title, int xsize, int ysize, int px, int py, int height);
+void slide_window(struct WINDOWINFO *winfo, int px, int py);
+void refresh_window(struct WINDOWINFO *winfo);
 
 /*fifo.c*/
 void fifo32_init(struct FIFO32 *fifo, int size, unsigned int *buf);

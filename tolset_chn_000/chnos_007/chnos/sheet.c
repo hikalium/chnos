@@ -34,7 +34,7 @@ void init_sheets(unsigned int *vram, int xsize, int ysize, unsigned char bits)
 	ctl->ysize = ysize;
 	ctl->top = -1;
 	for(i = 0;i < MAX_SHEETS;i++){
-		ctl->sheets0[i].flags = SHT_FLAGS_VOID;
+		ctl->sheets0[i].flags = initialized;
 	}
 err:
 	return;
@@ -46,9 +46,9 @@ struct SHEET32 *sheet_alloc(void)
 	struct SHEET32 *sht;
 	int i;
 	for(i = 0;i < MAX_SHEETS;i++){
-		if(ctl->sheets0[i].flags == SHT_FLAGS_VOID){
+		if(ctl->sheets0[i].flags == initialized){
 			sht = &ctl->sheets0[i];
-			sht->flags = SHT_FLAGS_USE;
+			sht->flags = allocated;
 			sht->height = -1;
 			return sht;
 		}
@@ -149,7 +149,7 @@ void sheet_slide(struct SHEET32 *sht, int vx0, int vy0)
 void sheet_free(struct SHEET32 *sht)
 {
 	if(sht->height >= 0) sheet_updown(sht, -1);
-	sht->flags = 0;
+	sht->flags = initialized;
 	return;
 }
 
