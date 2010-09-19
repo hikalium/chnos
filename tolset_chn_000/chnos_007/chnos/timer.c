@@ -32,7 +32,6 @@ void init_pit(void)
 	watch->next_timer = 0;
 	system.sys.timctl.timers = watch;
 	system.sys.timctl.next_count = 0xffffffff;
-	system.sys.timctl.using = 1;
 	io_out8(PIT_CTRL, 0x34);
 	io_out8(PIT_CNT0, 0x9c);
 	io_out8(PIT_CNT0, 0x2e);
@@ -74,7 +73,6 @@ void timer_settime(struct TIMER *timer, unsigned int timeout)
 	timer->flags = inuse;
 	ef = io_load_eflags();
 	io_cli();
-	system.sys.timctl.using++;
 	t = system.sys.timctl.timers;
 	if(timer->timeout <= t->timeout){
 		system.sys.timctl.timers = timer;
