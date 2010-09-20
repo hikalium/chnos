@@ -125,7 +125,7 @@ void slide_window(struct WINDOWINFO *winfo, int px, int py)
 	winfo->position.x = px;
 	winfo->position.y = py;
 
-	sheet_slide(winfo->win, winfo->position.x, winfo->position.x);
+	sheet_slide(winfo->win, winfo->position.x, winfo->position.y);
 	return;
 }
 

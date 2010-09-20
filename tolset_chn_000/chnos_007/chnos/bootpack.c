@@ -69,17 +69,24 @@ void CHNMain(void)
 				putfonts_asc_sht_i(system.sys.sht.desktop, 8, 232, 0xFFFFFF, 0x000000, s); 
 			} else if(SYS_FIFO_START_MOUSE <= i && i <= SYS_FIFO_START_MOUSE + DATA_BYTE){
 				if(decode_mouse(i - SYS_FIFO_START_MOUSE) != 0){
-					sprintf(s, "INT:2C IRQ:12 PS/2Ï³½ [lcr %4d %4d]", system.sys.mouse_decode.x, system.sys.mouse_decode.y);
-					if((system.sys.mouse_decode.btn & 0x01) != 0) s[23] = 'L';
-					if((system.sys.mouse_decode.btn & 0x02) != 0) s[25] = 'R';
-					if((system.sys.mouse_decode.btn & 0x04) != 0) s[24] = 'C';
-					putfonts_asc_sht_i(system.sys.sht.desktop, 8, 200, 0xFFFFFF, 0x000000, s);
 					mx += system.sys.mouse_decode.x;
 					my += system.sys.mouse_decode.y;
 					if(mx < 0) mx = 0;
 					if(my < 0) my = 0;
 					if(mx > system.sys.xsize - 1) mx = system.sys.xsize - 1;
 					if(my > system.sys.ysize - 1) my = system.sys.ysize - 1;
+					sprintf(s, "INT:2C IRQ:12 PS/2Ï³½ [lcr %4d %4d]", system.sys.mouse_decode.x, system.sys.mouse_decode.y);
+					if((system.sys.mouse_decode.btn & 0x01) != 0){
+						s[23] = 'L';
+						slide_window(testwin, mx - 10, my - 8);
+					}
+					if((system.sys.mouse_decode.btn & 0x02) != 0){
+						s[25] = 'R';
+					}
+					if((system.sys.mouse_decode.btn & 0x04) != 0){
+						s[24] = 'C';
+					}
+					putfonts_asc_sht_i(system.sys.sht.desktop, 8, 200, 0xFFFFFF, 0x000000, s);
 					sprintf(s, "(%3d, %3d)", mx, my);
 					putfonts_asc_sht_i(system.sys.sht.desktop, 8, 216, 0xFFFFFF, 0x000000, s);
 					system.draw.sht.slide(system.sys.sht.mouse, mx, my);
