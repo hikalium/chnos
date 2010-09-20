@@ -105,7 +105,11 @@ typedef enum _state_alloc { none, initialized, allocated, configured, inuse} sta
 #define MOUSECMD_ENABLE	0xf4
 
 #define SYS_FIFOSIZE	256
+#define SYS_FIFO_SIG_TIMERC	0x0001
+#define SYS_FIFO_START_KEYB	0x100		/*256~511=keycode*/
+#define SYS_FIFO_START_MOUSE	0x200		/*512~767=mouse*/
 
+#define DATA_BYTE	0xFF
 
 /*structures*/
 
@@ -349,6 +353,9 @@ struct SYSTEM {
 			unsigned int mouse_buf[24][24];
 			unsigned int *taskbar_buf;
 		} sht;
+		struct SYS_SYS_TIMER {
+			struct TIMER *t500;
+		} timer;
 		struct MEMMAN memman;
 		struct TIMERCTL timctl;
 		unsigned int memtotal;
@@ -443,6 +450,9 @@ struct WINDOWINFO *window_alloc(void);
 struct WINDOWINFO *make_window32(unsigned char *title, int xsize, int ysize, int px, int py, int height);
 void slide_window(struct WINDOWINFO *winfo, int px, int py);
 void refresh_window(struct WINDOWINFO *winfo);
+void refresh_window_alpha(struct WINDOWINFO *winfo);
+void boxfill_win(struct WINDOWINFO *winfo, unsigned int c, int x0, int y0, int x1, int y1);
+void putfonts_win(struct WINDOWINFO *winfo, int x, int y, unsigned int c, unsigned int bc, const unsigned char *s);
 
 /*fifo.c*/
 void fifo32_init(struct FIFO32 *fifo, int size, unsigned int *buf);

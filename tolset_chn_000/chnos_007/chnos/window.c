@@ -86,7 +86,7 @@ struct WINDOWINFO *make_window32(unsigned char *title, int xsize, int ysize, int
 
 	boxfill_i(winfo->buf, winfo->winxsize, 0xFFFFFF, winfo->origin.x, winfo->origin.y, winfo->origin.x + xsize, winfo->origin.y + ysize);
 	boxfill_i(winfo->buf, winfo->winxsize, WINDOW_COL32, 0, 0, winfo->winxsize, 24);	
-	boxfill_i(winfo->buf, winfo->winxsize, WINDOW_COL32, 0, 0, 4, winfo->winysize);
+	boxfill_i(winfo->buf, winfo->winxsize, WINDOW_COL32, 0, 0, 3, winfo->winysize);
 	boxfill_i(winfo->buf, winfo->winxsize, WINDOW_COL32, winfo->winxsize - 4, 0, winfo->winxsize, winfo->winysize);
 	boxfill_i(winfo->buf, winfo->winxsize, WINDOW_COL32, 0, winfo->winysize - 4, winfo->winxsize, winfo->winysize);
 	putfonts_asc_sht_i(winfo->win, 4, 4, 0xffffff, WINDOW_COL32, winfo->title);
@@ -135,6 +135,29 @@ void refresh_window(struct WINDOWINFO *winfo)
 	return;
 }
 
+void refresh_window_alpha(struct WINDOWINFO *winfo)
+{
+	sheet_refresh_full_alpha(winfo->win);
+	return;
+}
+
+void boxfill_win(struct WINDOWINFO *winfo, unsigned int c, int x0, int y0, int x1, int y1)
+{
+	if(x0 < 0 || y0 < 0 || x1 > winfo->xsize || y1 > winfo->ysize) goto err;
+
+	boxfill_i(winfo->buf, winfo->winxsize, c, winfo->origin.x + x0, winfo->origin.y + y0, winfo->origin.x + x1, winfo->origin.y + y1);
+	sheet_refresh(winfo->win, x0 + winfo->origin.x, y0 + winfo->origin.y, x1 + winfo->origin.x, y1 + winfo->origin.y);
+err:
+	return;
+}
+
+void putfonts_win(struct WINDOWINFO *winfo, int x, int y, unsigned int c, unsigned int bc, const unsigned char *s)
+{
+	if(x < 0 || y < 0 || x > winfo->xsize || y > winfo->ysize) goto err;
+	putfonts_asc_sht_i(winfo->win, x + winfo->origin.x, y + winfo->origin.y, c, bc, s);
+err:
+	return;
+}
 
 
 
