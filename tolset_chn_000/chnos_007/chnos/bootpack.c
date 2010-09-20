@@ -5,15 +5,19 @@
 struct SYSTEM system;
 
 void check_newline(struct POSITION_2D *p, int line_x, int line_y);
+void task_b_main(void);
 
 void CHNMain(void)
 {
 	struct KEYINFO dec_key;
 	struct WINDOWINFO *testwin;
 	struct POSITION_2D c_cursor;
+	struct TSS32 tss_a, tss_b;
 	unsigned char s[64];	
-	int i, mx = 0, my = 0;
+	int i, mx = 0, my = 0, task_b_esp;
 	bool cursor = false;
+
+
 	init_system();
 
 	system.draw.init_screen(system.sys.sht.desktop_buf, system.sys.sht.taskbar_buf, *system.sys.sht.mouse_buf);
@@ -30,8 +34,43 @@ void CHNMain(void)
 	timer_init(system.sys.timer.t500, &system.sys.fifo, SYS_FIFO_SIG_TIMERC);
 	timer_settime(system.sys.timer.t500, 50);
 
+	system.sys.timer.t10000 = timer_alloc();
+	timer_init(system.sys.timer.t10000, &system.sys.fifo, SYS_FIFO_SIG_TIMERC + 1);
+	timer_settime(system.sys.timer.t10000, 1000);
+
 	c_cursor.x = 0;
 	c_cursor.y = 0;
+
+	tss_a.ldtr = 0;
+	tss_a.iomap = 0x40000000;
+	tss_b.ldtr = 0;
+	tss_b.iomap = 0x40000000;
+
+	set_segmdesc(system.sys.gdt + 3, 103, (int)&tss_a, AR_TSS32);	
+	set_segmdesc(system.sys.gdt + 4, 103, (int)&tss_b, AR_TSS32);
+
+	load_tr(3 * 8);
+
+	task_b_esp = (int)system.io.mem.alloc(64 * 1024) + 64 * 1024;
+
+	tss_b.eip = (int)&task_b_main;
+	tss_b.eflags = 0x00000202;
+	tss_b.eax = 0;
+	tss_b.ecx = 0;
+	tss_b.edx = 0;
+	tss_b.ebx = 0;
+	tss_b.esp = task_b_esp;
+	tss_b.ebp = 0;
+	tss_b.esi = 0;
+	tss_b.edi = 0;
+	tss_b.es = 1 * 8;
+	tss_b.cs = 2 * 8;
+	tss_b.ss = 1 * 8;
+	tss_b.ds = 1 * 8;
+	tss_b.fs = 1 * 8;
+	tss_b.gs = 1 * 8;
+
+
 	for(;;){
 		system.io.cli();
 		if(system.data.fifo.status(&system.sys.fifo) == 0){
@@ -47,12 +86,14 @@ void CHNMain(void)
 					cursor = true;
 				}
 				timer_settime(system.sys.timer.t500, 50);
+			} else if(i == SYS_FIFO_SIG_TIMERC + 1){
+				putfonts_asc_sht_i(system.sys.sht.desktop, 8, 248, 0xFFFFFF, 0x000000, "10sec."); 
+				farjmp(0, 4 * 8);
 			} else if(SYS_FIFO_START_KEYB <= i && i <= SYS_FIFO_START_KEYB + DATA_BYTE){
 				decode_key(&dec_key, i - SYS_FIFO_START_KEYB);
 				sprintf(s, "INT:21 IRQ:01 PS/2·°ÎÞ°ÄÞ   ");
 				s[26] = dec_key.c;
-				putfonts_asc_sht_i(system.sys.sht.desktop, 8, 184, 0xFFFFFF, 0x000000, s);
-
+				putfonts_asc_sht_i(system.sys.sht.desktop, 8, 184, 0xFFFFFF, 0x000000, s); 
 				if(dec_key.make && dec_key.keycode == 0x0E){
 					boxfill_win(testwin, 0xFFFFFF, c_cursor.x, c_cursor.y, c_cursor.x + 8, c_cursor.y +16);
 					c_cursor.x -= 8;
@@ -115,4 +156,9 @@ void check_newline(struct POSITION_2D *p, int line_x, int line_y)
 		}
 	} 
 	return;
+}
+
+void task_b_main(void)
+{
+	for(;;){ io_hlt(); }
 }

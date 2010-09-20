@@ -355,6 +355,7 @@ struct SYSTEM {
 		} sht;
 		struct SYS_SYS_TIMER {
 			struct TIMER *t500;
+			struct TIMER *t10000;
 		} timer;
 		struct MEMMAN memman;
 		struct TIMERCTL timctl;
