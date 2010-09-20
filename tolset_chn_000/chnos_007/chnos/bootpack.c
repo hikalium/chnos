@@ -34,9 +34,9 @@ void CHNMain(void)
 	timer_init(system.sys.timer.t500, &system.sys.fifo, SYS_FIFO_SIG_TIMERC);
 	timer_settime(system.sys.timer.t500, 50);
 
-	system.sys.timer.t10000 = timer_alloc();
-	timer_init(system.sys.timer.t10000, &system.sys.fifo, SYS_FIFO_SIG_TIMERC + 1);
-	timer_settime(system.sys.timer.t10000, 1000);
+	system.sys.timer.t20 = timer_alloc();
+	timer_init(system.sys.timer.t20, &system.sys.fifo, SYS_FIFO_SIG_TIMERC + 1);
+	timer_settime(system.sys.timer.t20, 2);
 
 	c_cursor.x = 0;
 	c_cursor.y = 0;
@@ -87,8 +87,8 @@ void CHNMain(void)
 				}
 				timer_settime(system.sys.timer.t500, 50);
 			} else if(i == SYS_FIFO_SIG_TIMERC + 1){
-				putfonts_asc_sht_i(system.sys.sht.desktop, 8, 248, 0xFFFFFF, 0x000000, "10sec."); 
 				farjmp(0, 4 * 8);
+				timer_settime(system.sys.timer.t20, 2);
 			} else if(SYS_FIFO_START_KEYB <= i && i <= SYS_FIFO_START_KEYB + DATA_BYTE){
 				decode_key(&dec_key, i - SYS_FIFO_START_KEYB);
 				sprintf(s, "INT:21 IRQ:01 PS/2·°ÎÞ°ÄÞ   ");
@@ -160,5 +160,46 @@ void check_newline(struct POSITION_2D *p, int line_x, int line_y)
 
 void task_b_main(void)
 {
-	for(;;){ io_hlt(); }
+	struct FIFO32 fifo;
+	struct TIMER *timer, *timer01, *timer1000;
+	int i, fifobuf[128], count = 0, count0 = 0;
+	char s[12];
+
+	fifo32_init(&fifo, 128, fifobuf);
+
+	timer = timer_alloc();
+	timer_init(timer, &fifo, 1);
+	timer_settime(timer, 2);
+
+	timer01 = timer_alloc();
+	timer_init(timer01, &fifo, 2);
+	timer_settime(timer01, 1);
+
+	timer1000 = timer_alloc();
+	timer_init(timer1000, &fifo, 100);
+	timer_settime(timer1000, 100);
+
+	for(;;){
+		count ++;
+		io_cli();
+		if(fifo32_status(&fifo) == 0){
+			io_sti();
+		} else {
+			i = fifo32_get(&fifo);
+			io_sti();
+			if(i == 1){
+				farjmp(0, 3 * 8);
+				timer_settime(timer, 2);
+			} else if(i == 2){
+				sprintf(s, "%11d", count);
+				putfonts_asc_sht_i(system.sys.sht.desktop, 8, 248, 0xFFFFFF, 0x000000, s); 
+				timer_settime(timer01, 1);
+			} else if(i == 100){
+				sprintf(s, "%11d", count - count0);
+				putfonts_asc_sht_i(system.sys.sht.desktop, 8, 264, 0xFFFFFF, 0x000000, s); 
+				count0 = count;
+				timer_settime(timer1000, 100);	
+			}
+		}
+	}
 }
