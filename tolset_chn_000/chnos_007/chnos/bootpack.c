@@ -12,11 +12,10 @@ void CHNMain(void)
 	struct KEYINFO dec_key;
 	struct WINDOWINFO *testwin;
 	struct POSITION_2D c_cursor;
-	struct TSS32 tss_a, tss_b;
+	struct TASK *task_b;
 	unsigned char s[64];	
-	int i, mx = 0, my = 0, task_b_esp;
+	int i, mx = 0, my = 0;
 	bool cursor = false;
-
 
 	init_system();
 
@@ -34,42 +33,20 @@ void CHNMain(void)
 	timer_init(system.sys.timer.t500, &system.sys.fifo, SYS_FIFO_SIG_TIMERC);
 	timer_settime(system.sys.timer.t500, 50);
 
-	system.sys.timer.t20 = timer_alloc();
-	timer_init(system.sys.timer.t20, &system.sys.fifo, SYS_FIFO_SIG_TIMERC + 1);
-	timer_settime(system.sys.timer.t20, 2);
-
 	c_cursor.x = 0;
 	c_cursor.y = 0;
 
-	tss_a.ldtr = 0;
-	tss_a.iomap = 0x40000000;
-	tss_b.ldtr = 0;
-	tss_b.iomap = 0x40000000;
+	task_b = task_alloc();
+	task_b->tss.esp = (int)system.io.mem.alloc(64 * 1024) + 64 * 1024;
+	task_b->tss.eip = (int)&task_b_main;
+	task_b->tss.es = 1 * 8;
+	task_b->tss.cs = 2 * 8;
+	task_b->tss.ss = 1 * 8;
+	task_b->tss.ds = 1 * 8;
+	task_b->tss.fs = 1 * 8;
+	task_b->tss.gs = 1 * 8;
 
-	set_segmdesc(system.sys.gdt + 3, 103, (int)&tss_a, AR_TSS32);	
-	set_segmdesc(system.sys.gdt + 4, 103, (int)&tss_b, AR_TSS32);
-
-	load_tr(3 * 8);
-
-	task_b_esp = (int)system.io.mem.alloc(64 * 1024) + 64 * 1024;
-
-	tss_b.eip = (int)&task_b_main;
-	tss_b.eflags = 0x00000202;
-	tss_b.eax = 0;
-	tss_b.ecx = 0;
-	tss_b.edx = 0;
-	tss_b.ebx = 0;
-	tss_b.esp = task_b_esp;
-	tss_b.ebp = 0;
-	tss_b.esi = 0;
-	tss_b.edi = 0;
-	tss_b.es = 1 * 8;
-	tss_b.cs = 2 * 8;
-	tss_b.ss = 1 * 8;
-	tss_b.ds = 1 * 8;
-	tss_b.fs = 1 * 8;
-	tss_b.gs = 1 * 8;
-
+	task_run(task_b);
 
 	for(;;){
 		system.io.cli();
@@ -86,9 +63,6 @@ void CHNMain(void)
 					cursor = true;
 				}
 				timer_settime(system.sys.timer.t500, 50);
-			} else if(i == SYS_FIFO_SIG_TIMERC + 1){
-				farjmp(0, 4 * 8);
-				timer_settime(system.sys.timer.t20, 2);
 			} else if(SYS_FIFO_START_KEYB <= i && i <= SYS_FIFO_START_KEYB + DATA_BYTE){
 				decode_key(&dec_key, i - SYS_FIFO_START_KEYB);
 				sprintf(s, "INT:21 IRQ:01 PS/2·°ÎÞ°ÄÞ   ");
@@ -161,15 +135,11 @@ void check_newline(struct POSITION_2D *p, int line_x, int line_y)
 void task_b_main(void)
 {
 	struct FIFO32 fifo;
-	struct TIMER *timer, *timer01, *timer1000;
+	struct TIMER *timer01, *timer1000;
 	int i, fifobuf[128], count = 0, count0 = 0;
 	char s[12];
 
 	fifo32_init(&fifo, 128, fifobuf);
-
-	timer = timer_alloc();
-	timer_init(timer, &fifo, 1);
-	timer_settime(timer, 2);
 
 	timer01 = timer_alloc();
 	timer_init(timer01, &fifo, 2);
@@ -187,10 +157,7 @@ void task_b_main(void)
 		} else {
 			i = fifo32_get(&fifo);
 			io_sti();
-			if(i == 1){
-				farjmp(0, 3 * 8);
-				timer_settime(timer, 2);
-			} else if(i == 2){
+			if(i == 2){
 				sprintf(s, "%11d", count);
 				putfonts_asc_sht_i(system.sys.sht.desktop, 8, 248, 0xFFFFFF, 0x000000, s); 
 				timer_settime(timer01, 1);

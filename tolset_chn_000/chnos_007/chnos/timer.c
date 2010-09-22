@@ -4,6 +4,7 @@
 void inthandler20(int *esp)
 {
 	struct TIMER *timer;
+	char ts = 0;
 	system.sys.timctl.count++;
 	io_out8(PIC0_OCW2, 0x60);	/* IRQ-00受付完了をPICに通知 。0x60+番号。*/
 	if(system.sys.timctl.next_count > system.sys.timctl.count) return;
@@ -11,11 +12,16 @@ void inthandler20(int *esp)
 	for(;;){
 		if(timer->timeout > system.sys.timctl.count) break;
 		timer->flags = allocated;
-		fifo32_put(timer->fifo, timer->data);
+		if(timer != system.sys.timer.taskswitch){
+			fifo32_put(timer->fifo, timer->data);
+		} else {
+			ts = 1;
+		}
 		timer = timer->next_timer;
 	}
 	system.sys.timctl.timers = timer;
 	system.sys.timctl.next_count = timer->timeout;
+	if(ts != 0) task_switch();
 	return;
 }
 

@@ -125,6 +125,8 @@ void init_system(void)
 	fdc_motor_off(4);
 
 	init_windows();
-	
+
+	task_init();
+
 	return;
 }

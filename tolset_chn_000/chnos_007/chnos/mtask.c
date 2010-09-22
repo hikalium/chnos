@@ -1,0 +1,73 @@
+
+#include "core.h"
+
+struct TASKCTL *taskctl;
+
+void task_init(void)
+{
+	int i;
+	taskctl = (struct TASKCTL *)system.io.mem.alloc(sizeof(struct TASKCTL));
+	for(i = 0; i < MAX_TASKS; i++){
+		taskctl->tasks0[i].flags = initialized;
+		taskctl->tasks0[i].selector = (TASK_GDT_START + i) * 8;
+		set_segmdesc(system.sys.gdt + TASK_GDT_START + i, 103, (int)&taskctl->tasks0[i].tss, AR_TSS32);
+	}
+	system.sys.task.main = task_alloc();
+	system.sys.task.main->flags = inuse;
+	taskctl->running = 1;
+	taskctl->task_now = 0;
+	taskctl->tasks[0] = system.sys.task.main;
+	load_tr(system.sys.task.main->selector);
+	system.sys.timer.taskswitch = timer_alloc();
+	timer_settime(system.sys.timer.taskswitch, 2);
+	return;
+}
+
+struct TASK *task_alloc(void)
+{
+	int i;
+	struct TASK *task;
+	for(i = 0; i < MAX_TASKS; i++){
+		if(taskctl->tasks0[i].flags == initialized){
+			task = &taskctl->tasks0[i];
+			task->flags = allocated;
+			task->tss.eflags = 0x00000202;
+			task->tss.eax = 0;
+			task->tss.ecx = 0;
+			task->tss.edx = 0;
+			task->tss.ebx = 0;
+			task->tss.ebp = 0;
+			task->tss.esi = 0;
+			task->tss.edi = 0;
+			task->tss.es = 0;
+			task->tss.ds = 0;
+			task->tss.fs = 0;
+			task->tss.gs = 0;
+			task->tss.ldtr = 0;
+			task->tss.iomap = 0x40000000;
+			return task;
+		}
+	}
+	return 0;
+}
+
+void task_run(struct TASK *task)
+{
+	task->flags = inuse;
+	taskctl->tasks[taskctl->running] = task;
+	taskctl->running++;
+	return;
+}
+
+void task_switch(void)
+{
+	timer_settime(system.sys.timer.taskswitch, 2);
+	if(taskctl->running >= 2){
+		taskctl->task_now++;
+		if(taskctl->task_now == taskctl->running){
+			taskctl->task_now = 0;
+		}
+		farjmp(0, taskctl->tasks[taskctl->task_now]->selector);
+	}
+	return;
+}

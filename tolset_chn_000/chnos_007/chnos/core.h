@@ -111,6 +111,9 @@ typedef enum _state_alloc { none, initialized, allocated, configured, inuse} sta
 
 #define DATA_BYTE	0xFF
 
+#define MAX_TASKS	1000
+#define TASK_GDT_START	3
+
 /*structures*/
 
 extern char cursor[24][24];
@@ -192,6 +195,19 @@ struct TSS32 {
 	int eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
 	int es, cs, ss, ds, fs, gs;
 	int ldtr, iomap;
+};
+
+struct TASK {
+	int selector;
+	state_alloc flags;
+	struct TSS32 tss;
+};
+
+struct TASKCTL {
+	int running;
+	int task_now;
+	struct TASK *tasks[MAX_TASKS];
+	struct TASK tasks0[MAX_TASKS];
 };
 
 struct SEGMENT_DESCRIPTOR { 
@@ -355,8 +371,11 @@ struct SYSTEM {
 		} sht;
 		struct SYS_SYS_TIMER {
 			struct TIMER *t500;
-			struct TIMER *t20;
+			struct TIMER *taskswitch;
 		} timer;
+		struct SYS_SYS_TASK {
+			struct TASK *main;
+		} task;
 		struct MEMMAN memman;
 		struct TIMERCTL timctl;
 		unsigned int memtotal;
@@ -376,6 +395,12 @@ struct SYSTEM {
 extern struct SYSTEM system;
 
 /*functions*/
+
+/*mtask.c*/
+void task_init(void);
+struct TASK *task_alloc(void);
+void task_run(struct TASK *task);
+void task_switch(void);
 
 /*io.c*/
 void readrtc(unsigned char *t);
