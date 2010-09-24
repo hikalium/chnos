@@ -5,7 +5,7 @@
 struct SYSTEM system;
 
 void check_newline(struct POSITION_2D *p, int line_x, int line_y);
-void task_b_main(void);
+void task_b_main(int test, int test2, int test3);
 
 void CHNMain(void)
 {
@@ -45,6 +45,8 @@ void CHNMain(void)
 	task_b->tss.ds = 1 * 8;
 	task_b->tss.fs = 1 * 8;
 	task_b->tss.gs = 1 * 8;
+
+	task_arguments(task_b, 3, task_b->tss.esp, 2222, 3333);
 
 	task_run(task_b);
 
@@ -134,7 +136,7 @@ void check_newline(struct POSITION_2D *p, int line_x, int line_y)
 	return;
 }
 
-void task_b_main(void)
+void task_b_main(int test, int test2, int test3)
 {
 	struct FIFO32 fifo;
 	struct TIMER *timer01, *timer1000;
@@ -160,7 +162,7 @@ void task_b_main(void)
 			i = fifo32_get(&fifo);
 			io_sti();
 			if(i == 2){
-				sprintf(s, "%11d", count);
+				sprintf(s, "%11d %X %d %d", count, test, test2, test3);
 				putfonts_asc_sht_i(system.sys.sht.desktop, 8, 248, 0xFFFFFF, 0x000000, s); 
 				timer_settime(timer01, 1);
 			} else if(i == 100){

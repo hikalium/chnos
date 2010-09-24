@@ -94,3 +94,19 @@ void task_sleep(struct TASK *task)
 	}
 	return;
 }
+
+void task_arguments(struct TASK *task, int args, ...)
+{
+	int i;
+	va_list ap;
+
+	va_start(ap, args);
+
+	
+
+	for(i = 1; i < args + 1; i++){
+		*((int *)(task->tss.esp + (i * 4))) = va_arg(ap, int);
+	}
+	va_end(ap);
+	return; 
+}

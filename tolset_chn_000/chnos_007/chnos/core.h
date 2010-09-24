@@ -1,7 +1,7 @@
 
 /*include files*/
-#include<stdio.h>
-
+#include <stdio.h>
+#include <stdarg.h>
 /*new object types*/
 
 typedef enum _bool { false, true } bool;
@@ -403,6 +403,7 @@ struct TASK *task_alloc(void);
 void task_run(struct TASK *task);
 void task_switch(void);
 void task_sleep(struct TASK *task);
+void task_arguments(struct TASK *task, int args, ...);
 
 /*io.c*/
 void readrtc(unsigned char *t);
