@@ -51,7 +51,9 @@ void CHNMain(void)
 	for(;;){
 		system.io.cli();
 		if(system.data.fifo.status(&system.sys.fifo) == 0){
-			system.io.stihlt();
+//			system.io.stihlt();
+			task_sleep(system.sys.task.main);
+			system.io.sti();
 		} else {
 			i = system.data.fifo.get(&system.sys.fifo);
 			if(i == SYS_FIFO_SIG_TIMERC){
@@ -139,7 +141,7 @@ void task_b_main(void)
 	int i, fifobuf[128], count = 0, count0 = 0;
 	char s[12];
 
-	fifo32_init(&fifo, 128, fifobuf);
+	fifo32_init(&fifo, 128, fifobuf, 0);
 
 	timer01 = timer_alloc();
 	timer_init(timer01, &fifo, 2);

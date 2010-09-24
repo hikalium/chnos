@@ -114,7 +114,7 @@ void init_system(void)
 	system.draw.sht.slide(system.sys.sht.mouse, system.sys.xsize / 2, system.sys.ysize / 2);
 	system.draw.sht.updown(system.sys.sht.mouse, 3);
 
-	system.data.fifo.init(&system.sys.fifo, SYS_FIFOSIZE, system.sys.fifo_buf);
+	system.data.fifo.init(&system.sys.fifo, SYS_FIFOSIZE, system.sys.fifo_buf, 0);
 
 	init_pic();
 	init_keyboard(256);	
@@ -127,6 +127,8 @@ void init_system(void)
 	init_windows();
 
 	task_init();
+
+	system.sys.fifo.task = system.sys.task.main;
 
 	return;
 }

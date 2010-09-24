@@ -71,3 +71,26 @@ void task_switch(void)
 	}
 	return;
 }
+
+void task_sleep(struct TASK *task)
+{
+	int i;
+	bool ts = false;
+	if(task->flags == inuse){
+		if(task == taskctl->tasks[taskctl->task_now]) ts = true;
+		for(i = 0; i < taskctl->running; i++){
+			if(taskctl->tasks[i] == task) break;
+		}
+		taskctl->running--;
+		if(i < taskctl->task_now) taskctl->task_now--;
+		for(; i < taskctl->running; i++){
+			taskctl->tasks[i] = taskctl->tasks[i + 1];
+		}
+		task->flags = allocated;
+		if(ts){
+			if(taskctl->task_now >= taskctl->running) taskctl->task_now = 0;
+			farjmp(0, taskctl->tasks[taskctl->task_now]->selector);
+		}
+	}
+	return;
+}
