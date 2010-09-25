@@ -449,6 +449,7 @@ void sendto_mouse(int data);
 int decode_mouse(int data);
 
 /*int.c*/
+void cpu_exception_alert(int exception, int *esp);
 void init_pic(void);
 void inthandler27(int *esp);
 
