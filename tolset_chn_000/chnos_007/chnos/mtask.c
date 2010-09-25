@@ -101,8 +101,8 @@ void task_arguments(struct TASK *task, int args, ...)
 	va_list ap;
 
 	va_start(ap, args);
-
 	
+	task->tss.esp -= 4 * (args + 1);
 
 	for(i = 1; i < args + 1; i++){
 		*((int *)(task->tss.esp + (i * 4))) = va_arg(ap, int);

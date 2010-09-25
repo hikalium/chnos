@@ -5,14 +5,14 @@
 struct SYSTEM system;
 
 void check_newline(struct POSITION_2D *p, int line_x, int line_y);
-void task_b_main(int test, int test2, int test3);
+void task_b_main(struct WINDOWINFO *win);
 
 void CHNMain(void)
 {
 	struct KEYINFO dec_key;
-	struct WINDOWINFO *testwin;
+	struct WINDOWINFO *testwin, *win[4];
 	struct POSITION_2D c_cursor;
-	struct TASK *task_b;
+	struct TASK *task[4];
 	unsigned char s[64];	
 	int i, mx = 0, my = 0;
 	bool cursor = false;
@@ -36,20 +36,21 @@ void CHNMain(void)
 	c_cursor.x = 0;
 	c_cursor.y = 0;
 
-	task_b = task_alloc();
-	task_b->tss.esp = (int)system.io.mem.alloc(64 * 1024) + 64 * 1024;
-	task_b->tss.eip = (int)&task_b_main;
-	task_b->tss.es = 1 * 8;
-	task_b->tss.cs = 2 * 8;
-	task_b->tss.ss = 1 * 8;
-	task_b->tss.ds = 1 * 8;
-	task_b->tss.fs = 1 * 8;
-	task_b->tss.gs = 1 * 8;
-
-	task_arguments(task_b, 3, task_b->tss.esp, 2222, 3333);
-
-	task_run(task_b);
-
+	for(i = 0; i < 4; i++){
+		sprintf(s, "task:%d", i);
+		win[i] = make_window32(s, 100, 16, 0, i * 50, 3);
+		task[i] = task_alloc();
+		task[i]->tss.esp = (int)system.io.mem.alloc(64 * 1024) + 64 * 1024;
+		task[i]->tss.eip = (int)&task_b_main;
+		task[i]->tss.es = 1 * 8;
+		task[i]->tss.cs = 2 * 8;
+		task[i]->tss.ss = 1 * 8;
+		task[i]->tss.ds = 1 * 8;
+		task[i]->tss.fs = 1 * 8;
+		task[i]->tss.gs = 1 * 8;
+		task_arguments(task[i], 1, win[i]);
+		task_run(task[i]);
+	}
 	for(;;){
 		system.io.cli();
 		if(system.data.fifo.status(&system.sys.fifo) == 0){
@@ -136,18 +137,14 @@ void check_newline(struct POSITION_2D *p, int line_x, int line_y)
 	return;
 }
 
-void task_b_main(int test, int test2, int test3)
+void task_b_main(struct WINDOWINFO *win)
 {
 	struct FIFO32 fifo;
-	struct TIMER *timer01, *timer1000;
+	struct TIMER *timer1000;
 	int i, fifobuf[128], count = 0, count0 = 0;
 	char s[12];
 
 	fifo32_init(&fifo, 128, fifobuf, 0);
-
-	timer01 = timer_alloc();
-	timer_init(timer01, &fifo, 2);
-	timer_settime(timer01, 1);
 
 	timer1000 = timer_alloc();
 	timer_init(timer1000, &fifo, 100);
@@ -161,13 +158,9 @@ void task_b_main(int test, int test2, int test3)
 		} else {
 			i = fifo32_get(&fifo);
 			io_sti();
-			if(i == 2){
-				sprintf(s, "%11d %X %d %d", count, test, test2, test3);
-				putfonts_asc_sht_i(system.sys.sht.desktop, 8, 248, 0xFFFFFF, 0x000000, s); 
-				timer_settime(timer01, 1);
-			} else if(i == 100){
+			if(i == 100){
 				sprintf(s, "%11d", count - count0);
-				putfonts_asc_sht_i(system.sys.sht.desktop, 8, 264, 0xFFFFFF, 0x000000, s); 
+				putfonts_win(win, 0, 0, 0xFFFFFF, 0x000000, s);
 				count0 = count;
 				timer_settime(timer1000, 100);	
 			}
