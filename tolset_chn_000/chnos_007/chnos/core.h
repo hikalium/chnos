@@ -384,6 +384,7 @@ struct SYSTEM {
 			struct TIMER *taskswitch;
 		} timer;
 		struct SYS_SYS_TASK {
+			struct TASK *idle;
 			struct TASK *main;
 		} task;
 		struct MEMMAN memman;
@@ -417,6 +418,7 @@ struct TASK *task_now(void);
 void task_add(struct TASK *task);
 void task_remove(struct TASK *task);
 void task_switchsub(void);
+void task_idle(void);
 
 /*io.c*/
 void readrtc(unsigned char *t);

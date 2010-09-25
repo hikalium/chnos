@@ -36,6 +36,7 @@ void CHNMain(void)
 	c_cursor.x = 0;
 	c_cursor.y = 0;
 
+
 	for(i = 0; i < 4; i++){
 		sprintf(s, "task:%d", i);
 		win[i] = make_window32(s, 100, 16, 0, i * 50, 3);
@@ -51,10 +52,10 @@ void CHNMain(void)
 		task_arguments(task[i], 1, win[i]);
 		task_run(task[i], 2, i + 1);
 	}
+
 	for(;;){
 		system.io.cli();
 		if(system.data.fifo.status(&system.sys.fifo) == 0){
-//			system.io.stihlt();
 			task_sleep(system.sys.task.main);
 			system.io.sti();
 		} else {

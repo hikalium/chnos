@@ -16,6 +16,18 @@ void task_init(void)
 		taskctl->level[i].running_tasks = 0;
 		taskctl->level[i].task_now = 0;
 	}
+
+	system.sys.task.idle = task_alloc();
+	system.sys.task.idle->tss.esp = (int)system.io.mem.alloc(64 * 1024) + 64 * 1024;
+	system.sys.task.idle->tss.eip = (int)&task_idle;
+	system.sys.task.idle->tss.es = 1 * 8;
+	system.sys.task.idle->tss.cs = 2 * 8;
+	system.sys.task.idle->tss.ss = 1 * 8;
+	system.sys.task.idle->tss.ds = 1 * 8;
+	system.sys.task.idle->tss.fs = 1 * 8;
+	system.sys.task.idle->tss.gs = 1 * 8;
+	task_run(system.sys.task.idle, MAX_LEVELS - 1, 1);
+
 	system.sys.task.main = task_alloc();
 	system.sys.task.main->flags = inuse;
 	system.sys.task.main->priority = 2; /*0.02sec*/
@@ -158,4 +170,11 @@ void task_switchsub(void)
 	taskctl->level_now = i;
 	taskctl->change_lv_next = false;
 	return;
+}
+
+void task_idle(void)
+{
+	for(;;){
+		io_hlt();
+	}
 }
