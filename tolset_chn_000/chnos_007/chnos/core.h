@@ -201,6 +201,7 @@ struct TSS32 {
 struct TASK {
 	int selector;
 	state_alloc flags;
+	int priority;
 	struct TSS32 tss;
 };
 
@@ -400,7 +401,7 @@ extern struct SYSTEM system;
 /*mtask.c*/
 void task_init(void);
 struct TASK *task_alloc(void);
-void task_run(struct TASK *task);
+void task_run(struct TASK *task, int priority);
 void task_switch(void);
 void task_sleep(struct TASK *task);
 void task_arguments(struct TASK *task, int args, ...);

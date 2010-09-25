@@ -14,12 +14,13 @@ void task_init(void)
 	}
 	system.sys.task.main = task_alloc();
 	system.sys.task.main->flags = inuse;
+	system.sys.task.main->priority = 2; /*0.02sec*/
 	taskctl->running = 1;
 	taskctl->task_now = 0;
 	taskctl->tasks[0] = system.sys.task.main;
 	load_tr(system.sys.task.main->selector);
 	system.sys.timer.taskswitch = timer_alloc();
-	timer_settime(system.sys.timer.taskswitch, 2);
+	timer_settime(system.sys.timer.taskswitch, system.sys.task.main->priority);
 	return;
 }
 
@@ -51,22 +52,25 @@ struct TASK *task_alloc(void)
 	return 0;
 }
 
-void task_run(struct TASK *task)
+void task_run(struct TASK *task, int priority)
 {
-	task->flags = inuse;
-	taskctl->tasks[taskctl->running] = task;
-	taskctl->running++;
+	if(priority > 0) {
+		task->priority = priority;
+	}
+	if(task->flags != inuse){
+		task->flags = inuse;
+		taskctl->tasks[taskctl->running] = task;
+		taskctl->running++;
+	}
 	return;
 }
 
 void task_switch(void)
 {
-	timer_settime(system.sys.timer.taskswitch, 2);
+	taskctl->task_now++;
+	if(taskctl->task_now == taskctl->running) taskctl->task_now = 0;
+	timer_settime(system.sys.timer.taskswitch, taskctl->tasks[taskctl->task_now]->priority);
 	if(taskctl->running >= 2){
-		taskctl->task_now++;
-		if(taskctl->task_now == taskctl->running){
-			taskctl->task_now = 0;
-		}
 		farjmp(0, taskctl->tasks[taskctl->task_now]->selector);
 	}
 	return;

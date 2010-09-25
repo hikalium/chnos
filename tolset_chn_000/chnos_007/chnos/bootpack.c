@@ -49,7 +49,7 @@ void CHNMain(void)
 		task[i]->tss.fs = 1 * 8;
 		task[i]->tss.gs = 1 * 8;
 		task_arguments(task[i], 1, win[i]);
-		task_run(task[i]);
+		task_run(task[i], i + 1);
 	}
 	for(;;){
 		system.io.cli();
