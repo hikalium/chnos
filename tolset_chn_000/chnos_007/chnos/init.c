@@ -130,5 +130,7 @@ void init_system(void)
 
 	system.sys.fifo.task = system.sys.task.main;
 
+	task_run(system.sys.task.main, 1, 0);
+
 	return;
 }

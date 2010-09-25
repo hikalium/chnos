@@ -113,6 +113,8 @@ typedef enum _state_alloc { none, initialized, allocated, configured, inuse} sta
 
 #define MAX_TASKS	1000
 #define TASK_GDT_START	3
+#define MAX_LEVEL_TASKS	100
+#define MAX_LEVELS	10
 
 /*structures*/
 
@@ -201,14 +203,20 @@ struct TSS32 {
 struct TASK {
 	int selector;
 	state_alloc flags;
-	int priority;
+	int level, priority;
 	struct TSS32 tss;
 };
 
-struct TASKCTL {
-	int running;
+struct TASKLEVEL {
+	int running_tasks;
 	int task_now;
-	struct TASK *tasks[MAX_TASKS];
+	struct TASK *tasks[MAX_LEVEL_TASKS];
+};
+
+struct TASKCTL {
+	int level_now;
+	bool change_lv_next;
+	struct TASKLEVEL level[MAX_LEVELS];
 	struct TASK tasks0[MAX_TASKS];
 };
 
@@ -401,10 +409,14 @@ extern struct SYSTEM system;
 /*mtask.c*/
 void task_init(void);
 struct TASK *task_alloc(void);
-void task_run(struct TASK *task, int priority);
+void task_run(struct TASK *task, int level, int priority);
 void task_switch(void);
 void task_sleep(struct TASK *task);
 void task_arguments(struct TASK *task, int args, ...);
+struct TASK *task_now(void);
+void task_add(struct TASK *task);
+void task_remove(struct TASK *task);
+void task_switchsub(void);
 
 /*io.c*/
 void readrtc(unsigned char *t);
