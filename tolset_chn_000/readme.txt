@@ -1,8 +1,39 @@
-tolset_chnの説明書
-
-  これは「30日でできる！ OS自作入門」についているtolsetをパワーアップしたもの
-です。と共に、CHNOSProjectを開発したり、テストするための追加も含まれています。
+tolset_chnの説明書（19:36 2010/09/28）
+  これは「30日でできる！ OS自作入門」についているtolsetをパワーアップしたものです。
+と共に、CHNOSProjectを開発したり、テストするための追加も含まれています。
 
 このパッケージには、ＯＳは含まれていません。
 ＯＳのソースをダウンロードし、解凍したら、chnos_xxxフォルダを、z_toolsフォルダと同じ場所にコピーしてください。
 それ以降は、そのソースに附属しているドキュメントを参照してください。
+
+基本的に、このパッケージの中に含まれているものはほとんどが、このファイルと同じ階層にある「license.txt」にもあるように、
+KL-01となっています。
+
+KL-01でないものは、次の通りです。
+	cc1.exe
+	cpp0.exe
+	ld.exe
+	make.exe
+	upx.exe
+	上記のものは、GPLライセンスが適用されます。
+	t5lzma.exe
+	qemu/qemu.exe
+	qemu/bios.bin
+	qemu/SDL.bin
+	qemu_9x/qemu.exe
+	qemu_9x/bios.bin
+	qemu_9x/SDL.bin
+	qemu_iso/bios.bin
+	qemu_iso/qemu-system-x86_64.exe
+	qemu_iso/qemu-x86_64.bat
+	qemu_iso/SDL.exe
+	bochs/bochs-smp.exe
+	bochs/bios.bin
+	上記のものは、LGPLライセンスが適用されます。
+
+	ライセンスについては、詳しく確認していないので、間違いがあるかもしれません。
+	間違いの指摘、大歓迎です。
+
+
+
+hikarupsp:hikarupsp@users.sourceforge.jp:http://sourceforge.jp/projects/chnosproject/
