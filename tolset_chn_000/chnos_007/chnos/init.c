@@ -53,7 +53,6 @@ void init_system(void)
 
 	system.draw.putfonts_sht			= putfonts_asc_sht_i;
 	system.draw.init_screen				= init_screen_i;
-	system.draw.circle				= circle_i;
 	system.draw.point				= point_i;
 	system.draw.boxfill				= boxfill_i;
 	system.draw.putfonts				= putfonts_asc_i;

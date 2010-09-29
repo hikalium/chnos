@@ -3,17 +3,17 @@
 #include <math.h>
 #include <string.h>
 
-void boxfill8(unsigned int *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1)
+void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1)
 {
 	int x, y;
 	for (y = y0; y <= y1; y++) {
 		for (x = x0; x <= x1; x++)
-			vram[y * xsize + x] = (unsigned int)c;
+			vram[y * xsize + x] = c;
 	}
 	return;
 }
 
-void init_desktop8(unsigned int *vram)
+void init_desktop8(unsigned char *vram)
 {
 	unsigned int xsize = system.sys.xsize;
 	unsigned int ysize = system.sys.ysize;
@@ -26,9 +26,10 @@ void init_desktop8(unsigned int *vram)
 	return;	
 }
 
-void init_taskbar8(unsigned int *vram)
+void init_taskbar8(unsigned char *vram)
 {
 	unsigned int xsize = system.sys.xsize;
+
 	boxfill8(vram, xsize, TASKBAR_COL8, 0, 0, xsize, TASKBAR_HEIGHT);
 	boxfill8(vram, xsize, COL8_FFFFFF, 0, 0, xsize, 1);
 	boxfill8(vram, xsize, COL8_FFFFFF, xsize-2, 0, xsize, TASKBAR_HEIGHT);
@@ -36,27 +37,27 @@ void init_taskbar8(unsigned int *vram)
 	return;
 }
 
-void putfont8(unsigned int *vram, int xsize, int x, int y, unsigned char c, unsigned char *font)
+void putfont8(unsigned char *vram, int xsize, int x, int y, unsigned char c, unsigned char *font)
 {
 	int i;
-	char d /* data */;
-	unsigned int *p;
+	unsigned char d /* data */;
+	unsigned char *p;
 	for (i = 0; i < 16; i++) {
 		p = vram + (y + i) * xsize + x;
 		d = font[i];
-		if ((d & 0x80) != 0) { p[0] = (unsigned int)c; }
-		if ((d & 0x40) != 0) { p[1] = (unsigned int)c; }
-		if ((d & 0x20) != 0) { p[2] = (unsigned int)c; }
-		if ((d & 0x10) != 0) { p[3] = (unsigned int)c; }
-		if ((d & 0x08) != 0) { p[4] = (unsigned int)c; }
-		if ((d & 0x04) != 0) { p[5] = (unsigned int)c; }
-		if ((d & 0x02) != 0) { p[6] = (unsigned int)c; }
-		if ((d & 0x01) != 0) { p[7] = (unsigned int)c; }
+		if ((d & 0x80) != 0) { p[0] = c; }
+		if ((d & 0x40) != 0) { p[1] = c; }
+		if ((d & 0x20) != 0) { p[2] = c; }
+		if ((d & 0x10) != 0) { p[3] = c; }
+		if ((d & 0x08) != 0) { p[4] = c; }
+		if ((d & 0x04) != 0) { p[5] = c; }
+		if ((d & 0x02) != 0) { p[6] = c; }
+		if ((d & 0x01) != 0) { p[7] = c; }
 	}
 	return;
 }
 
-void putfonts8_asc(unsigned int *vram, int xsize, int x, int y, unsigned char c, unsigned char *s)
+void putfonts8_asc(unsigned char *vram, int xsize, int x, int y, unsigned char c, const unsigned char *s)
 {
 	extern char hankaku[4096];
 	for (; *s != 0x00; s++) {
@@ -66,17 +67,17 @@ void putfonts8_asc(unsigned int *vram, int xsize, int x, int y, unsigned char c,
 	return;
 }
 
-void init_mouse_cursor8(unsigned int *mouse)
+void init_mouse_cursor8(unsigned char *mouse)
 {
 	int x, y;
 
 	for (y = 0; y < 24; y++) {
 		for (x = 0; x < 24; x++) {
 			if (cursor[y][x] == '*') {
-				mouse[y * 24 + x] = (unsigned int)COL8_000000;
+				mouse[y * 24 + x] = COL8_000000;
 			}
 			if (cursor[y][x] == 'O') {
-				mouse[y * 24 + x] = (unsigned int)COL8_FFFFFF;
+				mouse[y * 24 + x] = COL8_FFFFFF;
 			}
 			if (cursor[y][x] == '.') {
 				mouse[y * 24 + x] = INV_COL8;
@@ -86,7 +87,7 @@ void init_mouse_cursor8(unsigned int *mouse)
 	return;
 }
 
-void putblock8_8(unsigned int *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned int *buf, int bxsize)
+void putblock8_8(unsigned char *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned char *buf, int bxsize)
 {
 	int x, y;
 	for (y = 0; y < pysize; y++) {

@@ -78,20 +78,19 @@ void putfonts_asc_sht_i(struct SHEET32 *sht, int x, int y, unsigned int c, unsig
 	return;
 }
 
-void init_screen_i(unsigned int *desktop, unsigned int *taskbar, unsigned int *mousecursor)
+void init_screen_i(void *desktop, void *taskbar, void *mousecursor)
 {
 	if(system.sys.bpp == 8){
 		init_palette();
 	}
-
 	init_desktop_i(desktop);
 	init_taskbar_i(taskbar);
 	init_mousecursor_i(mousecursor);
 
-	col_pat(desktop,system.sys.xsize, system.sys.ysize);
+	col_pat(desktop, system.sys.xsize, system.sys.ysize);
 }
 
-void init_desktop_i(unsigned int *vrami)
+void init_desktop_i(void *vrami)
 {
 	if(system.sys.bpp == 8){
 		init_desktop8(vrami);
@@ -103,7 +102,7 @@ void init_desktop_i(unsigned int *vrami)
 	return;	
 }
 
-void init_taskbar_i(unsigned int *vrami)
+void init_taskbar_i(void *vrami)
 {
 	if(system.sys.bpp == 8){
 		init_taskbar8(vrami);
@@ -115,7 +114,7 @@ void init_taskbar_i(unsigned int *vrami)
 	return;	
 }
 
-void init_mousecursor_i(unsigned int *vrami)
+void init_mousecursor_i(void *vrami)
 {
 	if(system.sys.bpp == 8){
 		init_mouse_cursor8(vrami);
@@ -162,39 +161,27 @@ unsigned int mix_color(unsigned int c0, unsigned int c1)
 	return c1;
 }
 
-void circle_i(unsigned int *vrami, int cx, int cy, unsigned int c, int xsize, int r)
-{
-	double pi = 3.1415;
-	int c_div = 100;
-	double incr = 2 * pi / c_div;
-	double th = 0;
-	int i,x,y;
-	for (i = 0;i <= c_div;i++){
-		x = r * cos(th);
-		y = r * sin(th);
-		point_i(vrami,cx+x,cy+y,c,xsize);
-		th += incr;
-	}
-
-}
-
-void point_i(unsigned int *vrami, int x, int y, unsigned int c, int xsize)
+void point_i(void *vrami, int x, int y, unsigned int c, int xsize)
 {
 	if(system.info.vesa.BitsPerPixel == 8){
 		unsigned char c8 = rgb_int2char(c);
-		vrami[y * xsize + x] = (unsigned int)c8;
+		unsigned char *cc = (unsigned char *)vrami;
+		cc[y * xsize + x] = c8;
 	} else if(system.info.vesa.BitsPerPixel == 16){
 		unsigned short c16 = rgb_int2short(c);
-		vrami[y * xsize + x] = (unsigned int)c16;
+		unsigned short *cs = (unsigned short *)vrami;
+		cs[y * xsize + x] = c16;
 	} else if(system.info.vesa.BitsPerPixel == 32){
-		vrami[y * xsize + x] = c;
+		unsigned int *ci = (unsigned int *)vrami;
+		ci[y * xsize + x] = c;
 	}
 	return;
 }
 
-void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1)
+void boxfill_i(void *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1)
 {
 	y1 -= 1;
+	x1 -= 1;
 	if(system.info.vesa.BitsPerPixel == 8){
 		unsigned char c8 = rgb_int2char(c);
 		boxfill8(vrami, xsize, c8, x0, y0, x1, y1);	
@@ -207,18 +194,18 @@ void boxfill_i(unsigned int *vrami, int xsize, unsigned int c, int x0, int y0, i
 	return;
 }
 
-void putfonts_asc_i(unsigned int *vrami, int xsize, int x, int y, unsigned int ci, const unsigned char *s)
+void putfonts_asc_i(void *vrami, int xsize, int x, int y, unsigned int c, const unsigned char *s)
 {
 	extern char hankaku[4096];
 	if(system.info.vesa.BitsPerPixel == 8){
-		unsigned char c8 = rgb_int2char(ci);
+		unsigned char c8 = rgb_int2char(c);
 		for (; *s != 0x00; s++) {
 			putfont8(vrami, xsize, x, y, c8, hankaku + *s * 16);
 			x += 8;
 		}
 		return;
 	} else if(system.info.vesa.BitsPerPixel == 16){
-		unsigned short c16 = rgb_int2short(ci);
+		unsigned short c16 = rgb_int2short(c);
 		for (; *s != 0x00; s++) {
 			putfont16(vrami, xsize, x, y, c16, hankaku + *s * 16);
 			x += 8;
@@ -226,7 +213,7 @@ void putfonts_asc_i(unsigned int *vrami, int xsize, int x, int y, unsigned int c
 		return;
 	} else if(system.info.vesa.BitsPerPixel == 32){
 		for (; *s != 0x00; s++) {
-			putfont32(vrami, xsize, x, y, ci, hankaku + *s * 16);
+			putfont32(vrami, xsize, x, y, c, hankaku + *s * 16);
 			x += 8;
 		}
 	}
@@ -253,7 +240,7 @@ unsigned short rgb_int2short (unsigned int c32)
 	return c16;
 }
 
-void col_pat(unsigned int *vrami, int xsize, int ysize)
+void col_pat(void *vrami, int xsize, int ysize)
 {
 	int x,y;
 	x=0;

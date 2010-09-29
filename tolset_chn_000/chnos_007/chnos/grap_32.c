@@ -56,7 +56,7 @@ void putfont32(unsigned int *vram, int xsize, int x, int y, unsigned int c, unsi
 	return;
 }
 
-void putfonts32_asc(unsigned int *vram, int xsize, int x, int y, unsigned int c, unsigned char *s)
+void putfonts32_asc(unsigned int *vram, int xsize, int x, int y, unsigned int c, const unsigned char *s)
 {
 	extern char hankaku[4096];
 	for (; *s != 0x00; s++) {
