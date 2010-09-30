@@ -23,24 +23,6 @@ static int rgb_int2char_list [16] = {
 	0x008484,
 	0x848484
 	};
-static short rgb_char2short_list[16] = {
-	RGB16(0,0,0),
-	RGB16(31,0,0),
-	RGB16(0,62,0),
-	RGB16(31,62,0),
-	RGB16(0,0,31),
-	RGB16(31,0,31),
-	RGB16(0,62,31),
-	RGB16(31,62,31),
-	RGB16(25,50,25),
-	RGB16(17,0,0),
-	RGB16(0,33,0),
-	RGB16(17,33,0),
-	RGB16(0,0,17),
-	RGB16(17,0,17),
-	RGB16(0,33,17),
-	RGB16(17,33,17)
-	};
 char cursor[24][24] = {
 	"***.....................",
 	"*O**....................",
@@ -228,15 +210,21 @@ unsigned char rgb_int2char (unsigned int c32)
 			return i;
 		}
 	}
-	return 7;
+	return 8;
 }
 
 unsigned short rgb_int2short (unsigned int c32)
 {
 	unsigned short c16;
-	unsigned char c8;
-	c8 = rgb_int2char(c32);
-	c16 = rgb_char2short_list[c8];
+	unsigned char c[4];
+
+	c[3] = (c32 << 24) >> 24;
+	c[2] = (c32 << 16) >> 24;
+	c[1] = (c32 <<  8) >> 24;
+	c[0] = (c32 >> 24);
+
+	c16 = ((c[1] >> 2) << 11 | (c[2] >> 2) << 5 | (c[3] >> 2));
+	
 	return c16;
 }
 

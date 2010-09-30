@@ -52,8 +52,11 @@ struct WINDOWINFO *make_window32(unsigned char *title, int xsize, int ysize, int
 	};
 	int x, y;
 	char c;
-	unsigned int col = 0;
+	unsigned int col32 = 0;
+	unsigned short col16 = 0;
+	unsigned char col8 = 0;
 	struct WINDOWINFO *winfo = window_alloc();
+
 	if(winfo == 0) goto err;
 	int i = 0;
 	for (; *title != 0x00; title++) {
@@ -72,11 +75,11 @@ struct WINDOWINFO *make_window32(unsigned char *title, int xsize, int ysize, int
 	
 	winfo->win = sheet_alloc();
 
-	winfo->buf = (unsigned int *)memman_alloc_4k(&system.sys.memman, (winfo->winxsize * winfo->winysize) * 4);
-//	winfo->buf_L = (unsigned int *)memman_alloc_4k(ysize * 4 * 4);
-//	winfo->buf_R = (unsigned int *)memman_alloc_4k(ysize * 4 * 4);
-//	winfo->buf_bottom = (unsigned int *)memman_alloc_4k(4 * winfo->xsize * 4);
-//	winfo->buf_head = (unsigned int *)memman_alloc_4k(24 * winfo->xsize * 4);
+	winfo->buf = (unsigned int *)memman_alloc_4k(&system.sys.memman, (winfo->winxsize * winfo->winysize) * (system.sys.bpp >> 2));
+//	winfo->buf_L = (unsigned int *)memman_alloc_4k(ysize * 4 * (system.sys.bpp >> 2));
+//	winfo->buf_R = (unsigned int *)memman_alloc_4k(ysize * 4 * (system.sys.bpp >> 2));
+//	winfo->buf_bottom = (unsigned int *)memman_alloc_4k(4 * winfo->xsize * (system.sys.bpp >> 2));
+//	winfo->buf_head = (unsigned int *)memman_alloc_4k(24 * winfo->xsize * (system.sys.bpp >> 2));
 
 	sheet_setbuf(winfo->win, winfo->buf, winfo->winxsize, winfo->winysize,INV_COL32);	
 //	sheet_setbuf(winfo->sideL, winfo->buf_L, 4, ysize,INV_COL32);
@@ -90,15 +93,42 @@ struct WINDOWINFO *make_window32(unsigned char *title, int xsize, int ysize, int
 	boxfill_i(winfo->buf, winfo->winxsize, WINDOW_COL32, winfo->winxsize - 4, 0, winfo->winxsize, winfo->winysize);
 	boxfill_i(winfo->buf, winfo->winxsize, WINDOW_COL32, 0, winfo->winysize - 4, winfo->winxsize, winfo->winysize);
 	putfonts_asc_sht_i(winfo->win, 4, 4, 0xffffff, WINDOW_COL32, winfo->title);
-	for(y = 0; y < 16; y++){
-		for(x = 0; x < 40; x++){
-			c = closebtn[y][x];
-			if(c == '@')		col = 0xCA0000;
-			else if(c == '$')	col = 0xFB0000;
-			else if(c == 'Q')	col = 0xFF1A1A;
-			else if(c == 'J')	col = 0xFFFFFF;
-			else if(c == 'O')	col = 0xFFFFFF;
-			winfo->buf[winfo->winxsize * y + (winfo->winxsize - 44 + x)] = col;
+
+	if(system.sys.bpp == 8){
+		for(y = 0; y < 16; y++){
+			for(x = 0; x < 40; x++){
+				c = closebtn[y][x];
+				if(c == '@')		col8 = COL8_FF0000;
+				else if(c == '$')	col8 = COL8_FF0000;
+				else if(c == 'Q')	col8 = COL8_FF0000;
+				else if(c == 'J')	col8 = COL8_FFFFFF;
+				else if(c == 'O')	col8 = COL8_FFFFFF;
+				point_i(winfo->buf, winfo->winxsize - 44 + x, y, col8, winfo->winxsize);
+			}
+		}
+	}else if(system.sys.bpp == 16){
+		for(y = 0; y < 16; y++){
+			for(x = 0; x < 40; x++){
+				c = closebtn[y][x];
+				if(c == '@')		col16 = rgb_int2short(0xCA0000);
+				else if(c == '$')	col16 = rgb_int2short(0xFB0000);
+				else if(c == 'Q')	col16 = rgb_int2short(0xFF1A1A);
+				else if(c == 'J')	col16 = rgb_int2short(0xFFFFFF);
+				else if(c == 'O')	col16 = rgb_int2short(0xFFFFFF);
+				point_i(winfo->buf, winfo->winxsize - 44 + x, y, col16, winfo->winxsize);
+			}
+		}
+	}else if(system.sys.bpp == 32){
+		for(y = 0; y < 16; y++){
+			for(x = 0; x < 40; x++){
+				c = closebtn[y][x];
+				if(c == '@')		col32 = 0xCA0000;
+				else if(c == '$')	col32 = 0xFB0000;
+				else if(c == 'Q')	col32 = 0xFF1A1A;
+				else if(c == 'J')	col32 = 0xFFFFFF;
+				else if(c == 'O')	col32 = 0xFFFFFF;
+				point_i(winfo->buf, winfo->winxsize - 44 + x, y, col32, winfo->winxsize);
+			}
 		}
 	}
 

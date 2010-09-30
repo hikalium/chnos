@@ -36,7 +36,7 @@ typedef enum _state_alloc { none, initialized, allocated, configured, inuse} sta
 #define WINDOW_COL32	0x5EC1E8
 
 #define INV_COL32	0xFFFFFFFF
-#define INV_COL16	0xFFFF
+#define INV_COL16	0x1192
 #define INV_COL8	0xFF
 
 #define DESKTOP_COL8	COL8_C6C6C6
@@ -559,7 +559,7 @@ void init_taskbar8(unsigned char *vram);
 void putfont8(unsigned char *vram, int xsize, int x, int y, unsigned char c, unsigned char *font);
 void putfonts8_asc(unsigned char *vram, int xsize, int x, int y, unsigned char c, const unsigned char *s);
 void init_mouse_cursor8(unsigned char *mouse);
-void putblock8_8(unsigned char *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned char *buf, int bxsize);
+void putblock8_8(unsigned char *vram, int vxsize, int pxsize, int pysize, int px0, int py0, unsigned char *buf, int bxsize);
 void init_palette(void);
 void set_palette(int start, int end, unsigned char *rgb);
 
