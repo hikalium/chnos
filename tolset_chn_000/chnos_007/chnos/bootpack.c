@@ -5,7 +5,6 @@
 struct SYSTEM system;
 
 void check_newline(struct POSITION_2D *p, int line_x, int line_y);
-void task_b_main(struct WINDOWINFO *win);
 
 void CHNMain(void)
 {
@@ -37,7 +36,7 @@ void CHNMain(void)
 	c_cursor.x = 0;
 	c_cursor.y = 0;
 
-	console_win = make_window("console", 256, 165, 200, 50, 3, false);
+	console_win = make_window("console", CONSOLE_XCHARS * 8, CONSOLE_YCHARS * 16, 200, 50, 3, false);
 	console_task = task_alloc();
 	console_task->tss.esp = (int)system.io.mem.alloc(64 * 1024) + 64 * 1024;
 	console_task->tss.eip = (int)&console_main;
@@ -71,21 +70,26 @@ void CHNMain(void)
 				sprintf(s, "INT:21 IRQ:01 PS/2·°ÎÞ°ÄÞ   ");
 				s[26] = dec_key.c;
 				putfonts_asc_sht_i(system.sys.sht.desktop, 8, 184, 0xFFFFFF, 0x000000, s); 
-				/*BackSpace*/
-				if(dec_key.make && dec_key.keycode == 0x0E){
-					boxfill_win(testwin, 0xFFFFFF, c_cursor.x, c_cursor.y, c_cursor.x + 8, c_cursor.y +16);
-					c_cursor.x -= 8;
-					check_newline(&c_cursor, testwin->xsize, testwin->ysize);
-					boxfill_win(testwin, 0xFFFFFF, c_cursor.x, c_cursor.y, c_cursor.x + 8, c_cursor.y +16);
-				} else if(dec_key.make && dec_key.c != 0){
-					s[0] = dec_key.c;
-					s[1] = 0x00;
-					putfonts_win(testwin, c_cursor.x, c_cursor.y, 0x000000, 0xFFFFFF, s);
-					c_cursor.x += 8;
-					check_newline(&c_cursor, testwin->xsize, testwin->ysize);
-				}
-				/*Tab*/
-				if(dec_key.make && dec_key.keycode == 0x0f){
+				if(dec_key.make && dec_key.c != 0){
+					if(key_to == 0){
+						s[0] = dec_key.c;
+						s[1] = 0x00;
+						putfonts_win(testwin, c_cursor.x, c_cursor.y, 0x000000, 0xFFFFFF, s);
+						c_cursor.x += 8;
+						check_newline(&c_cursor, testwin->xsize, testwin->ysize);
+					} else if(key_to == 1){
+						system.data.fifo.put(&console_task->fifo, dec_key.c + SYS_FIFO_START_KEYB);
+					}
+				}else if(dec_key.make && dec_key.keycode == 0x0E){/*BackSpace*/
+					if(key_to == 0){
+						boxfill_win(testwin, 0xFFFFFF, c_cursor.x, c_cursor.y, c_cursor.x + 8, c_cursor.y +16);
+						c_cursor.x -= 8;
+						check_newline(&c_cursor, testwin->xsize, testwin->ysize);
+						boxfill_win(testwin, 0xFFFFFF, c_cursor.x, c_cursor.y, c_cursor.x + 8, c_cursor.y +16);
+					} else if(key_to == 1){
+						system.data.fifo.put(&console_task->fifo, 0x0E + SYS_FIFO_START_KEYB);
+					}
+				}else if(dec_key.make && dec_key.keycode == 0x0f){/*Tab*/
 					if(key_to == 0){
 						key_to = 1;
 						change_window_active(console_win, true);

@@ -2,20 +2,19 @@
 /*include files*/
 #include <stdio.h>
 #include <stdarg.h>
-/*new object types*/
 
+/*new object types*/
 typedef enum _bool { false, true } bool;
 typedef enum _color_8 { black, red, green, yellow, 
 			blue, pink, light_blue, white, 
 			gray, brown, dark_green, gold, 
 			navy_blue, purple, dark_cyan, dark_gray} color_8;
 typedef enum _state_alloc { none, initialized, allocated, configured, inuse} state_alloc;
-/*definefunctions*/
 
+/*definefunctions*/
 #define RGB16(r,g,b) ((r)<<11|(g)<<5|(b))
 
 /*settings*/
-
 #define COL8_000000		0
 #define COL8_FF0000		1
 #define COL8_00FF00		2
@@ -76,6 +75,9 @@ typedef enum _state_alloc { none, initialized, allocated, configured, inuse} sta
 #define WIN_COL32_ACTIVE	0x93D9FF
 #define WIN_COL32_INACTIVE	0xD0EFFF
 
+#define CONSOLE_XCHARS	32
+#define CONSOLE_YCHARS	8
+
 #define MAX_TIMER	512
 
 #define PIT_CTRL	0x0043
@@ -121,7 +123,6 @@ typedef enum _state_alloc { none, initialized, allocated, configured, inuse} sta
 #define MAX_LEVELS	10
 
 /*structures*/
-
 extern char cursor[24][24];
 
 struct POSITION_2D {
@@ -211,6 +212,7 @@ struct TASK {
 	int selector;
 	state_alloc flags;
 	int level, priority;
+	struct FIFO32 fifo;
 	struct TSS32 tss;
 };
 
@@ -282,7 +284,6 @@ struct VESAINFO {/*0xe00--->512byte*/
 };
 
 /*virtualclasses*/
-
 struct SYSTEM {
 	struct SYS_IO {
 		void (*clts)(void);
