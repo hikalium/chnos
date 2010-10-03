@@ -3,7 +3,7 @@
 
 int keydata0;
 
-char keytable1[0x80] = {
+char keytable0[0x80] = {
 	0  , 0  , '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0  , 0  ,
 	'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '@', '[', 0  , 0  , 'a', 's', 
 	'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', ':', 0  , 0  , ']', 'z', 'x', 'c', 'v',
@@ -12,6 +12,17 @@ char keytable1[0x80] = {
 	'2', '3', '0', '.', 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 
 	0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 
 	0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  
+};
+
+char keytable1[0x80] = {
+	0  , 0  , '!',0x22, '#', '$', '%', '&',0x27, '(', ')', '~', '=', '~', 0  , 0  ,
+	'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '`', '{', 0  , 0  , 'A', 'S', 
+	'D', 'F', 'G', 'H', 'J', 'K', 'L', '+', '*', 0  , 0  , '}', 'Z', 'X', 'C', 'V',
+	'B', 'N', 'M', '<', '>', '?', 0  , '*', 0  , ' ', 0  , 0  , 0  , 0  , 0  , 0  ,      
+	0  , 0  , 0  , 0  , 0  , 0  , 0  , '7', '8', '9', '-', '4', '5', '6', '+', '1',
+	'2', '3', '0', '.', 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 
+	0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 
+	0  , 0  , 0  , '_', 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , '|', 0  , 0  
 };
 
 char *keynames[0x80] = {
@@ -145,6 +156,8 @@ char *keynames[0x80] = {
 	"[Reserved]                     "
 };
 
+int key_shift = 0;
+
 void init_keyboard(int data0)
 {
 	/* 書き込み先のFIFOバッファを記憶 */
@@ -171,11 +184,19 @@ int decode_key(struct KEYINFO *info, int data)
 {
 	if(data >= 0x00 && data <= 0x7f){
 		info->make = true;
+		if(data == 0x2a) key_shift |= 1;/*LShift on*/
+		else if(data == 0x36) key_shift |= 2;/*Rshift on*/
 	} else if(data >= 0x80 && data <= 0xff){
 		info->make = false;
 		data -= 0x80;
+		if(data == 0x2a) key_shift &= ~1;/*LShift on*/
+		else if(data == 0x36) key_shift &= ~2;/*Rshift on*/
 	}
-	info->c = keytable1[data];
+	if(key_shift == 0){
+		info->c = keytable0[data];
+	} else{
+		info->c = keytable1[data];
+	}
 	info->keycode = data;
 	return 0;
 }
