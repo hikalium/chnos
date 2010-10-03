@@ -5,9 +5,9 @@ int keydata0;
 
 char keytable0[0x80] = {
 	0  , 0  , '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0  , 0  ,
-	'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '@', '[', 0  , 0  , 'a', 's', 
-	'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', ':', 0  , 0  , ']', 'z', 'x', 'c', 'v',
-	'b', 'n', 'm', ',', '.', '/', 0  , '*', 0  , ' ', 0  , 0  , 0  , 0  , 0  , 0  ,      
+	'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', '[', 0  , 0  , 'A', 'S', 
+	'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', ':', 0  , 0  , ']', 'Z', 'X', 'C', 'V',
+	'B', 'N', 'M', ',', '.', '/', 0  , '*', 0  , ' ', 0  , 0  , 0  , 0  , 0  , 0  ,      
 	0  , 0  , 0  , 0  , 0  , 0  , 0  , '7', '8', '9', '-', '4', '5', '6', '+', '1',
 	'2', '3', '0', '.', 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 
 	0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 
@@ -156,7 +156,7 @@ char *keynames[0x80] = {
 	"[Reserved]                     "
 };
 
-int key_shift = 0;
+int key_shift = 0, key_leds;
 
 void init_keyboard(int data0)
 {
@@ -168,6 +168,9 @@ void init_keyboard(int data0)
 	wait_KBC_sendready();
 	io_out8(KEYB_DATA, KBC_MODE);
 	io_out8(PIC0_IMR, io_in8(PIC0_IMR) & 0xfd);
+
+	key_leds = (system.info.boot.leds >> 4) & 7;
+
 	return;
 }
 
@@ -192,11 +195,20 @@ int decode_key(struct KEYINFO *info, int data)
 		if(data == 0x2a) key_shift &= ~1;/*LShift on*/
 		else if(data == 0x36) key_shift &= ~2;/*Rshift on*/
 	}
+
 	if(key_shift == 0){
 		info->c = keytable0[data];
 	} else{
 		info->c = keytable1[data];
 	}
+
+	if('A' <= info->c && info->c <= 'Z'){
+		if(((key_leds & 4) == 0 && key_shift == 0) || ((key_leds & 4) != 0 && key_shift != 0)) info->c += 0x20;
+		info->alphabet = true;
+	} else {
+		info->alphabet = false;
+	}
+
 	info->keycode = data;
 	return 0;
 }

@@ -133,6 +133,7 @@ struct KEYINFO {
 	char c;
 	int keycode;
 	bool make;
+	bool alphabet;
 }; 
 
 struct TIMER {
