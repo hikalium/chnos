@@ -33,8 +33,6 @@ typedef enum _state_alloc { none, initialized, allocated, configured, inuse} sta
 #define COL8_008484		14
 #define COL8_848484		15
 
-#define WINDOW_COL32	0x5EC1E8
-
 #define INV_COL32	0xFFFFFFFF
 #define INV_COL16	0x1192
 #define INV_COL8	0xFF
@@ -71,6 +69,12 @@ typedef enum _state_alloc { none, initialized, allocated, configured, inuse} sta
 #define MAX_SHEETS	1024
 
 #define MAX_WINDOWS	256
+#define WIN_COL8_ACTIVE		0x000084
+#define WIN_COL8_INACTIVE	0x848484
+#define WIN_COL16_ACTIVE	0x60F8f0
+#define WIN_COL16_INACTIVE	0xBCFCF8
+#define WIN_COL32_ACTIVE	0x93D9FF
+#define WIN_COL32_INACTIVE	0xD0EFFF
 
 #define MAX_TIMER	512
 
@@ -152,6 +156,7 @@ struct WINDOWINFO {
 	struct POSITION_2D position;
 	struct POSITION_2D origin;
 	state_alloc flags;
+	bool active;
 };
 
 struct WINCTL {
@@ -408,6 +413,9 @@ extern struct SYSTEM system;
 
 /*functions*/
 
+/*console.c*/
+void console_main(struct WINDOWINFO *win);
+
 /*mtask.c*/
 void task_init(void);
 struct TASK *task_alloc(void);
@@ -493,7 +501,7 @@ void init_system(void);
 /*window.c*/
 void init_windows(void);
 struct WINDOWINFO *window_alloc(void);
-struct WINDOWINFO *make_window32(unsigned char *title, int xsize, int ysize, int px, int py, int height);
+struct WINDOWINFO *make_window(unsigned char *title, int xsize, int ysize, int px, int py, int height, bool active);
 void slide_window(struct WINDOWINFO *winfo, int px, int py);
 void refresh_window(struct WINDOWINFO *winfo);
 void refresh_window_alpha(struct WINDOWINFO *winfo);

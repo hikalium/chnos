@@ -10,9 +10,9 @@ void task_b_main(struct WINDOWINFO *win);
 void CHNMain(void)
 {
 	struct KEYINFO dec_key;
-	struct WINDOWINFO *testwin, *win[4];
+	struct WINDOWINFO *testwin, *console_win;
 	struct POSITION_2D c_cursor;
-	struct TASK *task[4];
+	struct TASK *console_task;
 	unsigned char s[64];	
 	int i, mx = 0, my = 0;
 	bool cursor = false;
@@ -27,7 +27,7 @@ void CHNMain(void)
 	sprintf(s, "ÒÓØ°: %dMB ±·: %dKB ÃÞ½¸Ä¯Ìß: %d À½¸ÊÞ°: %d Ï³½: %d", system.sys.memtotal / (1024 * 1024), system.io.mem.free_total() / 1024, system.sys.sht.desktop->height, system.sys.sht.taskbar->height, system.sys.sht.mouse->height);
 	putfonts_asc_sht_i(system.sys.sht.desktop, 8, 168, 0xFFFFFF, 0x000000, s);	
 
-	testwin = make_window32("Ã½Ä³¨ÝÄÞ³", 200, 100, 200, 300, 2);
+	testwin = make_window("Ã½Ä³¨ÝÄÞ³", 200, 100, 200, 300, 2, true);
 
 	system.sys.timer.t500 = timer_alloc();
 	timer_init(system.sys.timer.t500, &system.sys.fifo, SYS_FIFO_SIG_TIMERC);
@@ -36,22 +36,18 @@ void CHNMain(void)
 	c_cursor.x = 0;
 	c_cursor.y = 0;
 
-
-	for(i = 0; i < 4; i++){
-		sprintf(s, "task:%d", i);
-		win[i] = make_window32(s, 100, 16, 0, i * 50, 3);
-		task[i] = task_alloc();
-		task[i]->tss.esp = (int)system.io.mem.alloc(64 * 1024) + 64 * 1024;
-		task[i]->tss.eip = (int)&task_b_main;
-		task[i]->tss.es = 1 * 8;
-		task[i]->tss.cs = 2 * 8;
-		task[i]->tss.ss = 1 * 8;
-		task[i]->tss.ds = 1 * 8;
-		task[i]->tss.fs = 1 * 8;
-		task[i]->tss.gs = 1 * 8;
-		task_arguments(task[i], 1, win[i]);
-		task_run(task[i], 2, i + 1);
-	}
+	console_win = make_window("console", 256, 165, 200, 50, 3, false);
+	console_task = task_alloc();
+	console_task->tss.esp = (int)system.io.mem.alloc(64 * 1024) + 64 * 1024;
+	console_task->tss.eip = (int)&console_main;
+	console_task->tss.es = 1 * 8;
+	console_task->tss.cs = 2 * 8;
+	console_task->tss.ss = 1 * 8;
+	console_task->tss.ds = 1 * 8;
+	console_task->tss.fs = 1 * 8;
+	console_task->tss.gs = 1 * 8;
+	task_arguments(console_task, 1, console_win);
+	task_run(console_task, 2, 2);
 
 	for(;;){
 		system.io.cli();
@@ -136,35 +132,4 @@ void check_newline(struct POSITION_2D *p, int line_x, int line_y)
 		}
 	} 
 	return;
-}
-
-void task_b_main(struct WINDOWINFO *win)
-{
-	struct FIFO32 fifo;
-	struct TIMER *timer1000;
-	int i, fifobuf[128], count = 0, count0 = 0;
-	char s[12];
-
-	fifo32_init(&fifo, 128, fifobuf, 0);
-
-	timer1000 = timer_alloc();
-	timer_init(timer1000, &fifo, 100);
-	timer_settime(timer1000, 100);
-
-	for(;;){
-		count ++;
-		io_cli();
-		if(fifo32_status(&fifo) == 0){
-			io_sti();
-		} else {
-			i = fifo32_get(&fifo);
-			io_sti();
-			if(i == 100){
-				sprintf(s, "%11d", count - count0);
-				putfonts_win(win, 0, 0, 0xFFFFFF, 0x000000, s);
-				count0 = count;
-				timer_settime(timer1000, 100);	
-			}
-		}
-	}
 }
