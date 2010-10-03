@@ -2,6 +2,25 @@
 
 struct WINCTL *wctl;
 
+char closebtn[16][40] = {
+	"OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO@",
+	"OQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ$@",
+	"OQQQQQQQQQQQQQJJQQQQQQQQJJQQQQQQQQQQQQ$@",
+	"OQQQQQQQQQQQQQJJJQQQQQQJJJQQQQQQQQQQQQ$@",
+	"OQQQQQQQQQQQQQQJJJQQQQJJJQQQQQQQQQQQQQ$@",
+	"OQQQQQQQQQQQQQQQJJJQQJJJQQQQQQQQQQQQQQ$@",
+	"OQQQQQQQQQQQQQQQQJJJJJJQQQQQQQQQQQQQQQ$@",
+	"OQQQQQQQQQQQQQQQQQJJJJQQQQQQQQQQQQQQQQ$@",
+	"OQQQQQQQQQQQQQQQQQJJJJQQQQQQQQQQQQQQQQ$@",
+	"OQQQQQQQQQQQQQQQQJJJJJJQQQQQQQQQQQQQQQ$@",
+	"OQQQQQQQQQQQQQQQJJJQQJJJQQQQQQQQQQQQQQ$@",
+	"OQQQQQQQQQQQQQQJJJQQQQJJJQQQQQQQQQQQQQ$@",
+	"OQQQQQQQQQQQQQJJJQQQQQQJJJQQQQQQQQQQQQ$@",
+	"OQQQQQQQQQQQQQJJQQQQQQQQJJQQQQQQQQQQQQ$@",
+	"OQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ$@",
+	"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+};
+
 void init_windows(void)
 {
 	int i;
@@ -32,36 +51,9 @@ struct WINDOWINFO *window_alloc(void)
 
 struct WINDOWINFO *make_window(unsigned char *title, int xsize, int ysize, int px, int py, int height, bool active)
 {
-	static char closebtn[16][40] = {
-		"OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO@",
-		"OQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ$@",
-		"OQQQQQQQQQQQQQJJQQQQQQQQJJQQQQQQQQQQQQ$@",
-		"OQQQQQQQQQQQQQJJJQQQQQQJJJQQQQQQQQQQQQ$@",
-		"OQQQQQQQQQQQQQQJJJQQQQJJJQQQQQQQQQQQQQ$@",
-		"OQQQQQQQQQQQQQQQJJJQQJJJQQQQQQQQQQQQQQ$@",
-		"OQQQQQQQQQQQQQQQQJJJJJJQQQQQQQQQQQQQQQ$@",
-		"OQQQQQQQQQQQQQQQQQJJJJQQQQQQQQQQQQQQQQ$@",
-		"OQQQQQQQQQQQQQQQQQJJJJQQQQQQQQQQQQQQQQ$@",
-		"OQQQQQQQQQQQQQQQQJJJJJJQQQQQQQQQQQQQQQ$@",
-		"OQQQQQQQQQQQQQQQJJJQQJJJQQQQQQQQQQQQQQ$@",
-		"OQQQQQQQQQQQQQQJJJQQQQJJJQQQQQQQQQQQQQ$@",
-		"OQQQQQQQQQQQQQJJJQQQQQQJJJQQQQQQQQQQQQ$@",
-		"OQQQQQQQQQQQQQJJQQQQQQQQJJQQQQQQQQQQQQ$@",
-		"OQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ$@",
-		"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-	};
-	int x, y, i = 0;
-	char c;
-	unsigned int color = 0;
 	struct WINDOWINFO *winfo = window_alloc();
 
 	if(winfo == 0) goto err;
-	for (; *title != 0x00; title++) {
-		winfo->title[i] = *title;		
-		i++;
-	}
-	winfo->title[i] = 0x00;
-	winfo->active = active;
 	winfo->winxsize = xsize + 8;
 	winfo->winysize = ysize + 28;
 	winfo->xsize = xsize;
@@ -75,6 +67,28 @@ struct WINDOWINFO *make_window(unsigned char *title, int xsize, int ysize, int p
 
 	sheet_setbuf(winfo->win, winfo->buf, winfo->winxsize, winfo->winysize,INV_COL32);	
 
+	change_window(winfo, title, active);
+	boxfill_win(winfo, 0xFFFFFF, 0, 0, winfo->xsize, winfo->ysize);
+
+	sheet_slide(winfo->win, px, py);
+	sheet_updown(winfo->win, height);	
+err:
+	return winfo;
+}
+
+void change_window(struct WINDOWINFO *winfo, unsigned char *title, bool active)
+{
+	unsigned int color = 0;
+	int x = 0, y = 0;
+	char c;
+
+	for (; *title != 0x00; title++) {
+		winfo->title[x] = *title;		
+		x++;
+	}
+	winfo->title[x] = 0x00;
+	winfo->active = active;	
+
 	if(system.sys.bpp == 8){
 		if(active) color = WIN_COL8_ACTIVE;
 		else color = WIN_COL8_INACTIVE;
@@ -86,13 +100,12 @@ struct WINDOWINFO *make_window(unsigned char *title, int xsize, int ysize, int p
 		else color = WIN_COL32_INACTIVE;
 	}
 
-	boxfill_i(winfo->buf, winfo->winxsize, 0xFFFFFF, winfo->origin.x, winfo->origin.y, winfo->origin.x + xsize, winfo->origin.y + ysize);
 	boxfill_i(winfo->buf, winfo->winxsize, color, 0, 0, winfo->winxsize, 24);	
 	boxfill_i(winfo->buf, winfo->winxsize, color, 0, 0, 3, winfo->winysize);
 	boxfill_i(winfo->buf, winfo->winxsize, color, winfo->winxsize - 4, 0, winfo->winxsize, winfo->winysize);
 	boxfill_i(winfo->buf, winfo->winxsize, color, 0, winfo->winysize - 4, winfo->winxsize, winfo->winysize);
 
-	putfonts_asc_sht_i(winfo->win, 4, 4, 0xffffff, color, winfo->title);
+	putfonts_asc_sht_i(winfo->win, 4, 4, 0xFFFFFF, color, winfo->title);
 
 	for(y = 0; y < 16; y++){
 		for(x = 0; x < 40; x++){
@@ -105,11 +118,18 @@ struct WINDOWINFO *make_window(unsigned char *title, int xsize, int ysize, int p
 			point_i(winfo->buf, winfo->winxsize - 44 + x, y, color, winfo->winxsize);
 		}
 	}
+	refresh_window(winfo);
+	return;
+}
 
-	sheet_slide(winfo->win, px, py);
-	sheet_updown(winfo->win, height);	
-err:
-	return winfo;
+void change_window_title(struct WINDOWINFO *winfo, unsigned char *title)
+{
+	change_window(winfo, title, winfo->active);
+}
+
+void change_window_active(struct WINDOWINFO *winfo, bool active)
+{
+	change_window(winfo, winfo->title, active);
 }
 
 void slide_window(struct WINDOWINFO *winfo, int px, int py)

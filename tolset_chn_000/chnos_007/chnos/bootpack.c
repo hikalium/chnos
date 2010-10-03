@@ -16,6 +16,7 @@ void CHNMain(void)
 	unsigned char s[64];	
 	int i, mx = 0, my = 0;
 	bool cursor = false;
+	int key_to = 0;
 
 	init_system();
 
@@ -70,6 +71,7 @@ void CHNMain(void)
 				sprintf(s, "INT:21 IRQ:01 PS/2·°ÎÞ°ÄÞ   ");
 				s[26] = dec_key.c;
 				putfonts_asc_sht_i(system.sys.sht.desktop, 8, 184, 0xFFFFFF, 0x000000, s); 
+				/*BackSpace*/
 				if(dec_key.make && dec_key.keycode == 0x0E){
 					boxfill_win(testwin, 0xFFFFFF, c_cursor.x, c_cursor.y, c_cursor.x + 8, c_cursor.y +16);
 					c_cursor.x -= 8;
@@ -81,6 +83,18 @@ void CHNMain(void)
 					putfonts_win(testwin, c_cursor.x, c_cursor.y, 0x000000, 0xFFFFFF, s);
 					c_cursor.x += 8;
 					check_newline(&c_cursor, testwin->xsize, testwin->ysize);
+				}
+				/*Tab*/
+				if(dec_key.make && dec_key.keycode == 0x0f){
+					if(key_to == 0){
+						key_to = 1;
+						change_window_active(console_win, true);
+						change_window_active(testwin, false);
+					} else{
+						key_to = 0;
+						change_window_active(console_win, false);
+						change_window_active(testwin, true);
+					}
 				}
 				sprintf(s, "testwin size x: %5d y %5d c_cursor x: %5d y: %5d", testwin->xsize, testwin->ysize, c_cursor.x, c_cursor.y);
 				putfonts_asc_sht_i(system.sys.sht.desktop, 8, 232, 0xFFFFFF, 0x000000, s); 
