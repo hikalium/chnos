@@ -109,11 +109,14 @@ typedef enum _state_alloc { none, initialized, allocated, configured, inuse} sta
 #define PORT_KEYCMD	0x0064
 #define KEYCMD_SENDTO_MOUSE	0xd4
 #define MOUSECMD_ENABLE	0xf4
+#define KEYCMD_LED	0xed
 
 #define SYS_FIFOSIZE	256
 #define SYS_FIFO_SIG_TIMERC	0x0001
 #define SYS_FIFO_START_KEYB	0x100		/*256~511=keycode*/
 #define SYS_FIFO_START_MOUSE	0x200		/*512~767=mouse*/
+
+#define KEYCMD_FIFOSIZE	32
 
 #define DATA_BYTE	0xFF
 
@@ -405,7 +408,10 @@ struct SYSTEM {
 		struct SEGMENT_DESCRIPTOR *gdt;
 		struct GATE_DESCRIPTOR *idt;
 		struct FIFO32 fifo;
+		struct FIFO32 keycmd;
 		unsigned int fifo_buf[SYS_FIFOSIZE];
+		unsigned int keycmd_buf[KEYCMD_FIFOSIZE];
+		int keycmd_wait;
 		struct KEYINFO keyinfo;
 		struct MOUSE_DECODE mouse_decode;
 	} sys;
@@ -450,8 +456,8 @@ void timer_settime(struct TIMER *timer, unsigned int timeout);
 void init_keyboard(int data0);
 void inthandler21(int *esp);
 int decode_key(struct KEYINFO *info, int data);
+void keylock(int led);
 void wait_KBC_sendready(void);
-
 
 /*mouse.c*/
 void init_mouse(int data0);

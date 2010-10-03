@@ -86,6 +86,7 @@ void init_system(void)
 	system.sys.bpp					= system.info.vesa.BitsPerPixel;
 	system.sys.gdt					= (struct SEGMENT_DESCRIPTOR *)0x00270000;	/*0x270000-0x27ffff*/
 	system.sys.idt					= (struct GATE_DESCRIPTOR *)0x0026f800;		/*0x26f800-0x26ffff*/
+	system.sys.keycmd_wait				= -1;
 
 // system init
 	init_gdtidt();
@@ -114,6 +115,7 @@ void init_system(void)
 	system.draw.sht.updown(system.sys.sht.mouse, 3);
 
 	system.data.fifo.init(&system.sys.fifo, SYS_FIFOSIZE, system.sys.fifo_buf, 0);
+	system.data.fifo.init(&system.sys.keycmd, KEYCMD_FIFOSIZE, system.sys.keycmd_buf, 0);
 
 	init_pic();
 	init_keyboard(256);	

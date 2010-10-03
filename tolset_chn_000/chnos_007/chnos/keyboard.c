@@ -170,6 +170,8 @@ void init_keyboard(int data0)
 	io_out8(PIC0_IMR, io_in8(PIC0_IMR) & 0xfd);
 
 	key_leds = (system.info.boot.leds >> 4) & 7;
+	fifo32_put(&system.sys.keycmd, KEYCMD_LED);
+	fifo32_put(&system.sys.keycmd, key_leds);
 
 	return;
 }
@@ -185,10 +187,20 @@ void inthandler21(int *esp)
 
 int decode_key(struct KEYINFO *info, int data)
 {
+	if(data == 0xfa){
+		system.sys.keycmd_wait = -1;
+	} else if(data == 0xfe){
+		wait_KBC_sendready();
+		io_out8(KEYB_DATA, system.sys.keycmd_wait);
+	}
+
 	if(data >= 0x00 && data <= 0x7f){
 		info->make = true;
 		if(data == 0x2a) key_shift |= 1;/*LShift on*/
 		else if(data == 0x36) key_shift |= 2;/*Rshift on*/
+		else if(data == 0x3a) keylock(4);/*CapsLock*/
+		else if(data == 0x45) keylock(2);/*NumLock*/
+		else if(data == 0x46) keylock(1);/*ScrollLock*/
 	} else if(data >= 0x80 && data <= 0xff){
 		info->make = false;
 		data -= 0x80;
@@ -211,6 +223,14 @@ int decode_key(struct KEYINFO *info, int data)
 
 	info->keycode = data;
 	return 0;
+}
+
+void keylock(int led)
+{
+	key_leds ^= led;
+	fifo32_put(&system.sys.keycmd, KEYCMD_LED);
+	fifo32_put(&system.sys.keycmd, key_leds);
+	return;
 }
 
 void wait_KBC_sendready(void)

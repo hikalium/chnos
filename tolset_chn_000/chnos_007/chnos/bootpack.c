@@ -151,3 +151,4 @@ void check_newline(struct POSITION_2D *p, int line_x, int line_y)
 	} 
 	return;
 }
+
