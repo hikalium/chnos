@@ -171,5 +171,17 @@ err:
 	return;
 }
 
+void line_win(struct WINDOWINFO *winfo, int x0, int y0, int x1, int y1, unsigned int c)
+{
+	line_i(winfo->buf, winfo->winxsize, x0 + winfo->origin.x, y0 + winfo->origin.y, x1 + winfo->origin.x, y1 + winfo->origin.y, c);
+	return;
+}
+
+void draw_hexagon_win(struct WINDOWINFO *winfo, int a, int x, int y, unsigned int c)
+{
+	draw_hexagon_i(winfo->buf, winfo->winxsize, a, x + winfo->origin.x, y + winfo->origin.y, c);
+	return;
+}
+
 
 

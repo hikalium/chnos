@@ -202,6 +202,56 @@ void putfonts_asc_i(void *vrami, int xsize, int x, int y, unsigned int c, const 
 	return;
 }
 
+void line_i(void *vrami, int xsize, int x0, int y0, int x1, int y1, unsigned int c)
+{
+	int i, x, y, len, dx, dy;
+
+	dx = x1 - x0;
+	dy = y1 - y0;
+	x = x0 << 10;
+	y = y0 << 10;
+	if(dx < 0) dx = -dx;
+	if(dy < 0) dy = -dy;
+	if(dx >= dy){
+		len = dx + 1;
+		if(x0 > x1) dx = -1024;
+		else dx = 1024;
+		if(y0 <= y1) dy = ((y1 - y0 + 1) << 10) / len;
+		else dy = ((y1 - y0 - 1) << 10) / len;
+	} else{
+		len = dy + 1;
+		if(y0 > y1) dy = -1024;
+		else dy = 1024;
+		if(x0 <= x1) dx = ((x1 - x0 + 1) << 10) / len;
+		else dx = ((x1 - x0 - 1) << 10) / len;
+	}
+	for(i = 0; i < len; i++){
+		point_i(vrami, x >> 10, y >> 10, c, xsize);
+		x += dx;
+		y += dy;
+	}
+	return;
+}
+
+void draw_hexagon_i(void *vrami, int xsize, int a, int x, int y, unsigned int c)
+{
+	int n, m;
+
+	if(a < 0) a = -a;
+	m = a >> 1;
+	n = (1773 * m) >> 10;
+
+
+	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
+	line_i(vrami, xsize, x + n, y - m, x + n, y + m, c);
+	line_i(vrami, xsize, x + n, y + m, x    , y + a, c);
+	line_i(vrami, xsize, x    , y + a, x - n, y + m, c);
+	line_i(vrami, xsize, x - n, y + m, x - n, y - m, c);
+	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
+
+	return;
+}
+
 unsigned char rgb_int2char (unsigned int c32)
 {
 	unsigned char i ;

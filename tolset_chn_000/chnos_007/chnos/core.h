@@ -518,6 +518,8 @@ void refresh_window(struct WINDOWINFO *winfo);
 void refresh_window_alpha(struct WINDOWINFO *winfo);
 void boxfill_win(struct WINDOWINFO *winfo, unsigned int c, int x0, int y0, int x1, int y1);
 void putfonts_win(struct WINDOWINFO *winfo, int x, int y, unsigned int c, unsigned int bc, const unsigned char *s);
+void line_win(struct WINDOWINFO *winfo, int x0, int y0, int x1, int y1, unsigned int c);
+void draw_hexagon_win(struct WINDOWINFO *winfo, int a, int x, int y, unsigned int c);
 
 /*fifo.c*/
 void fifo32_init(struct FIFO32 *fifo, int size, unsigned int *buf, struct TASK *task);
@@ -567,6 +569,8 @@ unsigned int mix_color(unsigned int c0, unsigned int c1);
 void point_i(void *vrami, int x, int y, unsigned int c, int xsize);
 void boxfill_i(void *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
 void putfonts_asc_i(void *vrami, int xsize, int x, int y, unsigned int c, const unsigned char *s);
+void line_i(void *vrami, int xsize, int x0, int y0, int x1, int y1, unsigned int c);
+void draw_hexagon_i(void *vrami, int xsize, int a, int x, int y, unsigned int c);
 unsigned char rgb_int2char (unsigned int c32);
 unsigned short rgb_int2short (unsigned int c32);
 void col_pat(void *vrami, int xsize, int ysize);

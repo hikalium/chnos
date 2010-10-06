@@ -49,6 +49,10 @@ void CHNMain(void)
 	task_arguments(console_task, 1, console_win);
 	task_run(console_task, 2, 2);
 
+	line_win(testwin, 0, 0, 100, 100, 0xFF0000);
+	draw_hexagon_win(testwin, 20, 50, 50, 0x00FF00);
+	refresh_window(testwin);
+
 	for(;;){
 		system.io.cli();
 		if(system.data.fifo.status(&system.sys.fifo) == 0){
