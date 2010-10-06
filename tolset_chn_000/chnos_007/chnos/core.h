@@ -383,9 +383,11 @@ struct SYSTEM {
 	} app;
 	struct SYS_SYS {
 		struct SYS_SYS_SHT {
+			struct SHEET32 *core;
 			struct SHEET32 *desktop;
 			struct SHEET32 *mouse;
 			struct SHEET32 *taskbar;
+			unsigned int *core_buf;
 			unsigned int *desktop_buf;
 			unsigned int mouse_buf[24][24];
 			unsigned int *taskbar_buf;

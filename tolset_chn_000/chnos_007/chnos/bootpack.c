@@ -21,6 +21,24 @@ void CHNMain(void)
 
 	system.draw.init_screen(system.sys.sht.desktop_buf, system.sys.sht.taskbar_buf, *system.sys.sht.mouse_buf);
 
+	for(;;){
+		system.io.cli();
+		if(system.data.fifo.status(&system.sys.fifo) == 0){
+			task_sleep(system.sys.task.main);
+			system.io.sti();
+		} else {
+			i = system.data.fifo.get(&system.sys.fifo);
+			i -= SYS_FIFO_START_KEYB;
+			if(i == 0x1c){
+				sheet_updown(system.sys.sht.core, -1);
+				sheet_updown(system.sys.sht.desktop, 1);
+				sheet_updown(system.sys.sht.taskbar, 2);
+				sheet_updown(system.sys.sht.mouse, 3);
+				break;
+			}
+		}
+	}
+
 	sheet_refresh_full(system.sys.sht.desktop);
 	sheet_refresh_full(system.sys.sht.taskbar);
 	sheet_refresh_full_alpha(system.sys.sht.mouse);
@@ -46,11 +64,9 @@ void CHNMain(void)
 	console_task->tss.ds = 1 * 8;
 	console_task->tss.fs = 1 * 8;
 	console_task->tss.gs = 1 * 8;
-	task_arguments(console_task, 1, console_win);
+	task_arguments(console_task, 2, console_win);
 	task_run(console_task, 2, 2);
 
-	draw_chnos_logo(testwin->buf, testwin->winxsize, 30, 80, 80);
-	refresh_window(testwin);
 
 	for(;;){
 		system.io.cli();
