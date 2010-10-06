@@ -571,6 +571,7 @@ void boxfill_i(void *vrami, int xsize, unsigned int c, int x0, int y0, int x1, i
 void putfonts_asc_i(void *vrami, int xsize, int x, int y, unsigned int c, const unsigned char *s);
 void line_i(void *vrami, int xsize, int x0, int y0, int x1, int y1, unsigned int c);
 void draw_hexagon_i(void *vrami, int xsize, int a, int x, int y, unsigned int c);
+void draw_chnos_logo(void *vrami, int xsize, int a, int x, int y);
 unsigned char rgb_int2char (unsigned int c32);
 unsigned short rgb_int2short (unsigned int c32);
 void col_pat(void *vrami, int xsize, int ysize);

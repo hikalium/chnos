@@ -252,6 +252,94 @@ void draw_hexagon_i(void *vrami, int xsize, int a, int x, int y, unsigned int c)
 	return;
 }
 
+void draw_chnos_logo(void *vrami, int xsize, int a, int x, int y)
+{
+	int n, m;
+	unsigned int c;
+
+	if(a < 0) a = -a;
+	m = a >> 1;
+	n = (1773 * m) >> 10;
+	c = 0x00FF00;
+
+	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
+	line_i(vrami, xsize, x + n, y + m, x    , y + a, c);
+	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
+
+	x = x + n;
+	x = x + n;
+
+	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
+	line_i(vrami, xsize, x + n, y - m, x + n, y + m, c);
+	line_i(vrami, xsize, x + n, y + m, x    , y + a, c);
+	line_i(vrami, xsize, x    , y + a, x - n, y + m, c);
+	line_i(vrami, xsize, x - n, y + m, x - n, y - m, c);
+	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
+
+	x = x + n;
+	y = y + (3 * m);
+
+	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
+	line_i(vrami, xsize, x + n, y - m, x + n, y + m, c);
+	line_i(vrami, xsize, x + n, y + m, x    , y + a, c);
+	line_i(vrami, xsize, x    , y + a, x - n, y + m, c);
+	line_i(vrami, xsize, x - n, y + m, x - n, y - m, c);
+//	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
+
+	x = x + n;
+	y = y + (3 * m);
+
+	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
+
+	x = x + n;
+	x = x + n;
+
+	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
+	line_i(vrami, xsize, x + n, y - m, x + n, y + m, c);
+	line_i(vrami, xsize, x + n, y + m, x    , y + a, c);
+	line_i(vrami, xsize, x    , y + a, x - n, y + m, c);
+	line_i(vrami, xsize, x - n, y + m, x - n, y - m, c);
+	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
+
+	x = x - n;
+	x = x - n;
+
+	x = x - n;
+	y = y - (3 * m);
+
+	x = x - n;
+	y = y + (3 * m);
+
+	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
+
+	x = x - n;
+	x = x - n;
+
+	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
+	line_i(vrami, xsize, x + n, y - m, x + n, y + m, c);
+	line_i(vrami, xsize, x + n, y + m, x    , y + a, c);
+	line_i(vrami, xsize, x    , y + a, x - n, y + m, c);
+	line_i(vrami, xsize, x - n, y + m, x - n, y - m, c);
+	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
+
+	x = x + n;
+	x = x + n;
+
+	line_i(vrami, xsize, x + n, y - m, x + n, y + m, c);
+
+	x = x + n;
+	y = y + (3 * m);
+
+	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
+	line_i(vrami, xsize, x + n, y - m, x + n, y + m, c);
+	line_i(vrami, xsize, x + n, y + m, x    , y + a, c);
+	line_i(vrami, xsize, x    , y + a, x - n, y + m, c);
+	line_i(vrami, xsize, x - n, y + m, x - n, y - m, c);
+	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
+
+	return;
+}
+
 unsigned char rgb_int2char (unsigned int c32)
 {
 	unsigned char i ;

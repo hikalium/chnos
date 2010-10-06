@@ -27,7 +27,7 @@ void CHNMain(void)
 	sprintf(s, "ÒÓØ°: %dMB ±·: %dKB ÃÞ½¸Ä¯Ìß: %d À½¸ÊÞ°: %d Ï³½: %d", system.sys.memtotal / (1024 * 1024), system.io.mem.free_total() / 1024, system.sys.sht.desktop->height, system.sys.sht.taskbar->height, system.sys.sht.mouse->height);
 	putfonts_asc_sht_i(system.sys.sht.desktop, 8, 168, 0xFFFFFF, 0x000000, s);	
 
-	testwin = make_window("Ã½Ä³¨ÝÄÞ³", 200, 100, 200, 300, 2, true);
+	testwin = make_window("Ã½Ä³¨ÝÄÞ³", 300, 300, 0, 0, 2, true);
 
 	system.sys.timer.t500 = timer_alloc();
 	timer_init(system.sys.timer.t500, &system.sys.fifo, SYS_FIFO_SIG_TIMERC);
@@ -36,7 +36,7 @@ void CHNMain(void)
 	c_cursor.x = 0;
 	c_cursor.y = 0;
 
-	console_win = make_window("console", CONSOLE_XCHARS * 8, CONSOLE_YCHARS * 16, 200, 50, 3, false);
+	console_win = make_window("console", CONSOLE_XCHARS * 8, CONSOLE_YCHARS * 16, 200, 50, 2, false);
 	console_task = task_alloc();
 	console_task->tss.esp = (int)system.io.mem.alloc(64 * 1024) + 64 * 1024;
 	console_task->tss.eip = (int)&console_main;
@@ -49,8 +49,7 @@ void CHNMain(void)
 	task_arguments(console_task, 1, console_win);
 	task_run(console_task, 2, 2);
 
-	line_win(testwin, 0, 0, 100, 100, 0xFF0000);
-	draw_hexagon_win(testwin, 20, 50, 50, 0x00FF00);
+	draw_chnos_logo(testwin->buf, testwin->winxsize, 30, 80, 80);
 	refresh_window(testwin);
 
 	for(;;){
