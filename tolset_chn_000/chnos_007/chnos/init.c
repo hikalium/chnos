@@ -100,7 +100,7 @@ void init_system(void)
 	system.sys.sht.core_buf				= system.io.mem.alloc(system.sys.xsize * system.sys.ysize * (system.sys.bpp / 8));
 	system.draw.sht.set(system.sys.sht.core, system.sys.sht.core_buf, system.sys.xsize, system.sys.ysize, INV_COL32);
 	system.draw.boxfill(system.sys.sht.core_buf, system.sys.xsize, 0x000000, 0, 0, system.sys.xsize, system.sys.ysize);
-	draw_chnos_logo(system.sys.sht.core_buf, system.sys.xsize, 30, 80, 80);
+	draw_chnos_logo(system.sys.sht.core_buf, system.sys.xsize, system.sys.xsize / 16, system.sys.xsize / 2, (system.sys.ysize / 2) - (system.sys.ysize / 10));
 	system.draw.sht.updown(system.sys.sht.core, 1);
 	
 

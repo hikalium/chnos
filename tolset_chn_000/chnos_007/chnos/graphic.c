@@ -262,6 +262,11 @@ void draw_chnos_logo(void *vrami, int xsize, int a, int x, int y)
 	n = (1773 * m) >> 10;
 	c = 0x00FF00;
 
+	x = x - n;
+	x = x - n;
+	x = x - n;
+	y = y - (3 * m);
+
 	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
 	line_i(vrami, xsize, x + n, y + m, x    , y + a, c);
 	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
@@ -270,35 +275,70 @@ void draw_chnos_logo(void *vrami, int xsize, int a, int x, int y)
 	x = x + n;
 
 	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
+	line_i(vrami, xsize, x + n, y - m, x    , y    , c);
 	line_i(vrami, xsize, x + n, y - m, x + n, y + m, c);
 	line_i(vrami, xsize, x + n, y + m, x    , y + a, c);
+	line_i(vrami, xsize, x    , y + a, x    , y    , c);
 	line_i(vrami, xsize, x    , y + a, x - n, y + m, c);
 	line_i(vrami, xsize, x - n, y + m, x - n, y - m, c);
+	line_i(vrami, xsize, x - n, y - m, x    , y    , c);
+	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
+
+	x = x + n;
+	x = x + n;
+
+	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
+	line_i(vrami, xsize, x + n, y - m, x    , y    , c);
+	line_i(vrami, xsize, x + n, y - m, x + n, y + m, c);
+	line_i(vrami, xsize, x + n, y + m, x    , y + a, c);
+	line_i(vrami, xsize, x    , y + a, x    , y    , c);
+	line_i(vrami, xsize, x    , y + a, x - n, y + m, c);
+	line_i(vrami, xsize, x - n, y + m, x - n, y - m, c);
+	line_i(vrami, xsize, x - n, y - m, x    , y    , c);
+	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
+
+	x = x + n;
+	x = x + n;
+
+	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
+	line_i(vrami, xsize, x    , y + a, x - n, y + m, c);
+	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
+
+	x = x - n;
+	x = x - n;
+
+	x = x - n;
+	x = x - n;
+
+	x = x + n;
+	y = y + (3 * m);
+
+	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
+	line_i(vrami, xsize, x + n, y - m, x    , y    , c);
+	line_i(vrami, xsize, x + n, y - m, x + n, y + m, c);
+	line_i(vrami, xsize, x + n, y + m, x    , y + a, c);
+	line_i(vrami, xsize, x    , y + a, x    , y    , c);
+	line_i(vrami, xsize, x    , y + a, x - n, y + m, c);
+	line_i(vrami, xsize, x - n, y + m, x - n, y - m, c);
+	line_i(vrami, xsize, x - n, y - m, x    , y    , c);
 	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
 
 	x = x + n;
 	y = y + (3 * m);
 
 	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
-	line_i(vrami, xsize, x + n, y - m, x + n, y + m, c);
-	line_i(vrami, xsize, x + n, y + m, x    , y + a, c);
-	line_i(vrami, xsize, x    , y + a, x - n, y + m, c);
-	line_i(vrami, xsize, x - n, y + m, x - n, y - m, c);
-//	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
-
-	x = x + n;
-	y = y + (3 * m);
-
-	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
 
 	x = x + n;
 	x = x + n;
 
 	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
+	line_i(vrami, xsize, x + n, y - m, x    , y    , c);
 	line_i(vrami, xsize, x + n, y - m, x + n, y + m, c);
 	line_i(vrami, xsize, x + n, y + m, x    , y + a, c);
+	line_i(vrami, xsize, x    , y + a, x    , y    , c);
 	line_i(vrami, xsize, x    , y + a, x - n, y + m, c);
 	line_i(vrami, xsize, x - n, y + m, x - n, y - m, c);
+	line_i(vrami, xsize, x - n, y - m, x    , y    , c);
 	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
 
 	x = x - n;
@@ -316,10 +356,13 @@ void draw_chnos_logo(void *vrami, int xsize, int a, int x, int y)
 	x = x - n;
 
 	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
+	line_i(vrami, xsize, x + n, y - m, x    , y    , c);
 	line_i(vrami, xsize, x + n, y - m, x + n, y + m, c);
 	line_i(vrami, xsize, x + n, y + m, x    , y + a, c);
+	line_i(vrami, xsize, x    , y + a, x    , y    , c);
 	line_i(vrami, xsize, x    , y + a, x - n, y + m, c);
 	line_i(vrami, xsize, x - n, y + m, x - n, y - m, c);
+	line_i(vrami, xsize, x - n, y - m, x    , y    , c);
 	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
 
 	x = x + n;
@@ -331,10 +374,13 @@ void draw_chnos_logo(void *vrami, int xsize, int a, int x, int y)
 	y = y + (3 * m);
 
 	line_i(vrami, xsize, x    , y - a, x + n, y - m, c);
+	line_i(vrami, xsize, x + n, y - m, x    , y    , c);
 	line_i(vrami, xsize, x + n, y - m, x + n, y + m, c);
 	line_i(vrami, xsize, x + n, y + m, x    , y + a, c);
+	line_i(vrami, xsize, x    , y + a, x    , y    , c);
 	line_i(vrami, xsize, x    , y + a, x - n, y + m, c);
 	line_i(vrami, xsize, x - n, y + m, x - n, y - m, c);
+	line_i(vrami, xsize, x - n, y - m, x    , y    , c);
 	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
 
 	return;
