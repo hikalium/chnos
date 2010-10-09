@@ -103,6 +103,10 @@ void task_switch(void)
 void task_sleep(struct TASK *task)
 {
 	struct TASK *now_task;
+	int eflags;
+
+	eflags = io_load_eflags();
+	io_cli();
 
 	if(task->flags == inuse){
 		now_task = task_now();
@@ -113,6 +117,9 @@ void task_sleep(struct TASK *task)
 			farjmp(0, now_task->selector);
 		}
 	}
+
+	io_store_eflags(eflags);
+
 	return;
 }
 

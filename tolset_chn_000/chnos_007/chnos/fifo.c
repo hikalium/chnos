@@ -15,6 +15,11 @@ void fifo32_init(struct FIFO32 *fifo, int size, unsigned int *buf, struct TASK *
 
 int fifo32_put(struct FIFO32 *fifo, unsigned int data)
 {
+	int eflags;
+
+	eflags = io_load_eflags();
+	io_cli();
+
 	if (fifo->free == 0 ) {
 		fifo->flags |= FIFO32_PUT_OVER;
 		return -1;
@@ -28,6 +33,9 @@ int fifo32_put(struct FIFO32 *fifo, unsigned int data)
 	if(fifo->task != 0){
 		if(fifo->task->flags != inuse) task_run(fifo->task, -1, 0);
 	}
+
+	io_store_eflags(eflags);
+
 	return 0;
 
 }

@@ -96,24 +96,19 @@ void init_system(void)
 
 	system.draw.sht.init(system.sys.vram, system.sys.xsize, system.sys.ysize, system.sys.bpp);
 
-	system.sys.sht.core				= system.draw.sht.alloc();
-	system.sys.sht.core_buf				= system.io.mem.alloc(system.sys.xsize * system.sys.ysize * (system.sys.bpp / 8));
-	system.draw.sht.set(system.sys.sht.core, system.sys.sht.core_buf, system.sys.xsize, system.sys.ysize, INV_COL32);
-	system.draw.boxfill(system.sys.sht.core_buf, system.sys.xsize, 0x000000, 0, 0, system.sys.xsize, system.sys.ysize);
-	draw_chnos_logo(system.sys.sht.core_buf, system.sys.xsize, system.sys.xsize / 16, system.sys.xsize / 2, (system.sys.ysize / 2) - (system.sys.ysize / 10));
-	system.draw.sht.updown(system.sys.sht.core, 1);
-	
-
 	system.sys.sht.desktop				= system.draw.sht.alloc();
 	system.sys.sht.mouse				= system.draw.sht.alloc();
 	system.sys.sht.taskbar				= system.draw.sht.alloc();
+	system.sys.sht.core				= system.draw.sht.alloc();
 
 	system.sys.sht.desktop_buf			= system.io.mem.alloc(system.sys.xsize * system.sys.ysize * (system.sys.bpp / 8));
 	system.sys.sht.taskbar_buf			= system.io.mem.alloc(system.sys.xsize * TASKBAR_HEIGHT * (system.sys.bpp / 8));
+	system.sys.sht.core_buf				= system.io.mem.alloc(system.sys.xsize * system.sys.ysize * (system.sys.bpp / 8));
 
 	system.draw.sht.set(system.sys.sht.desktop, system.sys.sht.desktop_buf, system.sys.xsize, system.sys.ysize, INV_COL32);
 	system.draw.sht.set(system.sys.sht.mouse, *system.sys.sht.mouse_buf, 24, 24, INV_COL32);
 	system.draw.sht.set(system.sys.sht.taskbar, system.sys.sht.taskbar_buf, system.sys.xsize, system.sys.ysize, INV_COL32);
+	system.draw.sht.set(system.sys.sht.core, system.sys.sht.core_buf, system.sys.xsize, system.sys.ysize, INV_COL32);
 
 	system.draw.sht.slide(system.sys.sht.desktop, 0, 0);
 	system.draw.sht.updown(system.sys.sht.desktop, -1);
@@ -121,6 +116,8 @@ void init_system(void)
 	system.draw.sht.updown(system.sys.sht.taskbar, -1);
 	system.draw.sht.slide(system.sys.sht.mouse, system.sys.xsize / 2, system.sys.ysize / 2);
 	system.draw.sht.updown(system.sys.sht.mouse, -1);
+	system.draw.sht.slide(system.sys.sht.core, 0, 0);
+	system.draw.sht.updown(system.sys.sht.core, -1);
 
 	system.data.fifo.init(&system.sys.fifo, SYS_FIFOSIZE, system.sys.fifo_buf, 0);
 	system.data.fifo.init(&system.sys.keycmd, KEYCMD_FIFOSIZE, system.sys.keycmd_buf, 0);

@@ -21,6 +21,10 @@ void CHNMain(void)
 
 	system.draw.init_screen(system.sys.sht.desktop_buf, system.sys.sht.taskbar_buf, *system.sys.sht.mouse_buf);
 
+	system.draw.boxfill(system.sys.sht.core_buf, system.sys.xsize, 0x000000, 0, 0, system.sys.xsize, system.sys.ysize);
+	draw_chnos_logo(system.sys.sht.core_buf, system.sys.xsize, system.sys.xsize / 16, system.sys.xsize / 2, (system.sys.ysize / 2) - (system.sys.ysize / 10));
+	sheet_updown(system.sys.sht.core, 0);
+	sheet_refresh_full(system.sys.sht.core);
 	for(;;){
 		system.io.cli();
 		if(system.data.fifo.status(&system.sys.fifo) == 0){
@@ -28,16 +32,19 @@ void CHNMain(void)
 			system.io.sti();
 		} else {
 			i = system.data.fifo.get(&system.sys.fifo);
-			i -= SYS_FIFO_START_KEYB;
-			if(i == 0x1c){
-				sheet_updown(system.sys.sht.core, -1);
-				sheet_updown(system.sys.sht.desktop, 1);
-				sheet_updown(system.sys.sht.taskbar, 2);
-				sheet_updown(system.sys.sht.mouse, 3);
+			if(i - SYS_FIFO_START_KEYB == 0x1c){
 				break;
+			} else if(SYS_FIFO_START_MOUSE <= i && i <= SYS_FIFO_START_MOUSE + DATA_BYTE){
+				decode_mouse(i - SYS_FIFO_START_MOUSE);
 			}
 		}
 	}
+
+
+	sheet_updown(system.sys.sht.core, -1);
+	sheet_updown(system.sys.sht.desktop, 0);
+	sheet_updown(system.sys.sht.taskbar, 1);
+	sheet_updown(system.sys.sht.mouse, 2);
 
 	sheet_refresh_full(system.sys.sht.desktop);
 	sheet_refresh_full(system.sys.sht.taskbar);
