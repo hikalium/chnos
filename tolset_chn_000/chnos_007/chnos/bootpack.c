@@ -77,6 +77,11 @@ void CHNMain(void)
 
 
 	for(;;){
+		if(system.data.fifo.status(&system.sys.keycmd) > 0 && system.sys.keycmd_wait < 0){
+			system.sys.keycmd_wait = system.data.fifo.get(&system.sys.keycmd);
+			wait_KBC_sendready();
+			system.io.out8(KEYB_DATA, system.sys.keycmd_wait);
+		}
 		system.io.cli();
 		if(system.data.fifo.status(&system.sys.fifo) == 0){
 			task_sleep(system.sys.task.main);
