@@ -112,16 +112,16 @@ void CHNMain(void)
 					} else if(key_to == 1){
 						system.data.fifo.put(&console_task->fifo, dec_key.c + SYS_FIFO_START_KEYB);
 					}
-				}else if(dec_key.make && dec_key.keycode == 0x0E){/*BackSpace*/
+				} else if(dec_key.make && dec_key.keycode == 0x0E){/*BackSpace*/
 					if(key_to == 0){
 						boxfill_win(testwin, 0xFFFFFF, c_cursor.x, c_cursor.y, c_cursor.x + 8, c_cursor.y +16);
 						c_cursor.x -= 8;
 						check_newline(&c_cursor, testwin->xsize, testwin->ysize);
 						boxfill_win(testwin, 0xFFFFFF, c_cursor.x, c_cursor.y, c_cursor.x + 8, c_cursor.y +16);
 					} else if(key_to == 1){
-						system.data.fifo.put(&console_task->fifo, 0x0E + SYS_FIFO_START_KEYB);
+						system.data.fifo.put(&console_task->fifo, 0x0e + SYS_FIFO_START_KEYB);
 					}
-				}else if(dec_key.make && dec_key.keycode == 0x0f){/*Tab*/
+				} else if(dec_key.make && dec_key.keycode == 0x0f){/*Tab*/
 					if(key_to == 0){
 						key_to = 1;
 						change_window_active(console_win, true);
@@ -134,6 +134,10 @@ void CHNMain(void)
 						change_window_active(testwin, true);
 						cursor_on = true;
 						system.data.fifo.put(&console_task->fifo, CONSOLE_FIFO_CURSOR_STOP);
+					}
+				} else if(dec_key.make && dec_key.keycode == 0x1c){/*Enter*/
+					if(key_to == 1){
+						system.data.fifo.put(&console_task->fifo, 0x0a + SYS_FIFO_START_KEYB);
 					}
 				}
 				sprintf(s, "testwin size x: %5d y %5d c_cursor x: %5d y: %5d", testwin->xsize, testwin->ysize, c_cursor.x, c_cursor.y);

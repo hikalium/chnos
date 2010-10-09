@@ -75,9 +75,6 @@ typedef enum _state_alloc { none, initialized, allocated, configured, inuse} sta
 #define WIN_COL32_ACTIVE	0x93D9FF
 #define WIN_COL32_INACTIVE	0xD0EFFF
 
-#define CONSOLE_XCHARS	32
-#define CONSOLE_YCHARS	8
-
 #define MAX_TIMER	512
 
 #define PIT_CTRL	0x0043
@@ -118,6 +115,10 @@ typedef enum _state_alloc { none, initialized, allocated, configured, inuse} sta
 
 #define CONSOLE_FIFO_CURSOR_START	2
 #define CONSOLE_FIFO_CURSOR_STOP	3
+#define CONSOLE_COLOR_BACKGROUND	0x000000
+#define CONSOLE_COLOR_CHAR	0xFFFFFF
+#define CONSOLE_XCHARS	32
+#define CONSOLE_YCHARS	8
 
 #define KEYCMD_FIFOSIZE	32
 
