@@ -4,7 +4,7 @@
 #include <stdarg.h>
 
 /*new object types*/
-typedef enum _bool { false, true } bool;
+typedef enum _bool { false, true} bool;
 typedef enum _color_8 { black, red, green, yellow, 
 			blue, pink, light_blue, white, 
 			gray, brown, dark_green, gold, 
@@ -115,6 +115,9 @@ typedef enum _state_alloc { none, initialized, allocated, configured, inuse} sta
 #define SYS_FIFO_SIG_TIMERC	0x0001
 #define SYS_FIFO_START_KEYB	0x100		/*256~511=keycode*/
 #define SYS_FIFO_START_MOUSE	0x200		/*512~767=mouse*/
+
+#define CONSOLE_FIFO_CURSOR_START	2
+#define CONSOLE_FIFO_CURSOR_STOP	3
 
 #define KEYCMD_FIFOSIZE	32
 

@@ -15,6 +15,7 @@ void CHNMain(void)
 	unsigned char s[64];	
 	int i, mx = 0, my = 0;
 	bool cursor = false;
+	bool cursor_on = true;
 	int key_to = 0;
 
 	init_system();
@@ -83,12 +84,17 @@ void CHNMain(void)
 		} else {
 			i = system.data.fifo.get(&system.sys.fifo);
 			if(i == SYS_FIFO_SIG_TIMERC){
-				if(cursor){
+				if(cursor_on){
+					if(cursor){
+						boxfill_win(testwin, 0xFFFFFF, c_cursor.x, c_cursor.y, c_cursor.x + 8, c_cursor.y +16);
+						cursor = false;
+					} else{
+						boxfill_win(testwin, 0x000000, c_cursor.x, c_cursor.y, c_cursor.x + 8, c_cursor.y +16);
+						cursor = true;
+					}
+				} else if(cursor){
 					boxfill_win(testwin, 0xFFFFFF, c_cursor.x, c_cursor.y, c_cursor.x + 8, c_cursor.y +16);
 					cursor = false;
-				} else{
-					boxfill_win(testwin, 0x000000, c_cursor.x, c_cursor.y, c_cursor.x + 8, c_cursor.y +16);
-					cursor = true;
 				}
 				timer_settime(system.sys.timer.t500, 50);
 			} else if(SYS_FIFO_START_KEYB <= i && i <= SYS_FIFO_START_KEYB + DATA_BYTE){
@@ -120,10 +126,14 @@ void CHNMain(void)
 						key_to = 1;
 						change_window_active(console_win, true);
 						change_window_active(testwin, false);
+						cursor_on = false;
+						system.data.fifo.put(&console_task->fifo, CONSOLE_FIFO_CURSOR_START);
 					} else{
 						key_to = 0;
 						change_window_active(console_win, false);
 						change_window_active(testwin, true);
+						cursor_on = true;
+						system.data.fifo.put(&console_task->fifo, CONSOLE_FIFO_CURSOR_STOP);
 					}
 				}
 				sprintf(s, "testwin size x: %5d y %5d c_cursor x: %5d y: %5d", testwin->xsize, testwin->ysize, c_cursor.x, c_cursor.y);

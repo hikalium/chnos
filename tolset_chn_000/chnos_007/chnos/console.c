@@ -9,6 +9,7 @@ void console_main(struct WINDOWINFO *win)
 	struct TASK *task = task_now();
 	struct POSITION_2D cursor;
 	bool cursor_state = true;
+	bool cursor_on = false;
 	int i, fifobuf[128];
 	unsigned int cursor_c;
 	unsigned char s[128];
@@ -33,15 +34,22 @@ void console_main(struct WINDOWINFO *win)
 			i = fifo32_get(&task->fifo);
 			io_sti();
 			if(i == 1){
-				if(cursor_state){
-					cursor_c = 0xFFFFFF;
-					cursor_state = false;
-				} else{
-					cursor_c = 0x000000;
-					cursor_state = true;
+				if(cursor_on){
+					if(cursor_state){
+						cursor_c = 0xFFFFFF;
+						cursor_state = false;
+					} else{
+						cursor_c = 0x000000;
+						cursor_state = true;
+					}
+					boxfill_win(win, cursor_c, cursor.x, cursor.y, cursor.x + 8, cursor.y +16);
 				}
 				timer_settime(timer, 50);
-				boxfill_win(win, cursor_c, cursor.x, cursor.y, cursor.x + 8, cursor.y +16);
+			} else if(i == CONSOLE_FIFO_CURSOR_START){
+				cursor_on = true;
+			} else if(i == CONSOLE_FIFO_CURSOR_STOP){
+				cursor_on = false;
+					boxfill_win(win, 0x000000, cursor.x, cursor.y, cursor.x + 8, cursor.y +16);
 			} else if(SYS_FIFO_START_KEYB <= i && i <= SYS_FIFO_START_KEYB + DATA_BYTE){
 				i -= SYS_FIFO_START_KEYB;
 				if(i == 0x0E){
