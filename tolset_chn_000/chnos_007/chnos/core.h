@@ -160,7 +160,7 @@ struct TIMERCTL {
 struct WINDOWINFO {
 	char title[32];
 	struct SHEET32 *win;
-	unsigned int *buf;
+	void *buf;
 	int winxsize, winysize, xsize, ysize;
 	struct POSITION_2D position;
 	struct POSITION_2D origin;
@@ -524,6 +524,7 @@ void refresh_window(struct WINDOWINFO *winfo);
 void refresh_window_alpha(struct WINDOWINFO *winfo);
 void boxfill_win(struct WINDOWINFO *winfo, unsigned int c, int x0, int y0, int x1, int y1);
 void putfonts_win(struct WINDOWINFO *winfo, int x, int y, unsigned int c, unsigned int bc, const unsigned char *s);
+void scrool_win(struct WINDOWINFO *winfo);
 void line_win(struct WINDOWINFO *winfo, int x0, int y0, int x1, int y1, unsigned int c);
 void draw_hexagon_win(struct WINDOWINFO *winfo, int a, int x, int y, unsigned int c);
 
@@ -575,6 +576,7 @@ unsigned int mix_color(unsigned int c0, unsigned int c1);
 void point_i(void *vrami, int x, int y, unsigned int c, int xsize);
 void boxfill_i(void *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
 void putfonts_asc_i(void *vrami, int xsize, int x, int y, unsigned int c, const unsigned char *s);
+void putblock_i(void *vram, int vxsize, int pxsize, int pysize, int px0, int py0, void *buf, int bxsize);
 void line_i(void *vrami, int xsize, int x0, int y0, int x1, int y1, unsigned int c);
 void draw_hexagon_i(void *vrami, int xsize, int a, int x, int y, unsigned int c);
 void draw_chnos_logo(void *vrami, int xsize, int a, int x, int y);

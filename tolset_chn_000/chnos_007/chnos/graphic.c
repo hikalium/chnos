@@ -202,6 +202,18 @@ void putfonts_asc_i(void *vrami, int xsize, int x, int y, unsigned int c, const 
 	return;
 }
 
+void putblock_i(void *vrami, int vxsize, int pxsize, int pysize, int px0, int py0, void *buf, int bxsize)
+{
+	if(system.info.vesa.BitsPerPixel == 8){
+		putblock8_8(vrami, vxsize, pxsize, pysize, px0, py0, buf, bxsize);
+	} else if(system.info.vesa.BitsPerPixel == 16){
+		putblock16_16(vrami, vxsize, pxsize, pysize, px0, py0, buf, bxsize);
+	} else if(system.info.vesa.BitsPerPixel == 32){
+		putblock32_32(vrami, vxsize, pxsize, pysize, px0, py0, buf, bxsize);
+	}
+	return;
+}
+
 void line_i(void *vrami, int xsize, int x0, int y0, int x1, int y1, unsigned int c)
 {
 	int i, x, y, len, dx, dy;

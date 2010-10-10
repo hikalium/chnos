@@ -1,9 +1,10 @@
 
 #include "core.h"
 
-void cons_check_newline(struct POSITION_2D *p, struct POSITION_2D *prompt);
+void cons_check_newline(struct WINDOWINFO *win, struct POSITION_2D *p, struct POSITION_2D *prompt);
 void put_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor);
 void new_line(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor);
+void slide_line(struct WINDOWINFO *win);
 
 void console_main(struct WINDOWINFO *win)
 {
@@ -58,7 +59,7 @@ void console_main(struct WINDOWINFO *win)
 				if(i == 0x0e){
 					putfonts_win(win, cursor.x, cursor.y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
 					cursor.x -= 8;
-					cons_check_newline(&cursor, &prompt);
+					cons_check_newline(win, &cursor, &prompt);
 					putfonts_win(win, cursor.x, cursor.y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
 				} else if(i == 0x0a){
 					new_line(win, &prompt, &cursor);
@@ -67,7 +68,7 @@ void console_main(struct WINDOWINFO *win)
 					s[1] = 0x00;
 					putfonts_win(win, cursor.x, cursor.y, CONSOLE_COLOR_CHAR, CONSOLE_COLOR_BACKGROUND, s);
 					cursor.x += 8;
-					cons_check_newline(&cursor, &prompt);
+					cons_check_newline(win, &cursor, &prompt);
 				}
 			}
 		}
@@ -86,7 +87,9 @@ void put_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSIT
 void new_line(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor)
 {
 	if(prompt->y + 16 >= (CONSOLE_YCHARS * 16) - 15){
-
+		putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
+		slide_line(win);
+		put_prompt(win, prompt, cursor);
 	} else{
 		prompt->y = cursor->y + 16;
 		put_prompt(win, prompt, cursor);
@@ -94,7 +97,14 @@ void new_line(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITIO
 	return;
 }
 
-void cons_check_newline(struct POSITION_2D *p, struct POSITION_2D *prompt)
+void slide_line(struct WINDOWINFO *win)
+{
+	scrool_win(win);
+	refresh_window(win);
+	return;
+}
+
+void cons_check_newline(struct WINDOWINFO *win, struct POSITION_2D *p, struct POSITION_2D *prompt)
 {
 	if(p->x <= prompt->x){
 		if(p->y != prompt->y){
@@ -108,10 +118,16 @@ void cons_check_newline(struct POSITION_2D *p, struct POSITION_2D *prompt)
 		}
 	} else if(p->x >= CONSOLE_XCHARS * 8){
 		if(p->y <= (CONSOLE_YCHARS * 16) - 15){
-			p->y += 16;
 			p->x = 0;
-		} else {
-			p->x -= 8;
+			p->y += 16;
+		} else{
+			slide_line(win);
+			p->x = 0;
+			if(prompt->y > 0) prompt->y -= 16;
+			else{
+				prompt->y = 0;
+				prompt->x = 0;
+			}
 		}
 	} 
 	return;

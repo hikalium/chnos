@@ -2,6 +2,10 @@
 
 struct WINCTL *wctl;
 
+void scrool_win_8(struct WINDOWINFO *winfo, unsigned char *vram);
+void scrool_win_16(struct WINDOWINFO *winfo, unsigned short *vram);
+void scrool_win_32(struct WINDOWINFO *winfo, unsigned int *vram);
+
 char closebtn[16][40] = {
 	"OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO@",
 	"OQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ$@",
@@ -168,6 +172,51 @@ void putfonts_win(struct WINDOWINFO *winfo, int x, int y, unsigned int c, unsign
 	if(x < 0 || y < 0 || x > winfo->xsize || y > winfo->ysize) goto err;
 	putfonts_asc_sht_i(winfo->win, x + winfo->origin.x, y + winfo->origin.y, c, bc, s);
 err:
+	return;
+}
+
+void scrool_win(struct WINDOWINFO *winfo)
+{
+	if(system.sys.bpp == 8) scrool_win_8(winfo, winfo->buf);
+	else if(system.sys.bpp == 16) scrool_win_16(winfo, winfo->buf);
+	else if(system.sys.bpp == 32) scrool_win_32(winfo, winfo->buf);
+	boxfill_win(winfo, 0x000000, 0, winfo->ysize - 16, winfo->xsize, winfo->ysize);
+	return;
+}
+
+void scrool_win_32(struct WINDOWINFO *winfo, unsigned int *vram)
+{
+	int x, y;
+
+	for (y = winfo->origin.y; y < winfo->ysize + winfo->origin.y; y++) {
+		for (x = winfo->origin.x; x < winfo->xsize + winfo->origin.x; x++) {
+			vram[x + y * winfo->winxsize] = vram[x + (y + 16) * winfo->winxsize];
+		}
+	}
+	return;
+}
+
+void scrool_win_16(struct WINDOWINFO *winfo, unsigned short *vram)
+{
+	int x, y;
+
+	for (y = winfo->origin.y; y < winfo->origin.y + winfo->ysize; y++) {
+		for (x = winfo->origin.x; x < winfo->origin.x + winfo->xsize; x++) {
+			vram[x + y * winfo->xsize] = vram[x + (y + 16) * winfo->xsize];
+		}
+	}
+	return;
+}
+
+void scrool_win_8(struct WINDOWINFO *winfo, unsigned char *vram)
+{
+	int x, y;
+
+	for (y = winfo->origin.y; y < winfo->origin.y + winfo->ysize; y++) {
+		for (x = winfo->origin.x; x < winfo->origin.x + winfo->xsize; x++) {
+			vram[x + y * winfo->xsize] = vram[x + (y + 16) * winfo->xsize];
+		}
+	}
 	return;
 }
 
