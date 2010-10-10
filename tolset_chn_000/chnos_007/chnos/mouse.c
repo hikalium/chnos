@@ -25,7 +25,6 @@ void inthandler2c(int *esp)
 
 int decode_mouse(int data)
 {
-	putfonts_asc_sht_i(system.sys.sht.desktop, 8, 200, 0xFFFFFF, 0x000000, "INT:2C IRQ:12 PS/2Ï³½");
 	switch (system.sys.mouse_decode.phase){
 		case 0:
 			if(data == 0xfa) system.sys.mouse_decode.phase = 4;

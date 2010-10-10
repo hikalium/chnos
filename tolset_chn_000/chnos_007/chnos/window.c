@@ -200,9 +200,9 @@ void scrool_win_16(struct WINDOWINFO *winfo, unsigned short *vram)
 {
 	int x, y;
 
-	for (y = winfo->origin.y; y < winfo->origin.y + winfo->ysize; y++) {
-		for (x = winfo->origin.x; x < winfo->origin.x + winfo->xsize; x++) {
-			vram[x + y * winfo->xsize] = vram[x + (y + 16) * winfo->xsize];
+	for (y = winfo->origin.y; y < winfo->ysize + winfo->origin.y; y++) {
+		for (x = winfo->origin.x; x < winfo->xsize + winfo->origin.x; x++) {
+			vram[x + y * winfo->winxsize] = vram[x + (y + 16) * winfo->winxsize];
 		}
 	}
 	return;
@@ -212,9 +212,9 @@ void scrool_win_8(struct WINDOWINFO *winfo, unsigned char *vram)
 {
 	int x, y;
 
-	for (y = winfo->origin.y; y < winfo->origin.y + winfo->ysize; y++) {
-		for (x = winfo->origin.x; x < winfo->origin.x + winfo->xsize; x++) {
-			vram[x + y * winfo->xsize] = vram[x + (y + 16) * winfo->xsize];
+	for (y = winfo->origin.y; y < winfo->ysize + winfo->origin.y; y++) {
+		for (x = winfo->origin.x; x < winfo->xsize + winfo->origin.x; x++) {
+			vram[x + y * winfo->winxsize] = vram[x + (y + 16) * winfo->winxsize];
 		}
 	}
 	return;

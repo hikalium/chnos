@@ -50,8 +50,6 @@ void CHNMain(void)
 	sheet_refresh_full(system.sys.sht.desktop);
 	sheet_refresh_full(system.sys.sht.taskbar);
 	sheet_refresh_full_alpha(system.sys.sht.mouse);
-	sprintf(s, "ÒÓØ°: %dMB ±·: %dKB ÃÞ½¸Ä¯Ìß: %d À½¸ÊÞ°: %d Ï³½: %d", system.sys.memtotal / (1024 * 1024), system.io.mem.free_total() / 1024, system.sys.sht.desktop->height, system.sys.sht.taskbar->height, system.sys.sht.mouse->height);
-	putfonts_asc_sht_i(system.sys.sht.desktop, 8, 168, 0xFFFFFF, 0x000000, s);	
 
 	testwin = make_window("Ã½Ä³¨ÝÄÞ³", 300, 300, 0, 0, 2, true);
 
@@ -104,8 +102,6 @@ void CHNMain(void)
 				timer_settime(system.sys.timer.t500, 50);
 			} else if(SYS_FIFO_START_KEYB <= i && i <= SYS_FIFO_START_KEYB + DATA_BYTE){
 				decode_key(&dec_key, i - SYS_FIFO_START_KEYB);
-				sprintf(s, "INT:21 IRQ:01 PS/2·°ÎÞ°ÄÞ   ");
-				s[26] = dec_key.c;
 				putfonts_asc_sht_i(system.sys.sht.desktop, 8, 184, 0xFFFFFF, 0x000000, s); 
 				if(dec_key.make && dec_key.c != 0){
 					if(key_to == 0){
@@ -145,8 +141,6 @@ void CHNMain(void)
 						system.data.fifo.put(&console_task->fifo, 0x0a + SYS_FIFO_START_KEYB);
 					}
 				}
-				sprintf(s, "testwin size x: %5d y %5d c_cursor x: %5d y: %5d", testwin->xsize, testwin->ysize, c_cursor.x, c_cursor.y);
-				putfonts_asc_sht_i(system.sys.sht.desktop, 8, 232, 0xFFFFFF, 0x000000, s); 
 			} else if(SYS_FIFO_START_MOUSE <= i && i <= SYS_FIFO_START_MOUSE + DATA_BYTE){
 				if(decode_mouse(i - SYS_FIFO_START_MOUSE) != 0){
 					mx += system.sys.mouse_decode.x;
@@ -155,20 +149,13 @@ void CHNMain(void)
 					if(my < 0) my = 0;
 					if(mx > system.sys.xsize - 1) mx = system.sys.xsize - 1;
 					if(my > system.sys.ysize - 1) my = system.sys.ysize - 1;
-					sprintf(s, "INT:2C IRQ:12 PS/2Ï³½ [lcr %4d %4d]", system.sys.mouse_decode.x, system.sys.mouse_decode.y);
 					if((system.sys.mouse_decode.btn & 0x01) != 0){
-						s[23] = 'L';
 						slide_window(testwin, mx - 10, my - 8);
 					}
 					if((system.sys.mouse_decode.btn & 0x02) != 0){
-						s[25] = 'R';
 					}
 					if((system.sys.mouse_decode.btn & 0x04) != 0){
-						s[24] = 'C';
 					}
-					putfonts_asc_sht_i(system.sys.sht.desktop, 8, 200, 0xFFFFFF, 0x000000, s);
-					sprintf(s, "(%3d, %3d)", mx, my);
-					putfonts_asc_sht_i(system.sys.sht.desktop, 8, 216, 0xFFFFFF, 0x000000, s);
 					system.draw.sht.slide(system.sys.sht.mouse, mx, my);
 				}
 			}
