@@ -86,12 +86,13 @@ void put_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSIT
 
 void new_line(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor)
 {
-	if(prompt->y + 16 >= (CONSOLE_YCHARS * 16) - 15){
-		putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
-		slide_line(win);
+	if(cursor->y <= (CONSOLE_YCHARS * 16) - 17){
+		prompt->y = cursor->y + 16;
 		put_prompt(win, prompt, cursor);
 	} else{
-		prompt->y = cursor->y + 16;
+		putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
+		slide_line(win);
+		prompt->y = (CONSOLE_YCHARS - 1) * 16;
 		put_prompt(win, prompt, cursor);
 	}
 	return;
@@ -117,7 +118,7 @@ void cons_check_newline(struct WINDOWINFO *win, struct POSITION_2D *p, struct PO
 			p->x = 8;
 		}
 	} else if(p->x >= CONSOLE_XCHARS * 8){
-		if(p->y <= (CONSOLE_YCHARS * 16) - 15){
+		if(p->y <= (CONSOLE_YCHARS * 16) - 17){
 			p->x = 0;
 			p->y += 16;
 		} else{
