@@ -72,7 +72,6 @@ void console_main(struct WINDOWINFO *win)
 					cons_check_newline(win, &cursor, &prompt);
 					putfonts_win(win, cursor.x, cursor.y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
 				} else if(i == 0x0a){
-					cons_new_line_no_prompt(win, &prompt, &cursor);
 					cons_command_start(win, &prompt, &cursor, cmdline);
 					cons_reset_cmdline(cmdline, &cmdlines, &cmdline_overflow);
 					cons_new_line(win, &prompt, &cursor);
@@ -99,7 +98,20 @@ void cons_reset_cmdline(unsigned char *cmdline, unsigned int *cmdlines, bool *cm
 
 void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *cmdline)
 {
-	cons_put_str(win, prompt, cursor, cmdline);
+	unsigned char s[128];
+
+	if(cmdline[0] != 0x00){
+		cons_new_line_no_prompt(win, prompt, cursor);
+	}
+
+	if(cmdline[0] == 'm' && cmdline[1] == 'e' && cmdline[2] == 'm' && cmdline[3] == 0x00){
+		sprintf(s, "“”ÿ∞:%dMB\n", system.sys.memtotal / (1024 * 1024));
+		cons_put_str(win, prompt, cursor, s);
+		sprintf(s, "±∑:%dKB", system.io.mem.free_total() / 1024);
+		cons_put_str(win, prompt, cursor, s);
+	} else if(cmdline[0] != 0x00){
+		cons_put_str(win, prompt, cursor, "Bad command...\n");
+	}
 	return;
 }
 
