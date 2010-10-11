@@ -107,6 +107,7 @@ void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, stru
 {
 	unsigned char s[128];
 	int i, j;
+	unsigned char *p;
 
 	if(cmdline[0] != 0x00){
 		cons_new_line_no_prompt(win, prompt, cursor);
@@ -138,6 +139,44 @@ void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, stru
 					cons_put_str(win, prompt, cursor, s);
 				}
 			}
+		}
+	} else if(cmdline[0] == 't' && cmdline[1] == 'y' && cmdline[2] == 'p' && cmdline[3] == 'e' && cmdline[4] == ' '){
+		for(j = 0; j < 11; j++){
+			s[j] = ' ';
+		}
+		j = 0;
+		for(i = 5; j < 11 && cmdline[i] != 0; i++){
+			if(cmdline[i] == '.' && j <= 8){
+				j = 8;
+			} else{
+				s[j] = cmdline[i];
+				if('a' <= s[j] && s[j] <= 'z'){
+					s[j] -= 0x20;
+				}
+				j++;
+			}
+		}
+		for(i = 0; i < 224; ){
+			if(system.file.list[i].name[0] == 0x00) break;
+			if((system.file.list[i].type & 0x18) == 0){
+				for(j = 0; j < 11; j++){
+					if(system.file.list[i].name[j] != s[j]) goto next_file;
+				}
+				break; 
+			}
+next_file:
+			i++;
+		}
+		if(i < 224 && system.file.list[i].name[0] != 0x00){
+			j = system.file.list[i].size;
+			p = (unsigned char *)(system.file.list[i].clustno * 512 + 0x00003e00 + ADR_DISKIMG);
+			for(i = 0; i < j; i++){
+				s[0] = p[i];
+				s[1] = 0x00;
+				cons_put_str(win, prompt, cursor, s);
+			}
+		} else {
+			cons_put_str(win, prompt, cursor, "File not found...\n");
 		}
 	} else if(cmdline[0] != 0x00){
 		cons_put_str(win, prompt, cursor, "Bad command...\n");
