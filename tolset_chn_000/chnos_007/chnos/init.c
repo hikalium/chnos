@@ -88,6 +88,8 @@ void init_system(void)
 	system.sys.idt					= (struct GATE_DESCRIPTOR *)0x0026f800;		/*0x26f800-0x26ffff*/
 	system.sys.keycmd_wait				= -1;
 
+	system.file.list				= (struct FILEINFO *)(ADR_DISKIMG + 0x00002600);
+
 // system init
 	init_gdtidt();
 	system.sys.memtotal				= system.io.mem.test(0x00400000, 0xbfffffff);

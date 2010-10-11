@@ -135,6 +135,13 @@ typedef enum _state_alloc { none, initialized, allocated, configured, inuse} sta
 /*structures*/
 extern char cursor[24][24];
 
+struct FILEINFO {
+	unsigned char name[8], ext[3], type;
+	unsigned char reserve[10];
+	unsigned short time, data, clustno;
+	unsigned int size;
+};
+
 struct POSITION_2D {
 	int x, y;
 };
@@ -388,6 +395,9 @@ struct SYSTEM {
 		void (*start)(int eip, int cs, int esp, int ds, int *tss_esp0);
 		void (*end)(void);
 	} app;
+	struct SYS_FILE {
+		struct FILEINFO *list;
+	} file;
 	struct SYS_SYS {
 		struct SYS_SYS_SHT {
 			struct SHEET32 *core;

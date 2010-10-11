@@ -106,6 +106,7 @@ void cons_reset_cmdline(unsigned char *cmdline, unsigned int *cmdlines, bool *cm
 void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *cmdline, unsigned int *cmdlines, bool *cmdline_overflow)
 {
 	unsigned char s[128];
+	int i, j;
 
 	if(cmdline[0] != 0x00){
 		cons_new_line_no_prompt(win, prompt, cursor);
@@ -122,6 +123,22 @@ void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, stru
 		cons_reset_cmdline(cmdline, cmdlines, cmdline_overflow);
 		cons_put_prompt(win, prompt, cursor);
 		goto end;
+	} else if(strcmp(cmdline, "dir") == 0){
+		for(i = 0; i < 0xe0; i++){
+			if(system.file.list[i].name[0] == 0x00) break;
+			if(system.file.list[i].name[0] != 0xe5){
+				if((system.file.list[i].type & 0x18) == 0){
+					sprintf(s, "FILENAME.EXT %7d\n", system.file.list[i].size);
+					for(j = 0; j < 8; j++){
+						s[j] = system.file.list[i].name[j];
+					}
+					s[ 9] = system.file.list[i].ext[0];
+					s[10] = system.file.list[i].ext[1];
+					s[11] = system.file.list[i].ext[2];
+					cons_put_str(win, prompt, cursor, s);
+				}
+			}
+		}
 	} else if(cmdline[0] != 0x00){
 		cons_put_str(win, prompt, cursor, "Bad command...\n");
 	}

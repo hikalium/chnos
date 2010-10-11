@@ -65,6 +65,8 @@ chnos.img : chnipl.bin chnos.sys Makefile
 	$(EDIMG)   imgin:../../z_tools/fdimg0at.tek \
 		wbinimg src:chnipl.bin len:512 from:0 to:0 \
 		copy from:chnos.sys to:@: \
+		copy from:chnipl.nas to:@: \
+		copy from:make.bat to:@: \
 		imgout:chnos.img
 
 #ˆê”Ê‹K‘¥
