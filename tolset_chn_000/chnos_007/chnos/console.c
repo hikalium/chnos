@@ -2,9 +2,10 @@
 #include "core.h"
 
 void cons_check_newline(struct WINDOWINFO *win, struct POSITION_2D *p, struct POSITION_2D *prompt);
-void put_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor);
-void new_line(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor);
-void slide_line(struct WINDOWINFO *win);
+void cons_put_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor);
+void cons_new_line(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor);
+void cons_slide_line(struct WINDOWINFO *win);
+void cons_put_str(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *str);
 
 void console_main(struct WINDOWINFO *win)
 {
@@ -27,7 +28,7 @@ void console_main(struct WINDOWINFO *win)
 	timer_settime(timer, 50);
 
 	boxfill_win(win, CONSOLE_COLOR_BACKGROUND, 0, 0, win->xsize, win->ysize);
-	put_prompt(win, &prompt, &cursor);
+	cons_put_prompt(win, &prompt, &cursor);
 
 	for(;;){
 		io_cli();
@@ -62,20 +63,34 @@ void console_main(struct WINDOWINFO *win)
 					cons_check_newline(win, &cursor, &prompt);
 					putfonts_win(win, cursor.x, cursor.y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
 				} else if(i == 0x0a){
-					new_line(win, &prompt, &cursor);
+					cons_new_line(win, &prompt, &cursor);
 				} else{
 					s[0] = (unsigned char)i;
 					s[1] = 0x00;
-					putfonts_win(win, cursor.x, cursor.y, CONSOLE_COLOR_CHAR, CONSOLE_COLOR_BACKGROUND, s);
-					cursor.x += 8;
-					cons_check_newline(win, &cursor, &prompt);
+					cons_put_str(win, &prompt, &cursor, s);
 				}
 			}
 		}
 	}
 }
 
-void put_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor)
+void cons_put_str(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *str)
+{
+	int i;
+	unsigned char s[3];
+
+	for(i = 0; i < 128; i++){
+		if(str[i] == 0x00) break;
+		s[0] = str[i];
+		s[1] = 0x00;
+		putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_CHAR, CONSOLE_COLOR_BACKGROUND, s);
+		cursor->x += 8;
+		cons_check_newline(win, cursor, prompt);
+	}
+	return;
+}
+
+void cons_put_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor)
 {
 	putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
 	putfonts_win(win, prompt->x, prompt->y, CONSOLE_COLOR_CHAR, CONSOLE_COLOR_BACKGROUND, ">");
@@ -84,21 +99,21 @@ void put_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSIT
 	return;
 }
 
-void new_line(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor)
+void cons_new_line(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor)
 {
 	if(cursor->y <= (CONSOLE_YCHARS * 16) - 17){
 		prompt->y = cursor->y + 16;
-		put_prompt(win, prompt, cursor);
+		cons_put_prompt(win, prompt, cursor);
 	} else{
 		putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
-		slide_line(win);
+		cons_slide_line(win);
 		prompt->y = (CONSOLE_YCHARS - 1) * 16;
-		put_prompt(win, prompt, cursor);
+		cons_put_prompt(win, prompt, cursor);
 	}
 	return;
 }
 
-void slide_line(struct WINDOWINFO *win)
+void cons_slide_line(struct WINDOWINFO *win)
 {
 	scrool_win(win);
 	refresh_window(win);
@@ -122,7 +137,7 @@ void cons_check_newline(struct WINDOWINFO *win, struct POSITION_2D *p, struct PO
 			p->x = 0;
 			p->y += 16;
 		} else{
-			slide_line(win);
+			cons_slide_line(win);
 			p->x = 0;
 			if(prompt->y > 0) prompt->y -= 16;
 			else{
