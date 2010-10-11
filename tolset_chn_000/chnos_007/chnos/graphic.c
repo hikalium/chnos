@@ -266,13 +266,16 @@ void draw_hexagon_i(void *vrami, int xsize, int a, int x, int y, unsigned int c)
 
 void draw_chnos_logo(void *vrami, int xsize, int a, int x, int y)
 {
-	int n, m;
+	int n, m, oldx, oldy;
 	unsigned int c;
+
+	oldx = x;
+	oldy = y;
 
 	if(a < 0) a = -a;
 	m = a >> 1;
 	n = (1773 * m) >> 10;
-	c = 0x00FF00;
+	c = 0x00FFFF;
 
 	x = x - n;
 	x = x - n;
@@ -394,6 +397,8 @@ void draw_chnos_logo(void *vrami, int xsize, int a, int x, int y)
 	line_i(vrami, xsize, x - n, y + m, x - n, y - m, c);
 	line_i(vrami, xsize, x - n, y - m, x    , y    , c);
 	line_i(vrami, xsize, x - n, y - m, x    , y - a, c);
+
+	putfonts_asc_i(vrami, xsize, oldx + n + 8, oldy, 0x00FF00, "CHNOSProject");
 
 	return;
 }
