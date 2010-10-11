@@ -1,5 +1,6 @@
 
 #include "core.h"
+#include <string.h>
 
 void cons_check_newline(struct WINDOWINFO *win, struct POSITION_2D *p, struct POSITION_2D *prompt);
 void cons_put_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor);
@@ -7,7 +8,7 @@ void cons_new_line(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct PO
 void cons_slide_line(struct WINDOWINFO *win);
 void cons_put_str(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *str);
 void cons_reset_cmdline(unsigned char *cmdline, unsigned int *cmdlines, bool *cmdline_overflow);
-void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *cmdline);
+void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *cmdline, unsigned int *cmdlines, bool *cmdline_overflow);
 void cons_new_line_no_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor);
 
 void console_main(struct WINDOWINFO *win)
@@ -71,14 +72,20 @@ void console_main(struct WINDOWINFO *win)
 					cursor.x -= 8;
 					cons_check_newline(win, &cursor, &prompt);
 					putfonts_win(win, cursor.x, cursor.y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
+					if(cmdlines != 0){
+						cmdlines--;
+						cmdline[cmdlines] = 0x00;
+					}
 				} else if(i == 0x0a){
-					cons_command_start(win, &prompt, &cursor, cmdline);
-					cons_reset_cmdline(cmdline, &cmdlines, &cmdline_overflow);
-					cons_new_line(win, &prompt, &cursor);
+					cons_command_start(win, &prompt, &cursor, cmdline, &cmdlines, &cmdline_overflow);
 				} else{
 					s[0] = (unsigned char)i;
 					s[1] = 0x00;
 					cons_put_str(win, &prompt, &cursor, s);
+					if(cmdlines >= CONSOLE_CMDLINE_BUF_SIZE){
+						cmdline_overflow = true;
+						cmdlines = 0;
+					}
 					cmdline[cmdlines] = (unsigned char)i;
 					cmdline[cmdlines + 1] = 0x00;
 					cmdlines++;
@@ -96,22 +103,31 @@ void cons_reset_cmdline(unsigned char *cmdline, unsigned int *cmdlines, bool *cm
 	return;
 }
 
-void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *cmdline)
+void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *cmdline, unsigned int *cmdlines, bool *cmdline_overflow)
 {
 	unsigned char s[128];
 
 	if(cmdline[0] != 0x00){
 		cons_new_line_no_prompt(win, prompt, cursor);
 	}
-
-	if(cmdline[0] == 'm' && cmdline[1] == 'e' && cmdline[2] == 'm' && cmdline[3] == 0x00){
+	if(strcmp(cmdline, "mem") == 0){
 		sprintf(s, "ÒÓØ°:%dMB\n", system.sys.memtotal / (1024 * 1024));
 		cons_put_str(win, prompt, cursor, s);
 		sprintf(s, "±·:%dKB", system.io.mem.free_total() / 1024);
 		cons_put_str(win, prompt, cursor, s);
+	} else if(strcmp(cmdline, "cls") == 0){
+		prompt->x = 0;
+		prompt->y = 0;
+		boxfill_win(win, CONSOLE_COLOR_BACKGROUND, 0, 0, win->xsize, win->ysize);
+		cons_reset_cmdline(cmdline, cmdlines, cmdline_overflow);
+		cons_put_prompt(win, prompt, cursor);
+		goto end;
 	} else if(cmdline[0] != 0x00){
 		cons_put_str(win, prompt, cursor, "Bad command...\n");
 	}
+	cons_reset_cmdline(cmdline, cmdlines, cmdline_overflow);
+	cons_new_line(win, prompt, cursor);
+end:
 	return;
 }
 
