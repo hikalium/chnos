@@ -113,12 +113,15 @@ typedef enum _state_alloc { none, initialized, allocated, configured, inuse} sta
 #define SYS_FIFO_START_KEYB	0x100		/*256~511=keycode*/
 #define SYS_FIFO_START_MOUSE	0x200		/*512~767=mouse*/
 
+#define CONSOLE_FIFO_BUF_SIZE	128
 #define CONSOLE_FIFO_CURSOR_START	2
 #define CONSOLE_FIFO_CURSOR_STOP	3
 #define CONSOLE_COLOR_BACKGROUND	0x000000
 #define CONSOLE_COLOR_CHAR	0xFFFFFF
 #define CONSOLE_XCHARS	32
 #define CONSOLE_YCHARS	8
+#define CONSOLE_CMDLINE_BUF_SIZE	128
+
 
 #define KEYCMD_FIFOSIZE	32
 
