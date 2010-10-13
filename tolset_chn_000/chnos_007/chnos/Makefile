@@ -12,7 +12,7 @@ GAS2NASK = $(TOOLPATH)gas2nask.exe -a
 OBJ2BIM  = $(TOOLPATH)obj2bim.exe
 BIM2HRB  = $(TOOLPATH)bim2hrb.exe
 RULEFILE = $(INCPATH)CHNOSP.rul
-EDIMG    = $(TOOLPATH)edimg.exe
+EDIMG    = $(TOOLPATH)edimg.exe bias:9
 IMGTOL   = $(TOOLPATH)imgtol.com
 MAKEFONT = $(TOOLPATH)makefont.exe
 COPY     = copy
@@ -67,7 +67,7 @@ chnos.img : chnipl.bin chnos.sys Makefile
 		copy from:chnos.sys to:@: \
 		copy from:chnipl.nas to:@: \
 		copy from:make.bat to:@: \
-		imgout:chnos.img
+		imgout:chnos.img 
 
 #ˆê”Ê‹K‘¥
 

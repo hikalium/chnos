@@ -118,8 +118,8 @@ typedef enum _state_alloc { none, initialized, allocated, configured, inuse} sta
 #define CONSOLE_FIFO_CURSOR_STOP	3
 #define CONSOLE_COLOR_BACKGROUND	0x000000
 #define CONSOLE_COLOR_CHAR	0xFFFFFF
-#define CONSOLE_XCHARS	32
-#define CONSOLE_YCHARS	8
+#define CONSOLE_XCHARS	48
+#define CONSOLE_YCHARS	12
 #define CONSOLE_CMDLINE_BUF_SIZE	128
 
 
@@ -136,9 +136,18 @@ typedef enum _state_alloc { none, initialized, allocated, configured, inuse} sta
 extern char cursor[24][24];
 
 struct FILEINFO {
-	unsigned char name[8], ext[3], type;
-	unsigned char reserve[10];
-	unsigned short time, data, clustno;
+	unsigned char name[8];
+	unsigned char ext[3];
+	unsigned char type;
+	unsigned char reserve;
+	unsigned char VFAT_createTimeMs;
+	unsigned short VFAT_createTime;
+	unsigned short VFAT_createDate;
+	unsigned short VFAT_accessDate;
+	unsigned short VFAT_clusterHighWord;
+	unsigned short time;
+	unsigned short date;
+	unsigned short clustno;
 	unsigned int size;
 };
 

@@ -129,7 +129,7 @@ void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, stru
 			if(system.file.list[i].name[0] == 0x00) break;
 			if(system.file.list[i].name[0] != 0xe5){
 				if((system.file.list[i].type & 0x18) == 0){
-					sprintf(s, "FILENAME.EXT %7d\n", system.file.list[i].size);
+					sprintf(s, "FILENAME.EXT %7d %04d/%02d/%02d-%02d:%02d:%02d\n", system.file.list[i].size, (system.file.list[i].date >> 9) + 1980, (system.file.list[i].date & 0x01e0) >> 5, system.file.list[i].date & 0x001f, system.file.list[i].time >> 11, (system.file.list[i].time & 0x07e0) >> 5, system.file.list[i].time & 0x1f);
 					for(j = 0; j < 8; j++){
 						s[j] = system.file.list[i].name[j];
 					}
