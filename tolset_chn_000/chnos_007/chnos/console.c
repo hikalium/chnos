@@ -140,7 +140,7 @@ void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, stru
 				}
 			}
 		}
-	} else if(cmdline[0] == 't' && cmdline[1] == 'y' && cmdline[2] == 'p' && cmdline[3] == 'e' && cmdline[4] == ' '){
+	} else if(strncmp(cmdline, "type ", 5) == 0){
 		for(j = 0; j < 11; j++){
 			s[j] = ' ';
 		}
@@ -193,9 +193,20 @@ void cons_put_str(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POS
 	unsigned char s[3];
 
 	for(i = 0; i < 128; i++){
-		if(str[i] == 0x00) break;
-		if(str[i] == '\n')cons_new_line_no_prompt(win, prompt, cursor);
-		else{
+		if(str[i] == 0x00){
+			break;
+		} else if(str[i] == '\r'){
+
+		} else if(str[i] == '\n'){
+			cons_new_line_no_prompt(win, prompt, cursor);
+		} else if(str[i] == '\t'){
+			for(;;){
+				putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_CHAR, CONSOLE_COLOR_BACKGROUND, " ");
+				cursor->x += 8;
+				cons_check_newline(win, cursor, prompt);
+				if((cursor->x & 0x1f) == 0 && cursor->x != 0) break;
+			}
+		} else{
 			s[0] = str[i];
 			s[1] = 0x00;
 			putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_CHAR, CONSOLE_COLOR_BACKGROUND, s);
