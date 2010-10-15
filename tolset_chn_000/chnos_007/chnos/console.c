@@ -113,9 +113,9 @@ void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, stru
 		cons_new_line_no_prompt(win, prompt, cursor);
 	}
 	if(strcmp(cmdline, "mem") == 0){
-		sprintf(s, "ÒÓØ°:%dMB\n", system.sys.memtotal / (1024 * 1024));
+		sprintf(s, "ÒÓØ°:%dMB\n", system.sys.memtotal >> 20);
 		cons_put_str(win, prompt, cursor, s);
-		sprintf(s, "±·:%dKB", system.io.mem.free_total() / 1024);
+		sprintf(s, "±·:%dKB", system.io.mem.free_total() >> 10);
 		cons_put_str(win, prompt, cursor, s);
 	} else if(strcmp(cmdline, "cls") == 0){
 		prompt->x = 0;
@@ -228,13 +228,13 @@ void cons_put_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct 
 
 void cons_new_line(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor)
 {
-	if(cursor->y <= (CONSOLE_YCHARS * 16) - 17){
+	if(cursor->y <= system.sys.cons.org_ysize - 17){
 		prompt->y = cursor->y + 16;
 		cons_put_prompt(win, prompt, cursor);
 	} else{
 		putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
 		cons_slide_line(win);
-		prompt->y = (CONSOLE_YCHARS - 1) * 16;
+		prompt->y = (system.sys.cons.org_ychars - 1) * 16;
 		cons_put_prompt(win, prompt, cursor);
 	}
 	return;
@@ -242,7 +242,7 @@ void cons_new_line(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct PO
 
 void cons_new_line_no_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor)
 {
-	if(cursor->y <= (CONSOLE_YCHARS * 16) - 17){
+	if(cursor->y <= system.sys.cons.org_ysize - 17){
 		putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
 		cursor->x = 0;
 		cursor->y = cursor->y + 16;
@@ -267,14 +267,14 @@ void cons_check_newline(struct WINDOWINFO *win, struct POSITION_2D *p, struct PO
 		if(p->y != prompt->y){
 			if(p->x < prompt->x){
 				p->y -= 16;
-				p->x = (CONSOLE_XCHARS * 8) - 8;
+				p->x = system.sys.cons.org_xsize - 8;
 			}
 		} else{
 			p->y = prompt->y;
 			p->x = 8;
 		}
-	} else if(p->x >= CONSOLE_XCHARS * 8){
-		if(p->y <= (CONSOLE_YCHARS * 16) - 17){
+	} else if(p->x >= system.sys.cons.org_xsize){
+		if(p->y <= system.sys.cons.org_ysize - 17){
 			p->x = 0;
 			p->y += 16;
 		} else{

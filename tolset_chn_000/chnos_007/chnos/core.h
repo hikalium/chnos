@@ -118,8 +118,6 @@ typedef enum _state_alloc { none, initialized, allocated, configured, inuse} sta
 #define CONSOLE_FIFO_CURSOR_STOP	3
 #define CONSOLE_COLOR_BACKGROUND	0x000000
 #define CONSOLE_COLOR_CHAR	0xFFFFFF
-#define CONSOLE_XCHARS	48
-#define CONSOLE_YCHARS	12
 #define CONSOLE_CMDLINE_BUF_SIZE	128
 
 
@@ -426,6 +424,12 @@ struct SYSTEM {
 			struct TASK *idle;
 			struct TASK *main;
 		} task;
+		struct SYS_SYS_CONSOLE {
+			int org_xsize;
+			int org_ysize;
+			int org_xchars;
+			int org_ychars;
+		} cons;
 		struct MEMMAN memman;
 		struct TIMERCTL timctl;
 		unsigned int memtotal;

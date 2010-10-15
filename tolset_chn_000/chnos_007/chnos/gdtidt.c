@@ -63,7 +63,7 @@ void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, i
 {
 	if(limit > 0xfffff){
 		ar |= 0x8000;
-		limit /= 0x1000;
+		limit = limit >> 12;
 	}
 	sd->limit_low		= limit & 0xffff;
 	sd->base_low		= base & 0xffff;

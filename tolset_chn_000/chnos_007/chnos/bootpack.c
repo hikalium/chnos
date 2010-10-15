@@ -23,7 +23,7 @@ void CHNMain(void)
 	system.draw.init_screen(system.sys.sht.desktop_buf, system.sys.sht.taskbar_buf, *system.sys.sht.mouse_buf);
 
 	system.draw.boxfill(system.sys.sht.core_buf, system.sys.xsize, 0x000000, 0, 0, system.sys.xsize, system.sys.ysize);
-	draw_chnos_logo(system.sys.sht.core_buf, system.sys.xsize, system.sys.xsize / 16, system.sys.xsize / 2, (system.sys.ysize / 2) - (system.sys.ysize / 10));
+	draw_chnos_logo(system.sys.sht.core_buf, system.sys.xsize, system.sys.xsize >> 4, system.sys.xsize >> 1, (system.sys.ysize >> 1) - (system.sys.ysize / 10));
 	sheet_updown(system.sys.sht.core, 0);
 	sheet_refresh_full(system.sys.sht.core);
 	for(;;){
@@ -60,7 +60,7 @@ void CHNMain(void)
 	c_cursor.x = 0;
 	c_cursor.y = 0;
 
-	console_win = make_window("console", CONSOLE_XCHARS * 8, CONSOLE_YCHARS * 16, 200, 50, 2, false);
+	console_win = make_window("console", system.sys.cons.org_xsize, system.sys.cons.org_ysize, 10, 10, 2, false);
 	console_task = task_alloc();
 	console_task->tss.esp = (int)system.io.mem.alloc(64 * 1024) + 64 * 1024;
 	console_task->tss.eip = (int)&console_main;

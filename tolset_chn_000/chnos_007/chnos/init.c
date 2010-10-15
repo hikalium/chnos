@@ -90,6 +90,11 @@ void init_system(void)
 
 	system.file.list				= (struct FILEINFO *)(ADR_DISKIMG + 0x00002600);
 
+	system.sys.cons.org_xsize			= (system.sys.xsize >> 1) & 0xfffffff7;
+	system.sys.cons.org_ysize			= (system.sys.ysize >> 1) & 0xffffffef;
+	system.sys.cons.org_xchars			= system.sys.cons.org_xsize >> 3;
+	system.sys.cons.org_ychars			= system.sys.cons.org_ysize >> 4;
+
 // system init
 	init_gdtidt();
 	system.sys.memtotal				= system.io.mem.test(0x00400000, 0xbfffffff);
@@ -103,9 +108,9 @@ void init_system(void)
 	system.sys.sht.taskbar				= system.draw.sht.alloc();
 	system.sys.sht.core				= system.draw.sht.alloc();
 
-	system.sys.sht.desktop_buf			= system.io.mem.alloc(system.sys.xsize * system.sys.ysize * (system.sys.bpp / 8));
-	system.sys.sht.taskbar_buf			= system.io.mem.alloc(system.sys.xsize * TASKBAR_HEIGHT * (system.sys.bpp / 8));
-	system.sys.sht.core_buf				= system.io.mem.alloc(system.sys.xsize * system.sys.ysize * (system.sys.bpp / 8));
+	system.sys.sht.desktop_buf			= system.io.mem.alloc(system.sys.xsize * system.sys.ysize * (system.sys.bpp >> 3));
+	system.sys.sht.taskbar_buf			= system.io.mem.alloc(system.sys.xsize * TASKBAR_HEIGHT * (system.sys.bpp >> 3));
+	system.sys.sht.core_buf				= system.io.mem.alloc(system.sys.xsize * system.sys.ysize * (system.sys.bpp >> 3));
 
 	system.draw.sht.set(system.sys.sht.desktop, system.sys.sht.desktop_buf, system.sys.xsize, system.sys.ysize, INV_COL32);
 	system.draw.sht.set(system.sys.sht.mouse, *system.sys.sht.mouse_buf, 24, 24, INV_COL32);
@@ -116,7 +121,7 @@ void init_system(void)
 	system.draw.sht.updown(system.sys.sht.desktop, -1);
 	system.draw.sht.slide(system.sys.sht.taskbar, 0, system.sys.ysize - TASKBAR_HEIGHT);
 	system.draw.sht.updown(system.sys.sht.taskbar, -1);
-	system.draw.sht.slide(system.sys.sht.mouse, system.sys.xsize / 2, system.sys.ysize / 2);
+	system.draw.sht.slide(system.sys.sht.mouse, system.sys.xsize >> 1, system.sys.ysize >> 1);
 	system.draw.sht.updown(system.sys.sht.mouse, -1);
 	system.draw.sht.slide(system.sys.sht.core, 0, 0);
 	system.draw.sht.updown(system.sys.sht.core, -1);

@@ -67,6 +67,25 @@ chnos.img : chnipl.bin chnos.sys Makefile
 		copy from:chnos.sys to:@: \
 		copy from:chnipl.nas to:@: \
 		copy from:make.bat to:@: \
+		copy from:bootpack.c to:@: \
+		copy from:core.h to:@: \
+		copy from:console.c to:@: \
+		copy from:fifo.c to:@: \
+		copy from:gdtidt.c to:@: \
+		copy from:grap_08.c to:@: \
+		copy from:grap_16.c to:@: \
+		copy from:grap_32.c to:@: \
+		copy from:graphic.c to:@: \
+		copy from:init.c to:@: \
+		copy from:int.c to:@: \
+		copy from:io.c to:@: \
+		copy from:keyboard.c to:@: \
+		copy from:memory.c to:@: \
+		copy from:mouse.c to:@: \
+		copy from:mtask.c to:@: \
+		copy from:sheet.c to:@: \
+		copy from:timer.c to:@: \
+		copy from:window.c to:@: \
 		imgout:chnos.img 
 
 #ˆê”Ê‹K‘¥
@@ -125,6 +144,5 @@ src_only :
 	-$(DEL) chnos.img
 
 iso :
-	$(MAKE)
 	..\..\z_tools\mkisofs.exe -v -iso-level 1 -b chnos.img -o ..\..\z_tools\qemu_iso\chnos.iso .
 
