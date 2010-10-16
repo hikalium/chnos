@@ -480,6 +480,7 @@ void init_serial(void);
 void send_serial(unsigned char *s);
 void fdc_motor_on(unsigned char d);
 void fdc_motor_off(unsigned char d);
+void reset_cpu(void);
 
 /*timer.c*/
 void inthandler20(int *esp);

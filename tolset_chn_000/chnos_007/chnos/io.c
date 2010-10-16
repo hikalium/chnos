@@ -77,3 +77,11 @@ void fdc_motor_off(unsigned char d)
 	return;
 }
 
+void reset_cpu(void)
+{
+    wait_KBC_sendready();
+    io_out8(PORT_KEYCMD, 0xfe);
+    for (;;) { io_hlt(); }
+}
+
+

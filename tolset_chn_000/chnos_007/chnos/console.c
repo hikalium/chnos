@@ -105,7 +105,7 @@ void cons_reset_cmdline(unsigned char *cmdline, unsigned int *cmdlines, bool *cm
 
 void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *cmdline, unsigned int *cmdlines, bool *cmdline_overflow)
 {
-	unsigned char s[128];
+	unsigned char s[128], t[7];
 	int i, j;
 	unsigned char *p;
 
@@ -140,6 +140,12 @@ void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, stru
 				}
 			}
 		}
+	} else if(strcmp(cmdline, "reset") == 0){
+		reset_cpu();
+	} else if(strcmp(cmdline, "date") == 0){
+		readrtc(t);
+		sprintf(s, "%02X%02X.%02X.%02X %02X:%02X:%02X\n", t[6], t[5], t[4], t[3], t[2], t[1], t[0]);
+		cons_put_str(win, prompt, cursor, s);
 	} else if(strncmp(cmdline, "type ", 5) == 0){
 		for(j = 0; j < 11; j++){
 			s[j] = ' ';
