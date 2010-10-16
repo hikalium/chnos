@@ -112,6 +112,8 @@ void init_system(void)
 	system.sys.sht.taskbar_buf			= system.io.mem.alloc(system.sys.xsize * TASKBAR_HEIGHT * (system.sys.bpp >> 3));
 	system.sys.sht.core_buf				= system.io.mem.alloc(system.sys.xsize * system.sys.ysize * (system.sys.bpp >> 3));
 
+	system.file.fat					= system.io.mem.alloc(2 * 2880);
+
 	system.draw.sht.set(system.sys.sht.desktop, system.sys.sht.desktop_buf, system.sys.xsize, system.sys.ysize, INV_COL32);
 	system.draw.sht.set(system.sys.sht.mouse, *system.sys.sht.mouse_buf, 24, 24, INV_COL32);
 	system.draw.sht.set(system.sys.sht.taskbar, system.sys.sht.taskbar_buf, system.sys.xsize, system.sys.ysize, INV_COL32);
@@ -138,6 +140,7 @@ void init_system(void)
 	fdc_motor_off(4);
 
 	init_windows();
+	decode_fat(system.file.fat, false);
 
 	task_init();
 

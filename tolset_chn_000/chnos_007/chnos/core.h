@@ -404,6 +404,7 @@ struct SYSTEM {
 	} app;
 	struct SYS_FILE {
 		struct FILEINFO *list;
+		unsigned short *fat;
 	} file;
 	struct SYS_SYS {
 		struct SYS_SYS_SHT {
@@ -452,6 +453,10 @@ struct SYSTEM {
 extern struct SYSTEM system;
 
 /*functions*/
+
+/*file.c*/
+void decode_fat(unsigned short *fat, bool backup);
+void load_file(unsigned int finfo_no, unsigned char *buf);
 
 /*console.c*/
 void console_main(struct WINDOWINFO *win);

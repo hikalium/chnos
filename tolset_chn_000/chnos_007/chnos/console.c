@@ -169,12 +169,14 @@ next_file:
 		}
 		if(i < 224 && system.file.list[i].name[0] != 0x00){
 			j = system.file.list[i].size;
-			p = (unsigned char *)(system.file.list[i].clustno * 512 + 0x00003e00 + ADR_DISKIMG);
+			p = system.io.mem.alloc(j);
+			load_file(i, p);
 			for(i = 0; i < j; i++){
 				s[0] = p[i];
 				s[1] = 0x00;
 				cons_put_str(win, prompt, cursor, s);
 			}
+			system.io.mem.free(p, j);
 		} else {
 			cons_put_str(win, prompt, cursor, "File not found...\n");
 		}
