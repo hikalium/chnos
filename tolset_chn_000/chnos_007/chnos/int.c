@@ -104,26 +104,27 @@ void cpu_exception_alert(int exception, int *esp)
 {
 	int i;
 	char s[32];
-	putfonts_asc_sht_i(system.sys.sht.desktop, 0, 0, 0xFFFFFF, 0x000000, (const unsigned char *)cpu_exceptions[exception]);
-	putfonts_asc_sht_i(system.sys.sht.desktop, 0, 16, 0xFFFFFF, 0x000000, "***registers info***");
+	putfonts_asc_sht_i(system.sys.sht.core, 0, 0, 0xFFFFFF, 0x000000, (const unsigned char *)cpu_exceptions[exception]);
+	putfonts_asc_sht_i(system.sys.sht.core, 0, 16, 0xFFFFFF, 0x000000, "***registers info***");
 
-	putfonts_asc_sht_i(system.sys.sht.desktop, 0, 32, 0xFFFFFF, 0x000000, "#PUSHAD by _asm_inthandler");
+	putfonts_asc_sht_i(system.sys.sht.core, 0, 32, 0xFFFFFF, 0x000000, "#PUSHAD by _asm_inthandler");
 	for(i = 0; i <= 7; i++){
 	sprintf(s, "%s:0x%08X", cpu_exception_infos[i], esp[i]);
-	putfonts_asc_sht_i(system.sys.sht.desktop, 0, 16 * (i + 3), 0xFFFFFF, 0x000000, s);
+	putfonts_asc_sht_i(system.sys.sht.core, 0, 16 * (i + 3), 0xFFFFFF, 0x000000, s);
 	}
 
-	putfonts_asc_sht_i(system.sys.sht.desktop, 0, 176, 0xFFFFFF, 0x000000, "#PUSH by _asm_inthandler");
+	putfonts_asc_sht_i(system.sys.sht.core, 0, 176, 0xFFFFFF, 0x000000, "#PUSH by _asm_inthandler");
 	for(i = 8; i <= 9; i++){
 	sprintf(s, "%s:0x%08X", cpu_exception_infos[i], esp[i]);
-	putfonts_asc_sht_i(system.sys.sht.desktop, 0, 16 * (i + 4), 0xFFFFFF, 0x000000, s);
+	putfonts_asc_sht_i(system.sys.sht.core, 0, 16 * (i + 4), 0xFFFFFF, 0x000000, s);
 	}
 
-	putfonts_asc_sht_i(system.sys.sht.desktop, 0, 224, 0xFFFFFF, 0x000000, "#PUSH by CPU");
+	putfonts_asc_sht_i(system.sys.sht.core, 0, 224, 0xFFFFFF, 0x000000, "#PUSH by CPU");
 	for(i = 10; i <= 15; i++){
 	sprintf(s, "%s:0x%08X", cpu_exception_infos[i], esp[i]);
-	putfonts_asc_sht_i(system.sys.sht.desktop, 0, 16 * (i + 5), 0xFFFFFF, 0x000000, s);
+	putfonts_asc_sht_i(system.sys.sht.core, 0, 16 * (i + 5), 0xFFFFFF, 0x000000, s);
 	}
+	sheet_updown(system.sys.sht.core, 0x7fffffff);
 	for(;;){
 		io_hlt();
 	}

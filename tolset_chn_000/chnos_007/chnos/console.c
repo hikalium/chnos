@@ -2,15 +2,6 @@
 #include "core.h"
 #include <string.h>
 
-void cons_check_newline(struct WINDOWINFO *win, struct POSITION_2D *p, struct POSITION_2D *prompt);
-void cons_put_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor);
-void cons_new_line(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor);
-void cons_slide_line(struct WINDOWINFO *win);
-void cons_put_str(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *str);
-void cons_reset_cmdline(unsigned char *cmdline, unsigned int *cmdlines, bool *cmdline_overflow);
-void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *cmdline, unsigned int *cmdlines, bool *cmdline_overflow);
-void cons_new_line_no_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor);
-
 void console_main(struct WINDOWINFO *win)
 {
 	struct TIMER *timer;
@@ -29,6 +20,10 @@ void console_main(struct WINDOWINFO *win)
 
 	prompt.x = 0;
 	prompt.y = 0;
+
+	*((int *) 0x0fec) = (int) win;
+	*((int *) 0x0fe8) = (int) &prompt;
+	*((int *) 0x0fe4) = (int) &cursor;
 
 	fifo32_init(&task->fifo, CONSOLE_FIFO_BUF_SIZE, fifobuf, task);
 	timer = timer_alloc();
@@ -214,6 +209,15 @@ void cons_put_str(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POS
 			cons_check_newline(win, cursor, prompt);
 		}
 	}
+	return;
+}
+
+void cons_put_char(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char c)
+{
+	unsigned char s[2];
+	s[0] = c;
+	s[1] = 0x00;
+	cons_put_str(win, prompt, cursor, s);
 	return;
 }
 
