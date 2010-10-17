@@ -148,7 +148,7 @@ void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, stru
 			p = system.io.mem.alloc(j);
 			load_file(i, p);
 			set_segmdesc(system.sys.gdt + 1003, j - 1, (int)p, AR_CODE32_ER);
-			farjmp(0, 1003 * 8);
+			farcall(0, 1003 * 8);
 			system.io.mem.free(p, j);
 		} else{
 			cons_put_str(win, prompt, cursor, "File not found...\n");

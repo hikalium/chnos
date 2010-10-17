@@ -4,9 +4,15 @@
 [OPTION 1]
 [BITS 32]
 
-	mov	ax,'A'
+	mov	ax,'h'
 	call	2*8:0x24
-fin:
-	hlt
-	jmp	fin
+	mov	ax,'e'
+	call	2*8:0x24
+	mov	ax,'l'
+	call	2*8:0x24
+	mov	ax,'l'
+	call	2*8:0x24
+	mov	ax,'o'
+	call	2*8:0x24
+	retf
 	
