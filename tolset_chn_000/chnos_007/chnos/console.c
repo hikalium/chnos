@@ -146,6 +146,18 @@ void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, stru
 		readrtc(t);
 		sprintf(s, "%02X%02X.%02X.%02X %02X:%02X:%02X\n", t[6], t[5], t[4], t[3], t[2], t[1], t[0]);
 		cons_put_str(win, prompt, cursor, s);
+	} else if(strcmp(cmdline, "hlt") == 0){
+		i = search_file("hlt.hrb");
+		if(i != 0xFFFFFFFF){
+			j = system.file.list[i].size;
+			p = system.io.mem.alloc(j);
+			load_file(i, p);
+			set_segmdesc(system.sys.gdt + 1003, j - 1, (int)p, AR_CODE32_ER);
+			farjmp(0, 1003 * 8);
+			system.io.mem.free(p, j);
+		} else{
+			cons_put_str(win, prompt, cursor, "File not found...\n");
+		}
 	} else if(strncmp(cmdline, "type ", 5) == 0){
 		j = 0;
 		for(i = 5; cmdline[i] != 0x00; i++){
