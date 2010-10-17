@@ -457,6 +457,7 @@ extern struct SYSTEM system;
 /*file.c*/
 void decode_fat(unsigned short *fat, bool backup);
 void load_file(unsigned int finfo_no, unsigned char *buf);
+unsigned int search_file(char *name);
 
 /*console.c*/
 void console_main(struct WINDOWINFO *win);

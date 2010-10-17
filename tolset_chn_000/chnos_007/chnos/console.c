@@ -106,7 +106,7 @@ void cons_reset_cmdline(unsigned char *cmdline, unsigned int *cmdlines, bool *cm
 void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *cmdline, unsigned int *cmdlines, bool *cmdline_overflow)
 {
 	unsigned char s[128], t[7];
-	int i, j;
+	unsigned int i, j;
 	unsigned char *p;
 
 	if(cmdline[0] != 0x00){
@@ -147,33 +147,13 @@ void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, stru
 		sprintf(s, "%02X%02X.%02X.%02X %02X:%02X:%02X\n", t[6], t[5], t[4], t[3], t[2], t[1], t[0]);
 		cons_put_str(win, prompt, cursor, s);
 	} else if(strncmp(cmdline, "type ", 5) == 0){
-		for(j = 0; j < 11; j++){
-			s[j] = ' ';
-		}
 		j = 0;
-		for(i = 5; j < 11 && cmdline[i] != 0; i++){
-			if(cmdline[i] == '.' && j <= 8){
-				j = 8;
-			} else{
-				s[j] = cmdline[i];
-				if('a' <= s[j] && s[j] <= 'z'){
-					s[j] -= 0x20;
-				}
-				j++;
-			}
+		for(i = 5; cmdline[i] != 0x00; i++){
+			s[i - 5] = cmdline[i];
+			s[i - 4] = 0x00;
 		}
-		for(i = 0; i < 224; ){
-			if(system.file.list[i].name[0] == 0x00) break;
-			if((system.file.list[i].type & 0x18) == 0){
-				for(j = 0; j < 11; j++){
-					if(system.file.list[i].name[j] != s[j]) goto next_file;
-				}
-				break; 
-			}
-next_file:
-			i++;
-		}
-		if(i < 224 && system.file.list[i].name[0] != 0x00){
+		i = search_file(s);
+		if(i != 0xFFFFFFFF){
 			j = system.file.list[i].size;
 			p = system.io.mem.alloc(j);
 			load_file(i, p);
@@ -183,7 +163,7 @@ next_file:
 				cons_put_str(win, prompt, cursor, s);
 			}
 			system.io.mem.free(p, j);
-		} else {
+		} else{
 			cons_put_str(win, prompt, cursor, "File not found...\n");
 		}
 	} else if(cmdline[0] != 0x00){
