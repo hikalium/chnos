@@ -11,6 +11,8 @@ typedef enum _color_8 { black, red, green, yellow,
 			navy_blue, purple, dark_cyan, dark_gray} color_8;
 typedef enum _state_alloc { none, initialized, allocated, configured, inuse} state_alloc;
 
+typedef unsigned int uint;
+
 /*definefunctions*/
 #define RGB16(r,g,b) ((r)<<11|(g)<<5|(b))
 
@@ -454,6 +456,9 @@ extern struct SYSTEM system;
 
 /*functions*/
 
+/*api.c*/
+void hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ecx, uint eax);
+
 /*file.c*/
 void decode_fat(unsigned short *fat, bool backup);
 void load_file(unsigned int finfo_no, unsigned char *buf);
@@ -469,6 +474,7 @@ void cons_put_str(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POS
 void cons_reset_cmdline(unsigned char *cmdline, unsigned int *cmdlines, bool *cmdline_overflow);
 void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *cmdline, unsigned int *cmdlines, bool *cmdline_overflow);
 void cons_new_line_no_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor);
+void cons_put_char(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char c);
 
 /*mtask.c*/
 void task_init(void);
@@ -689,7 +695,7 @@ void farjmp(int eip, int cs);
 void farcall(int eip, int cs);
 void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);
 void asm_end_app(void);
-void asm_cons_put_char(void);
+void asm_hrb_api(void);
 
 void asm_inthandler21(void);
 void asm_inthandler20(void);

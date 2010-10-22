@@ -19,8 +19,8 @@
 		GLOBAL  _clts, _fnsave, _frstore
 		GLOBAL	_pit_beep_on, _pit_beep_off
 
-		GLOBAL	_asm_cons_put_char
-		EXTERN	_cons_put_char
+		GLOBAL	_asm_hrb_api
+		EXTERN	_hrb_api
 
 		GLOBAL	_asm_inthandler00, _asm_inthandler01, _asm_inthandler02, _asm_inthandler03, _asm_inthandler04, _asm_inthandler05, _asm_inthandler06, _asm_inthandler07, _asm_inthandler08, _asm_inthandler09, _asm_inthandler0a, _asm_inthandler0b, _asm_inthandler0c, _asm_inthandler0d, _asm_inthandler0e, _asm_inthandler0f, _asm_inthandler10, _asm_inthandler11, _asm_inthandler12, _asm_inthandler13, _asm_inthandler14, _asm_inthandler15, _asm_inthandler16, _asm_inthandler17, _asm_inthandler18, _asm_inthandler19, _asm_inthandler1a, _asm_inthandler1b, _asm_inthandler1c, _asm_inthandler1d, _asm_inthandler1e, _asm_inthandler1f
 		GLOBAL	_asm_inthandler21, _asm_inthandler20, _asm_inthandler2c, _asm_inthandler27
@@ -30,16 +30,12 @@
 
 [SECTION .text]
 
-_asm_cons_put_char:
+_asm_hrb_api:
 	sti
 	pushad
-	and	eax,0xff
-	push	eax
-	push	dword[0x0fe4]
-	push	dword[0x0fe8]
-	push	dword[0x0fec]
-	call	_cons_put_char
-	add	esp,16
+	pushad
+	call _hrb_api
+	add	esp,32
 	popad
 	iretd
 
