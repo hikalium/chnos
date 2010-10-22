@@ -689,6 +689,7 @@ void farjmp(int eip, int cs);
 void farcall(int eip, int cs);
 void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);
 void asm_end_app(void);
+void asm_cons_put_char(void);
 
 void asm_inthandler21(void);
 void asm_inthandler20(void);

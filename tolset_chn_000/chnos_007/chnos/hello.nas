@@ -4,15 +4,16 @@
 [OPTION 1]
 [BITS 32]
 
-	mov	ax,'h'
-	call	2*8:0x24
-	mov	ax,'e'
-	call	2*8:0x24
-	mov	ax,'l'
-	call	2*8:0x24
-	mov	ax,'l'
-	call	2*8:0x24
-	mov	ax,'o'
-	call	2*8:0x24
+	mov	ecx,msg
+putloop:
+	mov	al,[cs:ecx]
+	cmp	al,0
+	je	fin
+	int	0x40
+	add	ecx,1
+	jmp	putloop
+fin:
 	retf
+msg:
+	db	"hello",0
 	

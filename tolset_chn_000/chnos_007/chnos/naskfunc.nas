@@ -31,6 +31,8 @@
 [SECTION .text]
 
 _asm_cons_put_char:
+	sti
+	pushad
 	and	eax,0xff
 	push	eax
 	push	dword[0x0fe4]
@@ -38,7 +40,8 @@ _asm_cons_put_char:
 	push	dword[0x0fec]
 	call	_cons_put_char
 	add	esp,16
-	retf
+	popad
+	iretd
 
 _asm_inthandler00:
 	push	es

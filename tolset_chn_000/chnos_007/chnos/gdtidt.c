@@ -19,10 +19,6 @@ void init_gdtidt(void)
 	}
 	load_idtr(0x7ff, (int)idt);
 
-	set_gatedesc(idt+0x20, (int) asm_inthandler20, 2 * 8, AR_INTGATE32);
-	set_gatedesc(idt+0x21, (int) asm_inthandler21, 2 * 8, AR_INTGATE32);
-	set_gatedesc(idt+0x27, (int) asm_inthandler27, 2 * 8, AR_INTGATE32);
-	set_gatedesc(idt+0x2c, (int) asm_inthandler2c, 2 * 8, AR_INTGATE32);
 	set_gatedesc(idt+0x00, (int) asm_inthandler00, 2 * 8, AR_INTGATE32);
 	set_gatedesc(idt+0x01, (int) asm_inthandler01, 2 * 8, AR_INTGATE32);
 	set_gatedesc(idt+0x02, (int) asm_inthandler02, 2 * 8, AR_INTGATE32);
@@ -55,6 +51,13 @@ void init_gdtidt(void)
 	set_gatedesc(idt+0x1d, (int) asm_inthandler1d, 2 * 8, AR_INTGATE32);
 	set_gatedesc(idt+0x1e, (int) asm_inthandler1e, 2 * 8, AR_INTGATE32);
 	set_gatedesc(idt+0x1f, (int) asm_inthandler1f, 2 * 8, AR_INTGATE32);
+
+	set_gatedesc(idt+0x20, (int) asm_inthandler20, 2 * 8, AR_INTGATE32);
+	set_gatedesc(idt+0x21, (int) asm_inthandler21, 2 * 8, AR_INTGATE32);
+	set_gatedesc(idt+0x27, (int) asm_inthandler27, 2 * 8, AR_INTGATE32);
+	set_gatedesc(idt+0x2c, (int) asm_inthandler2c, 2 * 8, AR_INTGATE32);
+
+	set_gatedesc(idt+0x40, (int) asm_cons_put_char, 2 * 8, AR_INTGATE32);
 
 	return;
 }
