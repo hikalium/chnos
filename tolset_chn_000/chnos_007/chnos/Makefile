@@ -56,6 +56,18 @@ hello.hrb : hello.nas Makefile
 hello2.hrb : hello2.nas Makefile
 	$(NASK) hello2.nas hello2.hrb hello2.lst
 
+a.bim : a.obj a_nask.obj Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:a.bim map:a.map a.obj a_nask.obj
+
+a.hrb : a.bim Makefile
+	$(BIM2HRB) a.bim a.hrb 0
+
+hello3.bim : hello3.obj a_nask.obj Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:hello3.bim map:hello3.map hello3.obj a_nask.obj
+
+hello3.hrb : hello3.bim Makefile
+	$(BIM2HRB) hello3.bim hello3.hrb 0
+
 bootpack.bim : $(OBJS_BOOTPACK) Makefile
 	$(OBJ2BIM) @$(RULEFILE) out:bootpack.bim stack:3136k map:bootpack.map \
 		$(OBJS_BOOTPACK)
@@ -67,7 +79,7 @@ bootpack.hrb : bootpack.bim Makefile
 chnos.sys : asmhead.bin bootpack.hrb Makefile
 	copy /B asmhead.bin+bootpack.hrb chnos.sys
 
-chnos.img : chnipl.bin chnos.sys hello.hrb hello2.hrb Makefile
+chnos.img : chnipl.bin chnos.sys hello.hrb hello2.hrb hello3.hrb a.hrb Makefile
 	$(EDIMG)   imgin:../../z_tools/fdimg0at.tek \
 		wbinimg src:chnipl.bin len:512 from:0 to:0 \
 		copy from:chnos.sys to:@: \
@@ -95,6 +107,8 @@ chnos.img : chnipl.bin chnos.sys hello.hrb hello2.hrb Makefile
 		copy from:file.c to:@: \
 		copy from:hello.hrb to:@: \
 		copy from:hello2.hrb to:@: \
+		copy from:a.hrb to:@: \
+		copy from:hello3.hrb to:@: \
 		imgout:chnos.img 
 
 #ˆê”Ê‹K‘¥

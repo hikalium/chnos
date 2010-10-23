@@ -169,6 +169,14 @@ void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, stru
 			p = system.io.mem.alloc(j);
 			*((int *) 0x0fe0) = (int) p;
 			load_file(i, p);
+			if(j >= 8 && strncmp(p + 4, "Hari", 4) == 0){
+				p[0] = 0xe8;
+				p[1] = 0x16;
+				p[2] = 0x00;
+				p[3] = 0x00;
+				p[4] = 0x00;
+				p[5] = 0xcb;
+			}
 			set_segmdesc(system.sys.gdt + 1003, j - 1, (int)p, AR_CODE32_ER);
 			farcall(0, 1003 * 8);
 			system.io.mem.free(p, j);
@@ -179,6 +187,14 @@ void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, stru
 				p = system.io.mem.alloc(j);
 				*((int *) 0x0fe0) = (int) p;
 				load_file(i, p);
+				if(j >= 8 && strncmp(p + 4, "Hari", 4) == 0){
+					p[0] = 0xe8;
+					p[1] = 0x16;
+					p[2] = 0x00;
+					p[3] = 0x00;
+					p[4] = 0x00;
+					p[5] = 0xcb;
+				}
 				set_segmdesc(system.sys.gdt + 1003, j - 1, (int)p, AR_CODE32_ER);
 				farcall(0, 1003 * 8);
 				system.io.mem.free(p, j);
