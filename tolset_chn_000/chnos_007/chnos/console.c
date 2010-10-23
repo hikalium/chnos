@@ -150,7 +150,7 @@ void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, stru
 		i = search_file(s);
 		if(i != 0xFFFFFFFF){
 			j = system.file.list[i].size;
-			p = system.io.mem.alloc(j);
+			p = system.io.mem.alloc(j); 
 			load_file(i, p);
 			for(i = 0; i < j; i++){
 				s[0] = p[i];
@@ -167,6 +167,7 @@ void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, stru
 		if(i != 0xFFFFFFFF){
 			j = system.file.list[i].size;
 			p = system.io.mem.alloc(j);
+			*((int *) 0x0fe0) = (int) p;
 			load_file(i, p);
 			set_segmdesc(system.sys.gdt + 1003, j - 1, (int)p, AR_CODE32_ER);
 			farcall(0, 1003 * 8);
@@ -176,6 +177,7 @@ void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, stru
 			if(i != 0xFFFFFFFF){
 				j = system.file.list[i].size;
 				p = system.io.mem.alloc(j);
+				*((int *) 0x0fe0) = (int) p;
 				load_file(i, p);
 				set_segmdesc(system.sys.gdt + 1003, j - 1, (int)p, AR_CODE32_ER);
 				farcall(0, 1003 * 8);
