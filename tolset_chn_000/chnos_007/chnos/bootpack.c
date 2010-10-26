@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "core.h"
 
-struct SYSTEM system;
+struct SYSTEM *sys_main_str_buf;
 
 void check_newline(struct POSITION_2D *p, int line_x, int line_y);
 

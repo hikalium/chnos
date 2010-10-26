@@ -17,6 +17,9 @@ typedef unsigned int uint;
 #define RGB16(r,g,b) ((r)<<11|(g)<<5|(b))
 
 /*settings*/
+
+#define system	(*sys_main_str_buf)
+
 #define COL8_000000		0
 #define COL8_FF0000		1
 #define COL8_00FF00		2
@@ -452,7 +455,7 @@ struct SYSTEM {
 	} sys;
 };
 
-extern struct SYSTEM system;
+extern struct SYSTEM *sys_main_str_buf;
 
 /*functions*/
 

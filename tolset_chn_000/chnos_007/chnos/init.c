@@ -3,8 +3,13 @@
 
 void init_system(void)
 {
+	uint i;
 	struct VESAINFO *vesa = (struct VESAINFO *) ADR_VESAINFO;
 	struct BOOTINFO *boot = (struct BOOTINFO *) ADR_BOOTINFO;
+
+	i = memtest(0x00400000, 0xbfffffff);
+	i -= sizeof(struct SYSTEM);
+	sys_main_str_buf = (struct SYSTEM *)i;
 
 	system.io.clts					= clts;
 	system.io.fnsave				= fnsave;
@@ -97,7 +102,7 @@ void init_system(void)
 
 // system init
 	init_gdtidt();
-	system.sys.memtotal				= system.io.mem.test(0x00400000, 0xbfffffff);
+	system.sys.memtotal				= i;
 	system.io.mem.init();
 	system.io.mem.free((void *)0x00400000, system.sys.memtotal - 0x00400000);
 
