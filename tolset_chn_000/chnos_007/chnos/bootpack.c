@@ -12,7 +12,7 @@ void CHNMain(void)
 	struct WINDOWINFO *testwin, *console_win;
 	struct POSITION_2D c_cursor;
 	struct TASK *console_task;
-	unsigned char s[64];	
+	uchar s[64];	
 	int i, mx = 0, my = 0;
 	bool cursor = false;
 	bool cursor_on = true;

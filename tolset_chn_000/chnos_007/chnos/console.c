@@ -11,11 +11,11 @@ void console_main(struct WINDOWINFO *win)
 	bool cursor_state = true;
 	bool cursor_on = false;
 	int i;
-	unsigned int fifobuf[CONSOLE_FIFO_BUF_SIZE];
-	unsigned int cursor_c;
-	unsigned char s[128];
-	unsigned char cmdline[CONSOLE_CMDLINE_BUF_SIZE];
-	unsigned int cmdlines;
+	uint fifobuf[CONSOLE_FIFO_BUF_SIZE];
+	uint cursor_c;
+	uchar s[128];
+	uchar cmdline[CONSOLE_CMDLINE_BUF_SIZE];
+	uint cmdlines;
 	bool cmdline_overflow;
 
 	prompt.x = 0;
@@ -74,14 +74,14 @@ void console_main(struct WINDOWINFO *win)
 				} else if(i == 0x0a){
 					cons_command_start(win, &prompt, &cursor, cmdline, &cmdlines, &cmdline_overflow);
 				} else{
-					s[0] = (unsigned char)i;
+					s[0] = (uchar)i;
 					s[1] = 0x00;
 					cons_put_str(win, &prompt, &cursor, s);
 					if(cmdlines >= CONSOLE_CMDLINE_BUF_SIZE){
 						cmdline_overflow = true;
 						cmdlines = 0;
 					}
-					cmdline[cmdlines] = (unsigned char)i;
+					cmdline[cmdlines] = (uchar)i;
 					cmdline[cmdlines + 1] = 0x00;
 					cmdlines++;
 				}
@@ -90,7 +90,7 @@ void console_main(struct WINDOWINFO *win)
 	}
 }
 
-void cons_reset_cmdline(unsigned char *cmdline, unsigned int *cmdlines, bool *cmdline_overflow)
+void cons_reset_cmdline(uchar *cmdline, uint *cmdlines, bool *cmdline_overflow)
 {
 	*cmdlines = 0;
 	*cmdline_overflow = false;
@@ -98,11 +98,11 @@ void cons_reset_cmdline(unsigned char *cmdline, unsigned int *cmdlines, bool *cm
 	return;
 }
 
-void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *cmdline, unsigned int *cmdlines, bool *cmdline_overflow)
+void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, uchar *cmdline, uint *cmdlines, bool *cmdline_overflow)
 {
-	unsigned char s[128], t[7];
-	unsigned int i, j;
-	unsigned char *p;
+	uchar s[128], t[7];
+	uint i, j;
+	uchar *p;
 
 	if(cmdline[0] != 0x00){
 		cons_new_line_no_prompt(win, prompt, cursor);
@@ -209,10 +209,10 @@ end:
 	return;
 }
 
-void cons_put_str(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *str)
+void cons_put_str(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, uchar *str)
 {
 	int i;
-	unsigned char s[3];
+	uchar s[3];
 
 	for(i = 0; i < 128; i++){
 		if(str[i] == 0x00){
@@ -239,9 +239,9 @@ void cons_put_str(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POS
 	return;
 }
 
-void cons_put_char(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char c)
+void cons_put_char(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, uchar c)
 {
-	unsigned char s[2];
+	uchar s[2];
 	s[0] = c;
 	s[1] = 0x00;
 	cons_put_str(win, prompt, cursor, s);

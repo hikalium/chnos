@@ -62,7 +62,7 @@ void init_gdtidt(void)
 	return;
 }
 
-void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar)
+void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, uint limit, int base, int ar)
 {
 	if(limit > 0xfffff){
 		ar |= 0x8000;

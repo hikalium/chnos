@@ -5,12 +5,9 @@
 
 /*new object types*/
 typedef enum _bool { false, true} bool;
-typedef enum _color_8 { black, red, green, yellow, 
-			blue, pink, light_blue, white, 
-			gray, brown, dark_green, gold, 
-			navy_blue, purple, dark_cyan, dark_gray} color_8;
 typedef enum _state_alloc { none, initialized, allocated, configured, inuse} state_alloc;
-
+typedef unsigned char uchar;
+typedef unsigned short ushort;
 typedef unsigned int uint;
 
 /*definefunctions*/
@@ -136,22 +133,21 @@ typedef unsigned int uint;
 #define MAX_LEVELS	10
 
 /*structures*/
-extern char cursor[24][24];
 
 struct FILEINFO {
-	unsigned char name[8];
-	unsigned char ext[3];
-	unsigned char type;
-	unsigned char reserve;
-	unsigned char VFAT_createTimeMs;
-	unsigned short VFAT_createTime;
-	unsigned short VFAT_createDate;
-	unsigned short VFAT_accessDate;
-	unsigned short VFAT_clusterHighWord;
-	unsigned short time;
-	unsigned short date;
-	unsigned short clustno;
-	unsigned int size;
+	uchar name[8];
+	uchar ext[3];
+	uchar type;
+	uchar reserve;
+	uchar VFAT_createTimeMs;
+	ushort VFAT_createTime;
+	ushort VFAT_createDate;
+	ushort VFAT_accessDate;
+	ushort VFAT_clusterHighWord;
+	ushort time;
+	ushort date;
+	ushort clustno;
+	uint size;
 };
 
 struct POSITION_2D {
@@ -167,14 +163,14 @@ struct KEYINFO {
 
 struct TIMER {
 	struct TIMER *next_timer;
-	unsigned int timeout;
+	uint timeout;
 	struct FIFO32 *fifo;
-	unsigned int data;
+	uint data;
 	state_alloc flags;
 };
 
 struct TIMERCTL {
-	unsigned int count, next_count;
+	uint count, next_count;
 	struct TIMER timer[MAX_TIMER];
 	struct TIMER *timers;
 };
@@ -195,7 +191,7 @@ struct WINCTL {
 };
 
 struct MEM_FREEINFO {
-	unsigned int addr, size;
+	uint addr, size;
 };
 
 struct MEMMAN {
@@ -205,19 +201,19 @@ struct MEMMAN {
 
 struct SHEET32 {
 	void *buf;
-	unsigned int col_inv;
+	uint col_inv;
 	int bxsize, bysize, vx0, vy0, height;
 	state_alloc flags; 
 };
 
 struct FIFO32 {
-	unsigned int *buf;
+	uint *buf;
 	int p, q, size, free, flags;
 	struct TASK *task;
 };
 
 struct SHTCTL {
-	unsigned int *map;
+	uint *map;
 	void *vram;
 	int xsize,ysize,top;
 	struct SHEET32 *sheets[MAX_SHEETS];
@@ -225,9 +221,9 @@ struct SHTCTL {
 };
 
 struct MOUSE_DECODE {
-	unsigned int buf[4],scrool;
+	uint buf[4],scrool;
 	int x,y,btn,whinfo;
-	unsigned char phase; 
+	uchar phase; 
 
 };
 
@@ -281,36 +277,36 @@ struct BOOTINFO {
 };
 
 struct VESAINFO {/*0xe00--->512byte*/
-	unsigned short	ModeAttributes;
-	unsigned char	WinAAttributes;
-	unsigned char	WinBAttributes;
-	unsigned short	WinGranularity;
-	unsigned short	WinSize;
-	unsigned short	WinASegment;
-	unsigned short	WinBSegment;
-	unsigned int	WinFuncPtr;
-	unsigned short	BytesPerScanLine;
-	unsigned short	XResolution;
-	unsigned short	YResolution;
-	unsigned char	XCharSize;
-	unsigned char	YCharSize;
-	unsigned char	NumberOfPlanes;
-	unsigned char	BitsPerPixel;
-	unsigned char	NumberOfBanks;
-	unsigned char	MemoryModel;
-	unsigned char	BankSize;
-	unsigned char	NumberOfImagePages;
-	unsigned char	Reserved;
-	unsigned char	RedMaskSize;
-	unsigned char	RedFieldPosition;
-	unsigned char	GreenMaskSize;
-	unsigned char	GreenFieldPosition;
-	unsigned char	BlueMaskSize;
-	unsigned char	BlueFieldPosition;
-	unsigned char	RsvdMaskSize;
-	unsigned char	RsvdFieldPodition;
-	unsigned char	DirectColorModeInfo;
-	unsigned int*	PhysBasePtr;
+	ushort	ModeAttributes;
+	uchar	WinAAttributes;
+	uchar	WinBAttributes;
+	ushort	WinGranularity;
+	ushort	WinSize;
+	ushort	WinASegment;
+	ushort	WinBSegment;
+	uint	WinFuncPtr;
+	ushort	BytesPerScanLine;
+	ushort	XResolution;
+	ushort	YResolution;
+	uchar	XCharSize;
+	uchar	YCharSize;
+	uchar	NumberOfPlanes;
+	uchar	BitsPerPixel;
+	uchar	NumberOfBanks;
+	uchar	MemoryModel;
+	uchar	BankSize;
+	uchar	NumberOfImagePages;
+	uchar	Reserved;
+	uchar	RedMaskSize;
+	uchar	RedFieldPosition;
+	uchar	GreenMaskSize;
+	uchar	GreenFieldPosition;
+	uchar	BlueMaskSize;
+	uchar	BlueFieldPosition;
+	uchar	RsvdMaskSize;
+	uchar	RsvdFieldPodition;
+	uchar	DirectColorModeInfo;
+	uint*	PhysBasePtr;
 };
 
 /*virtualclasses*/
@@ -333,18 +329,18 @@ struct SYSTEM {
 		void (*farcall)(int eip, int cs);
 		struct SYS_MEMORY {
 			void (*init)(void);
-			unsigned int (*free_total)(void);
-			void *(*alloc)(unsigned int size);
-			int (*free)(void * addr, unsigned int size);
-			unsigned int (*test)(unsigned int start, unsigned int end);
-			unsigned int (*test_sub)(unsigned int start, unsigned int end);
+			uint (*free_total)(void);
+			void *(*alloc)(uint size);
+			int (*free)(void * addr, uint size);
+			uint (*test)(uint start, uint end);
+			uint (*test_sub)(uint start, uint end);
 			struct SYS_MEMORY_ORG {
 				void (*init)(struct MEMMAN *man);
-				unsigned int (*free_total)(struct MEMMAN *man);
-				void *(*alloc)(struct MEMMAN *man, unsigned int size);
-				int (*free)(struct MEMMAN *man, void *addr, unsigned int size);
-				void *(*alloc_4k)(struct MEMMAN *man, unsigned int size);
-				int (*free_4k)(struct MEMMAN *man, void *addr, unsigned int size);
+				uint (*free_total)(struct MEMMAN *man);
+				void *(*alloc)(struct MEMMAN *man, uint size);
+				int (*free)(struct MEMMAN *man, void *addr, uint size);
+				void *(*alloc_4k)(struct MEMMAN *man, uint size);
+				int (*free_4k)(struct MEMMAN *man, void *addr, uint size);
 			} org;
 		} mem;
 		struct SYS_TR {
@@ -370,21 +366,21 @@ struct SYSTEM {
 		} beep;
 	} io;
 	struct SYS_DRAW {
-		void (*putfonts_sht)(struct SHEET32 *sht, int x, int y, unsigned int c, unsigned int bc, const unsigned char *s);
+		void (*putfonts_sht)(struct SHEET32 *sht, int x, int y, uint c, uint bc, const uchar *s);
 		void (*init_screen)(void *desktop, void *taskbar, void *mousecursor);
-		void (*point)(void *vrami, int x, int y, unsigned int c, int xsize);
-		void (*boxfill)(void *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
-		void (*putfonts)(void *vrami, int xsize, int x, int y, unsigned int c, const unsigned char *s);		
+		void (*point)(void *vrami, int x, int y, uint c, int xsize);
+		void (*boxfill)(void *vrami, int xsize, uint c, int x0, int y0, int x1, int y1);
+		void (*putfonts)(void *vrami, int xsize, int x, int y, uint c, const uchar *s);		
 		struct SYS_COLOR {
-			unsigned int (*mix)(unsigned int c0, unsigned int c1);
-			unsigned char (*int2char) (unsigned int c32);
-			unsigned short (*int2short) (unsigned int c32);
+			uint (*mix)(uint c0, uint c1);
+			uchar (*int2char) (uint c32);
+			ushort (*int2short) (uint c32);
 			void (*pattern)(void *vrami, int xsize, int ysize);		
 		} color;
 		struct SYS_SHEET {
-			void (*init)(void *vram, int xsize, int ysize, unsigned char bits);
+			void (*init)(void *vram, int xsize, int ysize, uchar bits);
 			struct SHEET32 *(*alloc)(void);
-			void (*set)(struct SHEET32 *sht, void *buf,int xsize, int ysize, unsigned int col_inv);
+			void (*set)(struct SHEET32 *sht, void *buf,int xsize, int ysize, uint col_inv);
 			void (*updown)(struct SHEET32 *sht,int height);
 			void (*refresh)(struct SHEET32 *sht, int bx0, int by0, int bx1, int by1);
 			void (*slide)(struct SHEET32 *sht, int vx0, int vy0);
@@ -393,8 +389,8 @@ struct SYSTEM {
 	} draw;
 	struct SYS_DATA {
 		struct SYS_FIFO {
-			void (*init)(struct FIFO32 *fifo, int size, unsigned int *buf, struct TASK *task);
-			int (*put)(struct FIFO32 *fifo, unsigned int data);
+			void (*init)(struct FIFO32 *fifo, int size, uint *buf, struct TASK *task);
+			int (*put)(struct FIFO32 *fifo, uint data);
 			int (*get)(struct FIFO32 *fifo);
 			int (*status)(struct FIFO32 *fifo);
 		} fifo;
@@ -409,7 +405,7 @@ struct SYSTEM {
 	} app;
 	struct SYS_FILE {
 		struct FILEINFO *list;
-		unsigned short *fat;
+		ushort *fat;
 	} file;
 	struct SYS_SYS {
 		struct SYS_SYS_SHT {
@@ -417,10 +413,10 @@ struct SYSTEM {
 			struct SHEET32 *desktop;
 			struct SHEET32 *mouse;
 			struct SHEET32 *taskbar;
-			unsigned int *core_buf;
-			unsigned int *desktop_buf;
-			unsigned int mouse_buf[24][24];
-			unsigned int *taskbar_buf;
+			uint *core_buf;
+			uint *desktop_buf;
+			uint mouse_buf[24][24];
+			uint *taskbar_buf;
 		} sht;
 		struct SYS_SYS_TIMER {
 			struct TIMER *t500;
@@ -438,24 +434,29 @@ struct SYSTEM {
 		} cons;
 		struct MEMMAN memman;
 		struct TIMERCTL timctl;
-		unsigned int memtotal;
-		unsigned int *vram;
-		unsigned int xsize;
-		unsigned int ysize;
-		unsigned char bpp;
+		uint memtotal;
+		uint *vram;
+		uint xsize;
+		uint ysize;
+		uchar bpp;
 		struct SEGMENT_DESCRIPTOR *gdt;
 		struct GATE_DESCRIPTOR *idt;
 		struct FIFO32 fifo;
 		struct FIFO32 keycmd;
-		unsigned int fifo_buf[SYS_FIFOSIZE];
-		unsigned int keycmd_buf[KEYCMD_FIFOSIZE];
+		uint fifo_buf[SYS_FIFOSIZE];
+		uint keycmd_buf[KEYCMD_FIFOSIZE];
 		int keycmd_wait;
 		struct KEYINFO keyinfo;
 		struct MOUSE_DECODE mouse_decode;
 	} sys;
 };
 
+/*externs*/
+
 extern struct SYSTEM *sys_main_str_buf;
+extern char cursor[24][24];
+
+/*typedef structures*/
 
 /*functions*/
 
@@ -463,9 +464,9 @@ extern struct SYSTEM *sys_main_str_buf;
 void hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ecx, uint eax);
 
 /*file.c*/
-void decode_fat(unsigned short *fat, bool backup);
-void load_file(unsigned int finfo_no, unsigned char *buf);
-unsigned int search_file(char *name);
+void decode_fat(ushort *fat, bool backup);
+void load_file(uint finfo_no, uchar *buf);
+uint search_file(char *name);
 
 /*console.c*/
 void console_main(struct WINDOWINFO *win);
@@ -473,11 +474,11 @@ void cons_check_newline(struct WINDOWINFO *win, struct POSITION_2D *p, struct PO
 void cons_put_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor);
 void cons_new_line(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor);
 void cons_slide_line(struct WINDOWINFO *win);
-void cons_put_str(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *str);
-void cons_reset_cmdline(unsigned char *cmdline, unsigned int *cmdlines, bool *cmdline_overflow);
-void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char *cmdline, unsigned int *cmdlines, bool *cmdline_overflow);
+void cons_put_str(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, uchar *str);
+void cons_reset_cmdline(uchar *cmdline, uint *cmdlines, bool *cmdline_overflow);
+void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, uchar *cmdline, uint *cmdlines, bool *cmdline_overflow);
 void cons_new_line_no_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor);
-void cons_put_char(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, unsigned char c);
+void cons_put_char(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, uchar c);
 
 /*mtask.c*/
 void task_init(void);
@@ -493,11 +494,11 @@ void task_switchsub(void);
 void task_idle(void);
 
 /*io.c*/
-void readrtc(unsigned char *t);
+void readrtc(uchar *t);
 void init_serial(void);
-void send_serial(unsigned char *s);
-void fdc_motor_on(unsigned char d);
-void fdc_motor_off(unsigned char d);
+void send_serial(uchar *s);
+void fdc_motor_on(uchar d);
+void fdc_motor_off(uchar d);
 void reset_cpu(void);
 
 /*timer.c*/
@@ -505,8 +506,8 @@ void inthandler20(int *esp);
 void init_pit(void);
 struct TIMER *timer_alloc(void);
 void timer_free(struct TIMER *timer);
-void timer_init(struct TIMER *timer, struct FIFO32 *fifo, unsigned int data);
-void timer_settime(struct TIMER *timer, unsigned int timeout);
+void timer_init(struct TIMER *timer, struct FIFO32 *fifo, uint data);
+void timer_settime(struct TIMER *timer, uint timeout);
 
 /*keyboard.c*/
 void init_keyboard(int data0);
@@ -565,42 +566,42 @@ void init_system(void);
 /*window.c*/
 void init_windows(void);
 struct WINDOWINFO *window_alloc(void);
-struct WINDOWINFO *make_window(unsigned char *title, int xsize, int ysize, int px, int py, int height, bool active);
-void change_window(struct WINDOWINFO *winfo, unsigned char *title, bool active);
-void change_window_title(struct WINDOWINFO *winfo, unsigned char *title);
+struct WINDOWINFO *make_window(uchar *title, int xsize, int ysize, int px, int py, int height, bool active);
+void change_window(struct WINDOWINFO *winfo, uchar *title, bool active);
+void change_window_title(struct WINDOWINFO *winfo, uchar *title);
 void change_window_active(struct WINDOWINFO *winfo, bool active);
 void slide_window(struct WINDOWINFO *winfo, int px, int py);
 void refresh_window(struct WINDOWINFO *winfo);
 void refresh_window_alpha(struct WINDOWINFO *winfo);
-void boxfill_win(struct WINDOWINFO *winfo, unsigned int c, int x0, int y0, int x1, int y1);
-void putfonts_win(struct WINDOWINFO *winfo, int x, int y, unsigned int c, unsigned int bc, const unsigned char *s);
+void boxfill_win(struct WINDOWINFO *winfo, uint c, int x0, int y0, int x1, int y1);
+void putfonts_win(struct WINDOWINFO *winfo, int x, int y, uint c, uint bc, const uchar *s);
 void scrool_win(struct WINDOWINFO *winfo);
-void line_win(struct WINDOWINFO *winfo, int x0, int y0, int x1, int y1, unsigned int c);
-void draw_hexagon_win(struct WINDOWINFO *winfo, int a, int x, int y, unsigned int c);
+void line_win(struct WINDOWINFO *winfo, int x0, int y0, int x1, int y1, uint c);
+void draw_hexagon_win(struct WINDOWINFO *winfo, int a, int x, int y, uint c);
 
 /*fifo.c*/
-void fifo32_init(struct FIFO32 *fifo, int size, unsigned int *buf, struct TASK *task);
-int fifo32_put(struct FIFO32 *fifo, unsigned int data);
+void fifo32_init(struct FIFO32 *fifo, int size, uint *buf, struct TASK *task);
+int fifo32_put(struct FIFO32 *fifo, uint data);
 int fifo32_get(struct FIFO32 *fifo);
 int fifo32_status(struct FIFO32 *fifo);
 
 /*memory.c*/
 void sys_memman_init(void);
-unsigned int sys_memman_free_total(void);
-void *sys_memman_alloc(unsigned int size);
-int sys_memman_free(void *addr, unsigned int size);
-unsigned int memtest(unsigned int start, unsigned int end);
+uint sys_memman_free_total(void);
+void *sys_memman_alloc(uint size);
+int sys_memman_free(void *addr, uint size);
+uint memtest(uint start, uint end);
 void memman_init(struct MEMMAN *man);
-unsigned int memman_free_total(struct MEMMAN *man);
-void *memman_alloc(struct MEMMAN *man, unsigned int size);
-int memman_free(struct MEMMAN *man, void *addr, unsigned int size);
-void *memman_alloc_4k(struct MEMMAN *man, unsigned int size);
-int memman_free_4k(struct MEMMAN *man, void *addr, unsigned int size);
+uint memman_free_total(struct MEMMAN *man);
+void *memman_alloc(struct MEMMAN *man, uint size);
+int memman_free(struct MEMMAN *man, void *addr, uint size);
+void *memman_alloc_4k(struct MEMMAN *man, uint size);
+int memman_free_4k(struct MEMMAN *man, void *addr, uint size);
 
 /*sheet.c*/
-void init_sheets(void *vram, int xsize, int ysize, unsigned char bits);
+void init_sheets(void *vram, int xsize, int ysize, uchar bits);
 struct SHEET32 *sheet_alloc(void);
-void sheet_setbuf(struct SHEET32 *sht, void *buf,int xsize, int ysize, unsigned int col_inv);
+void sheet_setbuf(struct SHEET32 *sht, void *buf,int xsize, int ysize, uint col_inv);
 void sheet_updown(struct SHEET32 *sht, int height);
 void sheet_refresh(struct SHEET32 *sht, int bx0, int by0, int bx1, int by1);
 void sheet_refresh_full_alpha(struct SHEET32 *sht);
@@ -617,56 +618,56 @@ void sheet_refreshmap8(int vx0, int vy0, int vx1, int vy1, int h0);
 /*graphic.c grap_08.c grap_16.c grap_32.c*/
 
 /*All*/
-void putfonts_asc_sht_i(struct SHEET32 *sht, int x, int y, unsigned int c, unsigned int bc, const unsigned char *s);
+void putfonts_asc_sht_i(struct SHEET32 *sht, int x, int y, uint c, uint bc, const uchar *s);
 void init_screen_i(void *desktop, void *taskbar, void *mousecursor);
 void init_desktop_i(void *vrami);
 void init_taskbar_i(void *vrami);
 void init_mousecursor_i(void *vrami);
-unsigned int mix_color(unsigned int c0, unsigned int c1);
-void point_i(void *vrami, int x, int y, unsigned int c, int xsize);
-void boxfill_i(void *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
-void putfonts_asc_i(void *vrami, int xsize, int x, int y, unsigned int c, const unsigned char *s);
+uint mix_color(uint c0, uint c1);
+void point_i(void *vrami, int x, int y, uint c, int xsize);
+void boxfill_i(void *vrami, int xsize, uint c, int x0, int y0, int x1, int y1);
+void putfonts_asc_i(void *vrami, int xsize, int x, int y, uint c, const uchar *s);
 void putblock_i(void *vram, int vxsize, int pxsize, int pysize, int px0, int py0, void *buf, int bxsize);
-void line_i(void *vrami, int xsize, int x0, int y0, int x1, int y1, unsigned int c);
-void draw_hexagon_i(void *vrami, int xsize, int a, int x, int y, unsigned int c);
+void line_i(void *vrami, int xsize, int x0, int y0, int x1, int y1, uint c);
+void draw_hexagon_i(void *vrami, int xsize, int a, int x, int y, uint c);
 void draw_chnos_logo(void *vrami, int xsize, int a, int x, int y);
-unsigned char rgb_int2char (unsigned int c32);
-unsigned short rgb_int2short (unsigned int c32);
+uchar rgb_int2char (uint c32);
+ushort rgb_int2short (uint c32);
 void col_pat(void *vrami, int xsize, int ysize);
 
 /*8bits*/
-void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1);
-void init_desktop8(unsigned char *vram);
-void init_taskbar8(unsigned char *vram);
-void putfont8(unsigned char *vram, int xsize, int x, int y, unsigned char c, unsigned char *font);
-void putfonts8_asc(unsigned char *vram, int xsize, int x, int y, unsigned char c, const unsigned char *s);
-void init_mouse_cursor8(unsigned char *mouse);
-void putblock8_8(unsigned char *vram, int vxsize, int pxsize, int pysize, int px0, int py0, unsigned char *buf, int bxsize);
+void boxfill8(uchar *vram, int xsize, uchar c, int x0, int y0, int x1, int y1);
+void init_desktop8(uchar *vram);
+void init_taskbar8(uchar *vram);
+void putfont8(uchar *vram, int xsize, int x, int y, uchar c, uchar *font);
+void putfonts8_asc(uchar *vram, int xsize, int x, int y, uchar c, const uchar *s);
+void init_mouse_cursor8(uchar *mouse);
+void putblock8_8(uchar *vram, int vxsize, int pxsize, int pysize, int px0, int py0, uchar *buf, int bxsize);
 void init_palette(void);
-void set_palette(int start, int end, unsigned char *rgb);
+void set_palette(int start, int end, uchar *rgb);
 
 /*16bits*/
-void boxfill16(unsigned short *vram, int xsize, unsigned short c, int x0, int y0, int x1, int y1);
-void init_desktop16(unsigned short *vram);
-void init_taskbar16(unsigned short *vram);
-void putfont16(unsigned short *vram, int xsize, int x, int y, unsigned short c, unsigned char *font);
-void putfonts16_asc(unsigned short *vram, int xsize, int x, int y, unsigned short c, const unsigned char *s);
-void init_mouse_cursor16(unsigned short *mouse);
-void putblock16_16(unsigned short *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned short *buf, int bxsize);
+void boxfill16(ushort *vram, int xsize, ushort c, int x0, int y0, int x1, int y1);
+void init_desktop16(ushort *vram);
+void init_taskbar16(ushort *vram);
+void putfont16(ushort *vram, int xsize, int x, int y, ushort c, uchar *font);
+void putfonts16_asc(ushort *vram, int xsize, int x, int y, ushort c, const uchar *s);
+void init_mouse_cursor16(ushort *mouse);
+void putblock16_16(ushort *vram, int vxsize, int pxsize,int pysize, int px0, int py0, ushort *buf, int bxsize);
 
 /*32bits*/
-void boxfill32(unsigned int *vram, int xsize, unsigned int c, int x0, int y0, int x1, int y1);
-void init_desktop32(unsigned int *vram);
-void putfont32(unsigned int *vram, int xsize, int x, int y, unsigned int c, unsigned char *font);
-void putfonts32_asc(unsigned int *vram, int xsize, int x, int y, unsigned int c, const unsigned char *s);
-void init_mouse_cursor32(unsigned int *mouse);
-void putblock32_32(unsigned int *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned int *buf, int bxsize);
+void boxfill32(uint *vram, int xsize, uint c, int x0, int y0, int x1, int y1);
+void init_desktop32(uint *vram);
+void putfont32(uint *vram, int xsize, int x, int y, uint c, uchar *font);
+void putfonts32_asc(uint *vram, int xsize, int x, int y, uint c, const uchar *s);
+void init_mouse_cursor32(uint *mouse);
+void putblock32_32(uint *vram, int vxsize, int pxsize,int pysize, int px0, int py0, uint *buf, int bxsize);
 
 /*gdtidt.c*/
 void init_gdtidt(void);
-void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
+void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, uint limit, int base, int ar);
 void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
-void init_taskbar32(unsigned int *vram);
+void init_taskbar32(uint *vram);
 
 
 /* naskfunc.nas */
@@ -693,7 +694,7 @@ void load_idtr(int limit, int addr);
 int load_cr0(void);
 void store_cr0(int cr0);
 void load_tr(int tr);
-unsigned int memtest_sub(unsigned int start, unsigned int end);
+uint memtest_sub(uint start, uint end);
 void farjmp(int eip, int cs);
 void farcall(int eip, int cs);
 void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);

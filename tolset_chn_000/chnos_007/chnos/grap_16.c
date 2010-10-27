@@ -3,7 +3,7 @@
 #include <math.h>
 #include <string.h>
 
-void boxfill16(unsigned short *vram, int xsize, unsigned short c, int x0, int y0, int x1, int y1)
+void boxfill16(ushort *vram, int xsize, ushort c, int x0, int y0, int x1, int y1)
 {
 	int x, y;
 	for (y = y0;y <= y1;y++) {
@@ -12,10 +12,10 @@ void boxfill16(unsigned short *vram, int xsize, unsigned short c, int x0, int y0
 	}
 	return;
 }
-void init_desktop16(unsigned short *vram)
+void init_desktop16(ushort *vram)
 {
-	unsigned int xsize = system.sys.xsize;
-	unsigned int ysize = system.sys.ysize;
+	uint xsize = system.sys.xsize;
+	uint ysize = system.sys.ysize;
 
 	boxfill16(vram,xsize,DESKTOP_COL16,0,0,xsize,ysize);
 	putfonts16_asc(vram, xsize, 168, 8, RGB16(31,62,31), "welcome to CHNOSProject! on 16bit video mode .");
@@ -25,9 +25,9 @@ void init_desktop16(unsigned short *vram)
 	return;	
 }
 
-void init_taskbar16(unsigned short *vram)
+void init_taskbar16(ushort *vram)
 {
-	unsigned int xsize = system.sys.xsize;
+	uint xsize = system.sys.xsize;
 
 	boxfill16(vram, xsize, TASKBAR_COL16, 0, 0, xsize, TASKBAR_HEIGHT);
 	boxfill16(vram, xsize, RGB16(31,62,31), 0, 0, xsize, 1);
@@ -35,10 +35,10 @@ void init_taskbar16(unsigned short *vram)
 
 	return;
 }
-void putfont16(unsigned short *vram, int xsize, int x, int y, unsigned short c, unsigned char *font)
+void putfont16(ushort *vram, int xsize, int x, int y, ushort c, uchar *font)
 {
 	int i;
-	unsigned short *p;
+	ushort *p;
 	char d /* data */;
 	for (i = 0; i < 16; i++) {
 		p = vram + (y + i) * xsize + x;
@@ -55,7 +55,7 @@ void putfont16(unsigned short *vram, int xsize, int x, int y, unsigned short c, 
 	return;
 }
 
-void putfonts16_asc(unsigned short *vram, int xsize, int x, int y, unsigned short c, const unsigned char *s)
+void putfonts16_asc(ushort *vram, int xsize, int x, int y, ushort c, const uchar *s)
 {
 	extern char hankaku[4096];
 	for (; *s != 0x00; s++) {
@@ -65,7 +65,7 @@ void putfonts16_asc(unsigned short *vram, int xsize, int x, int y, unsigned shor
 	return;
 }
 
-void init_mouse_cursor16(unsigned short *mouse)
+void init_mouse_cursor16(ushort *mouse)
 {
 	int x, y;
 
@@ -85,7 +85,7 @@ void init_mouse_cursor16(unsigned short *mouse)
 	return;
 }
 
-void putblock16_16(unsigned short *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned short *buf, int bxsize)
+void putblock16_16(ushort *vram, int vxsize, int pxsize,int pysize, int px0, int py0, ushort *buf, int bxsize)
 {
 	int x, y;
 	for (y = 0; y < pysize; y++) {

@@ -64,14 +64,14 @@ void timer_free(struct TIMER *timer)
 	return;
 }
 
-void timer_init(struct TIMER *timer, struct FIFO32 *fifo, unsigned int data)
+void timer_init(struct TIMER *timer, struct FIFO32 *fifo, uint data)
 {
 	timer->fifo = fifo;
 	timer->data = data;
 	return;
 }
 
-void timer_settime(struct TIMER *timer, unsigned int timeout)
+void timer_settime(struct TIMER *timer, uint timeout)
 {
 	int ef;
 	struct TIMER *t, *s;

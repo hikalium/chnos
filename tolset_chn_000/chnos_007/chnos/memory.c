@@ -6,26 +6,26 @@ void sys_memman_init(void)
 	memman_init(&system.sys.memman);
 }
 
-unsigned int sys_memman_free_total(void)
+uint sys_memman_free_total(void)
 {
 	return memman_free_total(&system.sys.memman);
 }
 
-void *sys_memman_alloc(unsigned int size)
+void *sys_memman_alloc(uint size)
 {
 	return memman_alloc_4k(&system.sys.memman, size);
 }
 
-int sys_memman_free(void *addr, unsigned int size)
+int sys_memman_free(void *addr, uint size)
 {
 	return memman_free_4k(&system.sys.memman, addr, size);
 }
 
-unsigned int memtest(unsigned int start, unsigned int end)
+uint memtest(uint start, uint end)
 {
 
 	char flg486 = 0;
-	unsigned int eflg,cr0,i;
+	uint eflg,cr0,i;
 
 	eflg = io_load_eflags();
 	eflg |= EFLAGS_AC_BIT;
@@ -58,18 +58,18 @@ void memman_init(struct MEMMAN *man)
 	return;
 }
 
-unsigned int memman_free_total(struct MEMMAN *man)
+uint memman_free_total(struct MEMMAN *man)
 {
-	unsigned int i,t = 0;
+	uint i,t = 0;
 	for (i = 0; i < man->frees; i++) {
 		t += man->free[i].size;
 		}
 	return t;
 }
 
-void *memman_alloc(struct MEMMAN *man, unsigned int size)
+void *memman_alloc(struct MEMMAN *man, uint size)
 {
-	unsigned int i,a;
+	uint i,a;
 	for(i = 0; i < man->frees; i++) {
 		if (man->free[i].size >= size) {
 		a = man->free[i].addr;
@@ -87,11 +87,11 @@ void *memman_alloc(struct MEMMAN *man, unsigned int size)
 	return 0;
 }
 
-int memman_free(struct MEMMAN *man, void *addr0, unsigned int size)
+int memman_free(struct MEMMAN *man, void *addr0, uint size)
 {
 	int i, j;
-	unsigned int addr;
-	addr = (unsigned int)addr0;
+	uint addr;
+	addr = (uint)addr0;
 	for(i = 0; i < man->frees; i++){
 		if(man->free[i].addr > addr) break;
 	}
@@ -134,7 +134,7 @@ int memman_free(struct MEMMAN *man, void *addr0, unsigned int size)
 	return -1;
 }
 
-void *memman_alloc_4k(struct MEMMAN *man, unsigned int size)
+void *memman_alloc_4k(struct MEMMAN *man, uint size)
 {
 	void *a;
 	size = (size + 0xfff) & 0xfffff000;
@@ -142,7 +142,7 @@ void *memman_alloc_4k(struct MEMMAN *man, unsigned int size)
 	return a;
 }
 
-int memman_free_4k(struct MEMMAN *man, void *addr, unsigned int size)
+int memman_free_4k(struct MEMMAN *man, void *addr, uint size)
 {
 	int i;
 	size = (size + 0xfff) & 0xfffff000;

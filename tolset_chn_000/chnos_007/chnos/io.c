@@ -1,11 +1,11 @@
 
 #include "core.h"
 
-void readrtc(unsigned char *t)
+void readrtc(uchar *t)
 {
     char err;
-    static unsigned char adr[7] = { 0x00, 0x02, 0x04, 0x07, 0x08, 0x09, 0x32 };
-    static unsigned char max[7] = { 0x60, 0x59, 0x23, 0x31, 0x12, 0x99, 0x99 };
+    static uchar adr[7] = { 0x00, 0x02, 0x04, 0x07, 0x08, 0x09, 0x32 };
+    static uchar max[7] = { 0x60, 0x59, 0x23, 0x31, 0x12, 0x99, 0x99 };
     int i;
     for (;;) { /* ì«Ç›çûÇ›Ç™ê¨å˜Ç∑ÇÈÇ‹Ç≈åJÇËï‘Ç∑ */
         err = 0;
@@ -35,7 +35,7 @@ void init_serial(void)
 	return;
 }
 
-void send_serial(unsigned char *s)
+void send_serial(uchar *s)
 {
 	for (; *s != 0x00; s++) {
 		io_out8(0x03f8,*s);
@@ -44,7 +44,7 @@ void send_serial(unsigned char *s)
 	return;
 }
 
-void fdc_motor_on(unsigned char d)
+void fdc_motor_on(uchar d)
 {
 	if(d == 0){
 		io_out8(0x3f2,io_in8(0x3f2) | 0x10);
@@ -58,7 +58,7 @@ void fdc_motor_on(unsigned char d)
 	return;
 }
 
-void fdc_motor_off(unsigned char d)
+void fdc_motor_off(uchar d)
 {
 	if(d == 0){
 		io_out8(0x3f2,io_in8(0x3f2) & 0xef);

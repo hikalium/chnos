@@ -50,7 +50,7 @@ char cursor[24][24] = {
 	"***.....................",
 };
 
-void putfonts_asc_sht_i(struct SHEET32 *sht, int x, int y, unsigned int c, unsigned int bc, const unsigned char *s)
+void putfonts_asc_sht_i(struct SHEET32 *sht, int x, int y, uint c, uint bc, const uchar *s)
 {
 	int l;
 	l = strlen(s);
@@ -108,10 +108,10 @@ void init_mousecursor_i(void *vrami)
 	return;	
 }
 
-unsigned int mix_color(unsigned int c0, unsigned int c1)
+uint mix_color(uint c0, uint c1)
 {
 	float r0,g0,b0,r1,g1,b1,alpha;
-	unsigned int cc;
+	uint cc;
 	cc = c0 << 24;
 	b0 = (float)(cc >> 24);
 	cc = c0 << 16;
@@ -132,43 +132,43 @@ unsigned int mix_color(unsigned int c0, unsigned int c1)
 	g1 = g1 * (alpha / 255) + g0 * (1 - (alpha / 255));
 	b1 = b1 * (alpha / 255) + b0 * (1 - (alpha / 255));
 
-	c1 = (unsigned int) alpha;
+	c1 = (uint) alpha;
 	c1 = c1 << 8;
-	c1 += (unsigned int) r1;
+	c1 += (uint) r1;
 	c1 = c1 << 8;
-	c1 += (unsigned int) g1;
+	c1 += (uint) g1;
 	c1 = c1 << 8;
-	c1 += (unsigned int) b1;
+	c1 += (uint) b1;
 
 	return c1;
 }
 
-void point_i(void *vrami, int x, int y, unsigned int c, int xsize)
+void point_i(void *vrami, int x, int y, uint c, int xsize)
 {
 	if(system.info.vesa.BitsPerPixel == 8){
-		unsigned char c8 = rgb_int2char(c);
-		unsigned char *cc = (unsigned char *)vrami;
+		uchar c8 = rgb_int2char(c);
+		uchar *cc = (uchar *)vrami;
 		cc[y * xsize + x] = c8;
 	} else if(system.info.vesa.BitsPerPixel == 16){
-		unsigned short c16 = rgb_int2short(c);
-		unsigned short *cs = (unsigned short *)vrami;
+		ushort c16 = rgb_int2short(c);
+		ushort *cs = (ushort *)vrami;
 		cs[y * xsize + x] = c16;
 	} else if(system.info.vesa.BitsPerPixel == 32){
-		unsigned int *ci = (unsigned int *)vrami;
+		uint *ci = (uint *)vrami;
 		ci[y * xsize + x] = c;
 	}
 	return;
 }
 
-void boxfill_i(void *vrami, int xsize, unsigned int c, int x0, int y0, int x1, int y1)
+void boxfill_i(void *vrami, int xsize, uint c, int x0, int y0, int x1, int y1)
 {
 	y1 -= 1;
 	x1 -= 1;
 	if(system.info.vesa.BitsPerPixel == 8){
-		unsigned char c8 = rgb_int2char(c);
+		uchar c8 = rgb_int2char(c);
 		boxfill8(vrami, xsize, c8, x0, y0, x1, y1);	
 	} else if(system.info.vesa.BitsPerPixel == 16){
-		unsigned short c16 = rgb_int2short(c);
+		ushort c16 = rgb_int2short(c);
 		boxfill16(vrami, xsize, c16, x0, y0, x1, y1);
 	} else if(system.info.vesa.BitsPerPixel == 32){
 		boxfill32(vrami, xsize, c, x0, y0, x1, y1);
@@ -176,18 +176,18 @@ void boxfill_i(void *vrami, int xsize, unsigned int c, int x0, int y0, int x1, i
 	return;
 }
 
-void putfonts_asc_i(void *vrami, int xsize, int x, int y, unsigned int c, const unsigned char *s)
+void putfonts_asc_i(void *vrami, int xsize, int x, int y, uint c, const uchar *s)
 {
 	extern char hankaku[4096];
 	if(system.info.vesa.BitsPerPixel == 8){
-		unsigned char c8 = rgb_int2char(c);
+		uchar c8 = rgb_int2char(c);
 		for (; *s != 0x00; s++) {
 			putfont8(vrami, xsize, x, y, c8, hankaku + *s * 16);
 			x += 8;
 		}
 		return;
 	} else if(system.info.vesa.BitsPerPixel == 16){
-		unsigned short c16 = rgb_int2short(c);
+		ushort c16 = rgb_int2short(c);
 		for (; *s != 0x00; s++) {
 			putfont16(vrami, xsize, x, y, c16, hankaku + *s * 16);
 			x += 8;
@@ -214,7 +214,7 @@ void putblock_i(void *vrami, int vxsize, int pxsize, int pysize, int px0, int py
 	return;
 }
 
-void line_i(void *vrami, int xsize, int x0, int y0, int x1, int y1, unsigned int c)
+void line_i(void *vrami, int xsize, int x0, int y0, int x1, int y1, uint c)
 {
 	int i, x, y, len, dx, dy;
 
@@ -245,7 +245,7 @@ void line_i(void *vrami, int xsize, int x0, int y0, int x1, int y1, unsigned int
 	return;
 }
 
-void draw_hexagon_i(void *vrami, int xsize, int a, int x, int y, unsigned int c)
+void draw_hexagon_i(void *vrami, int xsize, int a, int x, int y, uint c)
 {
 	int n, m;
 
@@ -267,7 +267,7 @@ void draw_hexagon_i(void *vrami, int xsize, int a, int x, int y, unsigned int c)
 void draw_chnos_logo(void *vrami, int xsize, int a, int x, int y)
 {
 	int n, m, oldx, oldy;
-	unsigned int c;
+	uint c;
 
 	oldx = x;
 	oldy = y;
@@ -403,9 +403,9 @@ void draw_chnos_logo(void *vrami, int xsize, int a, int x, int y)
 	return;
 }
 
-unsigned char rgb_int2char (unsigned int c32)
+uchar rgb_int2char (uint c32)
 {
-	unsigned char i ;
+	uchar i ;
 	for(i = 0;i < 15; i++) {
 		if(rgb_int2char_list[i] == c32) {
 			return i;
@@ -414,10 +414,10 @@ unsigned char rgb_int2char (unsigned int c32)
 	return 8;
 }
 
-unsigned short rgb_int2short (unsigned int c32)
+ushort rgb_int2short (uint c32)
 {
-	unsigned short c16;
-	unsigned char c[4];
+	ushort c16;
+	uchar c[4];
 
 	c[3] = (c32 << 24) >> 24;
 	c[2] = (c32 << 16) >> 24;

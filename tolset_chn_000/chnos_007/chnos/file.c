@@ -1,13 +1,13 @@
 
 #include "core.h"
 
-void decode_fat(unsigned short *fat, bool backup)
+void decode_fat(ushort *fat, bool backup)
 {
 	int i, j = 0;
-	unsigned char *img;
+	uchar *img;
 
-	if(backup)	img = (unsigned char *)ADR_DISKIMG + 0x00001400;
-	else		img = (unsigned char *)ADR_DISKIMG + 0x00000200;
+	if(backup)	img = (uchar *)ADR_DISKIMG + 0x00001400;
+	else		img = (uchar *)ADR_DISKIMG + 0x00000200;
 
 	for(i = 0; i < 2880; i += 2){
 		fat[i + 0] = (img[j + 0]	| img[j + 1] << 8) & 0xfff;
@@ -17,16 +17,16 @@ void decode_fat(unsigned short *fat, bool backup)
 	return;
 }
 
-void load_file(unsigned int finfo_no, unsigned char *buf)
+void load_file(uint finfo_no, uchar *buf)
 {
 	int i;
-	unsigned char *img;
-	unsigned int size;
-	unsigned short clustno;
+	uchar *img;
+	uint size;
+	ushort clustno;
 
 	if(finfo_no > 224) return;
 
-	img = (unsigned char *)ADR_DISKIMG + 0x00003e00;
+	img = (uchar *)ADR_DISKIMG + 0x00003e00;
 	size = system.file.list[finfo_no].size;
 	clustno = system.file.list[finfo_no].clustno;
 
@@ -48,10 +48,10 @@ void load_file(unsigned int finfo_no, unsigned char *buf)
 	}
 }
 
-unsigned int search_file(char *name)
+uint search_file(char *name)
 {
 	int i, j;
-	unsigned char s[12];
+	uchar s[12];
 
 	for(j = 0; j < 11; j++){
 		s[j] = ' ';

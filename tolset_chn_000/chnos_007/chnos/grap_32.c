@@ -3,7 +3,7 @@
 #include <math.h>
 #include <string.h>
 
-void boxfill32(unsigned int *vram, int xsize, unsigned int c, int x0, int y0, int x1, int y1)
+void boxfill32(uint *vram, int xsize, uint c, int x0, int y0, int x1, int y1)
 {
 	int x, y;
 	for (y = y0;y <= y1;y++) {
@@ -13,10 +13,10 @@ void boxfill32(unsigned int *vram, int xsize, unsigned int c, int x0, int y0, in
 	return;
 }
 
-void init_desktop32(unsigned int *vram)
+void init_desktop32(uint *vram)
 {
-	unsigned int xsize = system.sys.xsize;
-	unsigned int ysize = system.sys.ysize;
+	uint xsize = system.sys.xsize;
+	uint ysize = system.sys.ysize;
 
 	boxfill32(vram,xsize,DESKTOP_COL32,0,0,xsize,ysize);
 	putfonts32_asc(vram, xsize, 168, 8, 0xFFFFFF, "welcome to CHNOSProject! on 32bit video mode .");
@@ -26,9 +26,9 @@ void init_desktop32(unsigned int *vram)
 	return;	
 }
 
-void init_taskbar32(unsigned int *vram)
+void init_taskbar32(uint *vram)
 {
-	unsigned int xsize = system.sys.xsize;
+	uint xsize = system.sys.xsize;
 	boxfill32(vram, xsize, TASKBAR_COL32, 0, 0, xsize, TASKBAR_HEIGHT);
 	boxfill32(vram, xsize, 0xFFFFFF, 0, 0, xsize, 1);
 	boxfill32(vram, xsize, 0xFFFFFF, xsize-2, 0, xsize, TASKBAR_HEIGHT);
@@ -36,7 +36,7 @@ void init_taskbar32(unsigned int *vram)
 	return;
 }
 
-void putfont32(unsigned int *vram, int xsize, int x, int y, unsigned int c, unsigned char *font)
+void putfont32(uint *vram, int xsize, int x, int y, uint c, uchar *font)
 {
 	int i;
 	int *p;
@@ -56,7 +56,7 @@ void putfont32(unsigned int *vram, int xsize, int x, int y, unsigned int c, unsi
 	return;
 }
 
-void putfonts32_asc(unsigned int *vram, int xsize, int x, int y, unsigned int c, const unsigned char *s)
+void putfonts32_asc(uint *vram, int xsize, int x, int y, uint c, const uchar *s)
 {
 	extern char hankaku[4096];
 	for (; *s != 0x00; s++) {
@@ -66,7 +66,7 @@ void putfonts32_asc(unsigned int *vram, int xsize, int x, int y, unsigned int c,
 	return;
 }
 
-void init_mouse_cursor32(unsigned int *mouse)
+void init_mouse_cursor32(uint *mouse)
 {
 	int x, y;
 
@@ -86,7 +86,7 @@ void init_mouse_cursor32(unsigned int *mouse)
 	return;
 }
 
-void putblock32_32(unsigned int *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned int *buf, int bxsize)
+void putblock32_32(uint *vram, int vxsize, int pxsize,int pysize, int px0, int py0, uint *buf, int bxsize)
 {
 	int x, y;
 	for (y = 0; y < pysize; y++) {

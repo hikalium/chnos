@@ -104,7 +104,7 @@ void cpu_exception_alert(int exception, int *esp)
 {
 	int i;
 	char s[32];
-	putfonts_asc_sht_i(system.sys.sht.core, 0, 0, 0xFFFFFF, 0x000000, (const unsigned char *)cpu_exceptions[exception]);
+	putfonts_asc_sht_i(system.sys.sht.core, 0, 0, 0xFFFFFF, 0x000000, (const uchar *)cpu_exceptions[exception]);
 	putfonts_asc_sht_i(system.sys.sht.core, 0, 16, 0xFFFFFF, 0x000000, "***registers info***");
 
 	putfonts_asc_sht_i(system.sys.sht.core, 0, 32, 0xFFFFFF, 0x000000, "#PUSHAD by _asm_inthandler");

@@ -3,7 +3,7 @@
 #include <math.h>
 #include <string.h>
 
-void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1)
+void boxfill8(uchar *vram, int xsize, uchar c, int x0, int y0, int x1, int y1)
 {
 	int x, y;
 	for (y = y0; y <= y1; y++) {
@@ -13,10 +13,10 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, i
 	return;
 }
 
-void init_desktop8(unsigned char *vram)
+void init_desktop8(uchar *vram)
 {
-	unsigned int xsize = system.sys.xsize;
-	unsigned int ysize = system.sys.ysize;
+	uint xsize = system.sys.xsize;
+	uint ysize = system.sys.ysize;
 
 	boxfill8(vram,xsize,DESKTOP_COL8,0,0,xsize,ysize);
 	putfonts8_asc(vram, xsize, 168, 8, COL8_FFFFFF, "welcome to CHNOSProject! on 8bit video mode .");
@@ -26,9 +26,9 @@ void init_desktop8(unsigned char *vram)
 	return;	
 }
 
-void init_taskbar8(unsigned char *vram)
+void init_taskbar8(uchar *vram)
 {
-	unsigned int xsize = system.sys.xsize;
+	uint xsize = system.sys.xsize;
 
 	boxfill8(vram, xsize, TASKBAR_COL8, 0, 0, xsize, TASKBAR_HEIGHT);
 	boxfill8(vram, xsize, COL8_FFFFFF, 0, 0, xsize, 1);
@@ -37,11 +37,11 @@ void init_taskbar8(unsigned char *vram)
 	return;
 }
 
-void putfont8(unsigned char *vram, int xsize, int x, int y, unsigned char c, unsigned char *font)
+void putfont8(uchar *vram, int xsize, int x, int y, uchar c, uchar *font)
 {
 	int i;
-	unsigned char d /* data */;
-	unsigned char *p;
+	uchar d /* data */;
+	uchar *p;
 	for (i = 0; i < 16; i++) {
 		p = vram + (y + i) * xsize + x;
 		d = font[i];
@@ -57,7 +57,7 @@ void putfont8(unsigned char *vram, int xsize, int x, int y, unsigned char c, uns
 	return;
 }
 
-void putfonts8_asc(unsigned char *vram, int xsize, int x, int y, unsigned char c, const unsigned char *s)
+void putfonts8_asc(uchar *vram, int xsize, int x, int y, uchar c, const uchar *s)
 {
 	extern char hankaku[4096];
 	for (; *s != 0x00; s++) {
@@ -67,7 +67,7 @@ void putfonts8_asc(unsigned char *vram, int xsize, int x, int y, unsigned char c
 	return;
 }
 
-void init_mouse_cursor8(unsigned char *mouse)
+void init_mouse_cursor8(uchar *mouse)
 {
 	int x, y;
 
@@ -87,7 +87,7 @@ void init_mouse_cursor8(unsigned char *mouse)
 	return;
 }
 
-void putblock8_8(unsigned char *vram, int vxsize, int pxsize,int pysize, int px0, int py0, unsigned char *buf, int bxsize)
+void putblock8_8(uchar *vram, int vxsize, int pxsize,int pysize, int px0, int py0, uchar *buf, int bxsize)
 {
 	int x, y;
 	for (y = 0; y < pysize; y++) {
@@ -100,7 +100,7 @@ void putblock8_8(unsigned char *vram, int vxsize, int pxsize,int pysize, int px0
 
 void init_palette(void)
 {
-	static unsigned char table_rgb[16 * 3] = {
+	static uchar table_rgb[16 * 3] = {
 		0x00, 0x00, 0x00,
 		0xff, 0x00, 0x00,
 		0x00, 0xff, 0x00,
@@ -118,7 +118,7 @@ void init_palette(void)
 		0x00, 0x84, 0x84,
 		0x84, 0x84, 0x84
 	};
-	unsigned char table2[216 * 3];
+	uchar table2[216 * 3];
 	int r, g, b;
 	set_palette(0, 15, table_rgb);
 	for (b = 0; b < 6; b++) {
@@ -134,7 +134,7 @@ void init_palette(void)
 	return;
 }
 
-void set_palette(int start, int end, unsigned char *rgb)
+void set_palette(int start, int end, uchar *rgb)
 {
 	int i, eflags;
 	eflags = io_load_eflags();
