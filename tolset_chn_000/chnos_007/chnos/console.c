@@ -104,6 +104,8 @@ void cons_command_start(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D
 	uint i, j;
 	uchar *p;
 
+	i = 0;
+
 	if(cmdline[0] != 0x00){
 		cons_new_line_no_prompt(win, prompt, cursor);
 	}
@@ -162,51 +164,49 @@ void cons_command_start(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D
 			cons_put_str(win, prompt, cursor, "File not found...\n");
 		}
 	} else if(cmdline[0] != 0x00){
-		strcat(cmdline, ".hrb");
-		i = search_file(cmdline);
-		if(i != 0xFFFFFFFF){
-			j = system.file.list[i].size;
-			p = system.io.mem.alloc(j);
-			*((int *) 0x0fe0) = (int) p;
-			load_file(i, p);
-			if(j >= 8 && strncmp(p + 4, "Hari", 4) == 0){
-				p[0] = 0xe8;
-				p[1] = 0x16;
-				p[2] = 0x00;
-				p[3] = 0x00;
-				p[4] = 0x00;
-				p[5] = 0xcb;
-			}
-			set_segmdesc(system.sys.gdt + 1003, j - 1, (int)p, AR_CODE32_ER);
-			farcall(0, 1003 * 8);
-			system.io.mem.free(p, j);
-		} else{
-			i = search_file(cmdline);
-			if(i != 0xFFFFFFFF){
-				j = system.file.list[i].size;
-				p = system.io.mem.alloc(j);
-				*((int *) 0x0fe0) = (int) p;
-				load_file(i, p);
-				if(j >= 8 && strncmp(p + 4, "Hari", 4) == 0){
-					p[0] = 0xe8;
-					p[1] = 0x16;
-					p[2] = 0x00;
-					p[3] = 0x00;
-					p[4] = 0x00;
-					p[5] = 0xcb;
-				}
-				set_segmdesc(system.sys.gdt + 1003, j - 1, (int)p, AR_CODE32_ER);
-				farcall(0, 1003 * 8);
-				system.io.mem.free(p, j);
-			} else{
-				cons_put_str(win, prompt, cursor, "Bad command...\n");
-			}
+		for(i = 0; i < 11 && cmdline[i] != 0x00; i++){
+			if(cmdline[i] <= ' ' || cmdline[i] == '.') break;
+		}
+		cmdline[i] = 0x00;
+		if(cons_app_hrb_start(cmdline) == 0xFFFFFFFF){
+			cons_put_str(win, prompt, cursor, "Bad Command...\n");
 		}
 	}
 	cons_reset_cmdline(cmdline, cmdlines, cmdline_overflow);
 	cons_new_line(win, prompt, cursor);
 end:
 	return;
+}
+
+uint cons_app_hrb_start(uchar *cmdline)
+{
+	uint i, j;
+	char *p;
+
+	i = search_file(cmdline);
+	if(i == 0xFFFFFFFF){
+		strcat(cmdline, ".hrb");
+		i = search_file(cmdline);
+	}
+	if(i != 0xFFFFFFFF){
+		j = system.file.list[i].size;
+		p = system.io.mem.alloc(j);
+		*((int *) 0x0fe0) = (int) p;
+		load_file(i, p);
+		if(j >= 8 && strncmp(p + 4, "Hari", 4) == 0){
+			p[0] = 0xe8;
+			p[1] = 0x16;
+			p[2] = 0x00;
+			p[3] = 0x00;
+			p[4] = 0x00;
+			p[5] = 0xcb;
+		}
+		set_segmdesc(system.sys.gdt + 1003, j - 1, (int)p, AR_CODE32_ER);
+		farcall(0, 1003 * 8);
+		system.io.mem.free(p, j);
+		return i;
+	}
+	return 0xFFFFFFFF;
 }
 
 void cons_put_str(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor, uchar *str)

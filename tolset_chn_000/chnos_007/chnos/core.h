@@ -493,6 +493,7 @@ void cons_reset_cmdline(uchar *cmdline, uint *cmdlines, bool *cmdline_overflow);
 void cons_command_start(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor, uchar *cmdline, uint *cmdlines, bool *cmdline_overflow);
 void cons_new_line_no_prompt(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor);
 void cons_put_char(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor, uchar c);
+uint cons_app_hrb_start(uchar *cmdline);
 
 /*mtask.c*/
 void task_init(void);
