@@ -1,12 +1,12 @@
 
 #include "core.h"
 
-struct TASKCTL *taskctl;
+UI_TaskControl *taskctl;
 
 void task_init(void)
 {
 	int i;
-	taskctl = (struct TASKCTL *)system.io.mem.alloc(sizeof(struct TASKCTL));
+	taskctl = (UI_TaskControl *)system.io.mem.alloc(sizeof(UI_TaskControl));
 	for(i = 0; i < MAX_TASKS; i++){
 		taskctl->tasks0[i].flags = initialized;
 		taskctl->tasks0[i].selector = (TASK_GDT_START + i) * 8;
@@ -40,10 +40,10 @@ void task_init(void)
 	return;
 }
 
-struct TASK *task_alloc(void)
+UI_Task *task_alloc(void)
 {
 	int i;
-	struct TASK *task;
+	UI_Task *task;
 	for(i = 0; i < MAX_TASKS; i++){
 		if(taskctl->tasks0[i].flags == initialized){
 			task = &taskctl->tasks0[i];
@@ -68,7 +68,7 @@ struct TASK *task_alloc(void)
 	return 0;
 }
 
-void task_run(struct TASK *task, int level, int priority)
+void task_run(UI_Task *task, int level, int priority)
 {
 	if(level < 0){
 		level = task->level;
@@ -87,7 +87,7 @@ void task_run(struct TASK *task, int level, int priority)
 
 void task_switch(void)
 {
-	struct TASK *new_task, *now_task = taskctl->level[taskctl->level_now].tasks[taskctl->level[taskctl->level_now].task_now];
+	UI_Task *new_task, *now_task = taskctl->level[taskctl->level_now].tasks[taskctl->level[taskctl->level_now].task_now];
 
 	taskctl->level[taskctl->level_now].task_now++;
 	if(taskctl->level[taskctl->level_now].task_now == taskctl->level[taskctl->level_now].running_tasks) taskctl->level[taskctl->level_now].task_now = 0;
@@ -100,9 +100,9 @@ void task_switch(void)
 	return;
 }
 
-void task_sleep(struct TASK *task)
+void task_sleep(UI_Task *task)
 {
-	struct TASK *now_task;
+	UI_Task *now_task;
 	int eflags;
 
 	eflags = io_load_eflags();
@@ -123,7 +123,7 @@ void task_sleep(struct TASK *task)
 	return;
 }
 
-void task_arguments(struct TASK *task, int args, ...)
+void task_arguments(UI_Task *task, int args, ...)
 {
 	int i;
 	va_list ap;
@@ -139,12 +139,12 @@ void task_arguments(struct TASK *task, int args, ...)
 	return; 
 }
 
-struct TASK *task_now(void)
+UI_Task *task_now(void)
 {
 	return taskctl->level[taskctl->level_now].tasks[taskctl->level[taskctl->level_now].task_now];
 }
 
-void task_add(struct TASK *task)
+void task_add(UI_Task *task)
 {
 	taskctl->level[task->level].tasks[taskctl->level[task->level].running_tasks] = task;
 	taskctl->level[task->level].running_tasks++;
@@ -152,7 +152,7 @@ void task_add(struct TASK *task)
 	return;	
 }
 
-void task_remove(struct TASK *task)
+void task_remove(UI_Task *task)
 {
 	int i;
 	for(i = 0; i < taskctl->level[task->level].running_tasks; i++){

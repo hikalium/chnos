@@ -4,8 +4,8 @@
 void init_system(void)
 {
 	uint i;
-	struct VESAINFO *vesa = (struct VESAINFO *) ADR_VESAINFO;
-	struct BOOTINFO *boot = (struct BOOTINFO *) ADR_BOOTINFO;
+	DATA_VESAInfo *vesa = (DATA_VESAInfo *) ADR_VESAINFO;
+	DATA_BootInfo *boot = (DATA_BootInfo *) ADR_BOOTINFO;
 
 	i = memtest(0x00400000, 0xbfffffff);
 	i -= sizeof(struct SYSTEM);
@@ -89,11 +89,11 @@ void init_system(void)
 	system.sys.xsize				= system.info.boot.scrnx;
 	system.sys.ysize				= system.info.boot.scrny;
 	system.sys.bpp					= system.info.vesa.BitsPerPixel;
-	system.sys.gdt					= (struct SEGMENT_DESCRIPTOR *)0x00270000;	/*0x270000-0x27ffff*/
-	system.sys.idt					= (struct GATE_DESCRIPTOR *)0x0026f800;		/*0x26f800-0x26ffff*/
+	system.sys.gdt					= (IO_SegmentDescriptor *)0x00270000;	/*0x270000-0x27ffff*/
+	system.sys.idt					= (IO_GateDescriptor *)0x0026f800;		/*0x26f800-0x26ffff*/
 	system.sys.keycmd_wait				= -1;
 
-	system.file.list				= (struct FILEINFO *)(ADR_DISKIMG + 0x00002600);
+	system.file.list				= (IO_FileInfo *)(ADR_DISKIMG + 0x00002600);
 
 	system.sys.cons.org_xsize			= (system.sys.xsize >> 1) & 0xfffffff7;
 	system.sys.cons.org_ysize			= (system.sys.ysize >> 1) & 0xffffffef;

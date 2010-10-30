@@ -185,7 +185,7 @@ void inthandler21(int *esp)
 	return;
 }
 
-int decode_key(struct KEYINFO *info, int data)
+int decode_key(UI_KeyInfo *info, int data)
 {
 	if(data == 0xfa){
 		system.sys.keycmd_wait = -1;

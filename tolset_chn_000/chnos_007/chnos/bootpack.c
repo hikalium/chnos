@@ -4,14 +4,14 @@
 
 struct SYSTEM *sys_main_str_buf;
 
-void check_newline(struct POSITION_2D *p, int line_x, int line_y);
+void check_newline(DATA_Position2D *p, int line_x, int line_y);
 
 void CHNMain(void)
 {
-	struct KEYINFO dec_key;
-	struct WINDOWINFO *testwin, *console_win;
-	struct POSITION_2D c_cursor;
-	struct TASK *console_task;
+	UI_KeyInfo dec_key;
+	UI_Window *testwin, *console_win;
+	DATA_Position2D c_cursor;
+	UI_Task *console_task;
 	uchar s[64];	
 	int i, mx = 0, my = 0;
 	bool cursor = false;
@@ -163,7 +163,7 @@ void CHNMain(void)
 	}
 }
 
-void check_newline(struct POSITION_2D *p, int line_x, int line_y)
+void check_newline(DATA_Position2D *p, int line_x, int line_y)
 {
 	if(p->x < 0){
 		if(p->y != 0){

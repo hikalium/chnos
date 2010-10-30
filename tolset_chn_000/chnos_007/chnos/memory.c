@@ -49,7 +49,7 @@ uint memtest(uint start, uint end)
 
 }
 
-void memman_init(struct MEMMAN *man)
+void memman_init(IO_MemoryControl *man)
 {
 	man->frees = 0;
 	man->maxfrees = 0;
@@ -58,7 +58,7 @@ void memman_init(struct MEMMAN *man)
 	return;
 }
 
-uint memman_free_total(struct MEMMAN *man)
+uint memman_free_total(IO_MemoryControl *man)
 {
 	uint i,t = 0;
 	for (i = 0; i < man->frees; i++) {
@@ -67,7 +67,7 @@ uint memman_free_total(struct MEMMAN *man)
 	return t;
 }
 
-void *memman_alloc(struct MEMMAN *man, uint size)
+void *memman_alloc(IO_MemoryControl *man, uint size)
 {
 	uint i,a;
 	for(i = 0; i < man->frees; i++) {
@@ -87,7 +87,7 @@ void *memman_alloc(struct MEMMAN *man, uint size)
 	return 0;
 }
 
-int memman_free(struct MEMMAN *man, void *addr0, uint size)
+int memman_free(IO_MemoryControl *man, void *addr0, uint size)
 {
 	int i, j;
 	uint addr;
@@ -134,7 +134,7 @@ int memman_free(struct MEMMAN *man, void *addr0, uint size)
 	return -1;
 }
 
-void *memman_alloc_4k(struct MEMMAN *man, uint size)
+void *memman_alloc_4k(IO_MemoryControl *man, uint size)
 {
 	void *a;
 	size = (size + 0xfff) & 0xfffff000;
@@ -142,7 +142,7 @@ void *memman_alloc_4k(struct MEMMAN *man, uint size)
 	return a;
 }
 
-int memman_free_4k(struct MEMMAN *man, void *addr, uint size)
+int memman_free_4k(IO_MemoryControl *man, void *addr, uint size)
 {
 	int i;
 	size = (size + 0xfff) & 0xfffff000;

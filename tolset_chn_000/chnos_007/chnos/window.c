@@ -1,10 +1,10 @@
 #include "core.h"
 
-struct WINCTL *wctl;
+UI_WindowControl *wctl;
 
-void scrool_win_8(struct WINDOWINFO *winfo, uchar *vram);
-void scrool_win_16(struct WINDOWINFO *winfo, ushort *vram);
-void scrool_win_32(struct WINDOWINFO *winfo, uint *vram);
+void scrool_win_8(UI_Window *winfo, uchar *vram);
+void scrool_win_16(UI_Window *winfo, ushort *vram);
+void scrool_win_32(UI_Window *winfo, uint *vram);
 
 char closebtn[16][40] = {
 	"OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO@",
@@ -28,7 +28,7 @@ char closebtn[16][40] = {
 void init_windows(void)
 {
 	int i;
-	wctl = (struct WINCTL *)memman_alloc_4k(&system.sys.memman, sizeof(struct WINCTL));
+	wctl = (UI_WindowControl *)memman_alloc_4k(&system.sys.memman, sizeof(UI_WindowControl));
 	if(wctl == 0) goto err;
 	for(i = 0;i < MAX_WINDOWS;i++){
 		wctl->winfos[i].flags = initialized;
@@ -39,9 +39,9 @@ err:
 
 }
 
-struct WINDOWINFO *window_alloc(void)
+UI_Window *window_alloc(void)
 {
-	struct WINDOWINFO *win;
+	UI_Window *win;
 	int i;
 	for(i = 0;i < MAX_WINDOWS;i++){
 		if(wctl->winfos[i].flags == initialized){
@@ -53,9 +53,9 @@ struct WINDOWINFO *window_alloc(void)
 	return 0;
 }
 
-struct WINDOWINFO *make_window(uchar *title, int xsize, int ysize, int px, int py, int height, bool active)
+UI_Window *make_window(uchar *title, int xsize, int ysize, int px, int py, int height, bool active)
 {
-	struct WINDOWINFO *winfo = window_alloc();
+	UI_Window *winfo = window_alloc();
 
 	if(winfo == 0) goto err;
 	winfo->winxsize = xsize + 8;
@@ -80,7 +80,7 @@ err:
 	return winfo;
 }
 
-void change_window(struct WINDOWINFO *winfo, uchar *title, bool active)
+void change_window(UI_Window *winfo, uchar *title, bool active)
 {
 	uint color = 0;
 	int x = 0, y = 0;
@@ -126,17 +126,17 @@ void change_window(struct WINDOWINFO *winfo, uchar *title, bool active)
 	return;
 }
 
-void change_window_title(struct WINDOWINFO *winfo, uchar *title)
+void change_window_title(UI_Window *winfo, uchar *title)
 {
 	change_window(winfo, title, winfo->active);
 }
 
-void change_window_active(struct WINDOWINFO *winfo, bool active)
+void change_window_active(UI_Window *winfo, bool active)
 {
 	change_window(winfo, winfo->title, active);
 }
 
-void slide_window(struct WINDOWINFO *winfo, int px, int py)
+void slide_window(UI_Window *winfo, int px, int py)
 {
 	winfo->position.x = px;
 	winfo->position.y = py;
@@ -145,19 +145,19 @@ void slide_window(struct WINDOWINFO *winfo, int px, int py)
 	return;
 }
 
-void refresh_window(struct WINDOWINFO *winfo)
+void refresh_window(UI_Window *winfo)
 {
 	sheet_refresh_full(winfo->win);
 	return;
 }
 
-void refresh_window_alpha(struct WINDOWINFO *winfo)
+void refresh_window_alpha(UI_Window *winfo)
 {
 	sheet_refresh_full_alpha(winfo->win);
 	return;
 }
 
-void boxfill_win(struct WINDOWINFO *winfo, uint c, int x0, int y0, int x1, int y1)
+void boxfill_win(UI_Window *winfo, uint c, int x0, int y0, int x1, int y1)
 {
 	if(x0 < 0 || y0 < 0 || x1 > winfo->xsize || y1 > winfo->ysize) goto err;
 
@@ -167,7 +167,7 @@ err:
 	return;
 }
 
-void putfonts_win(struct WINDOWINFO *winfo, int x, int y, uint c, uint bc, const uchar *s)
+void putfonts_win(UI_Window *winfo, int x, int y, uint c, uint bc, const uchar *s)
 {
 	if(x < 0 || y < 0 || x > winfo->xsize || y > winfo->ysize) goto err;
 	putfonts_asc_sht_i(winfo->win, x + winfo->origin.x, y + winfo->origin.y, c, bc, s);
@@ -175,7 +175,7 @@ err:
 	return;
 }
 
-void scrool_win(struct WINDOWINFO *winfo)
+void scrool_win(UI_Window *winfo)
 {
 	if(system.sys.bpp == 8) scrool_win_8(winfo, winfo->buf);
 	else if(system.sys.bpp == 16) scrool_win_16(winfo, winfo->buf);
@@ -184,7 +184,7 @@ void scrool_win(struct WINDOWINFO *winfo)
 	return;
 }
 
-void scrool_win_32(struct WINDOWINFO *winfo, uint *vram)
+void scrool_win_32(UI_Window *winfo, uint *vram)
 {
 	int x, y;
 
@@ -196,7 +196,7 @@ void scrool_win_32(struct WINDOWINFO *winfo, uint *vram)
 	return;
 }
 
-void scrool_win_16(struct WINDOWINFO *winfo, ushort *vram)
+void scrool_win_16(UI_Window *winfo, ushort *vram)
 {
 	int x, y;
 
@@ -208,7 +208,7 @@ void scrool_win_16(struct WINDOWINFO *winfo, ushort *vram)
 	return;
 }
 
-void scrool_win_8(struct WINDOWINFO *winfo, uchar *vram)
+void scrool_win_8(UI_Window *winfo, uchar *vram)
 {
 	int x, y;
 
@@ -220,13 +220,13 @@ void scrool_win_8(struct WINDOWINFO *winfo, uchar *vram)
 	return;
 }
 
-void line_win(struct WINDOWINFO *winfo, int x0, int y0, int x1, int y1, uint c)
+void line_win(UI_Window *winfo, int x0, int y0, int x1, int y1, uint c)
 {
 	line_i(winfo->buf, winfo->winxsize, x0 + winfo->origin.x, y0 + winfo->origin.y, x1 + winfo->origin.x, y1 + winfo->origin.y, c);
 	return;
 }
 
-void draw_hexagon_win(struct WINDOWINFO *winfo, int a, int x, int y, uint c)
+void draw_hexagon_win(UI_Window *winfo, int a, int x, int y, uint c)
 {
 	draw_hexagon_i(winfo->buf, winfo->winxsize, a, x + winfo->origin.x, y + winfo->origin.y, c);
 	return;

@@ -4,8 +4,8 @@
 void init_gdtidt(void)
 {
 	int i;
-	struct SEGMENT_DESCRIPTOR *gdt = system.sys.gdt;
-	struct GATE_DESCRIPTOR *idt = system.sys.idt;
+	IO_SegmentDescriptor *gdt = system.sys.gdt;
+	IO_GateDescriptor *idt = system.sys.idt;
 
 	for(i =0; i < 8192; i++){
 		set_segmdesc(gdt + i, 0, 0, 0);
@@ -62,7 +62,7 @@ void init_gdtidt(void)
 	return;
 }
 
-void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, uint limit, int base, int ar)
+void set_segmdesc(IO_SegmentDescriptor *sd, uint limit, int base, int ar)
 {
 	if(limit > 0xfffff){
 		ar |= 0x8000;
@@ -77,7 +77,7 @@ void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, uint limit, int base, int ar)
 	return;
 }
 
-void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar)
+void set_gatedesc(IO_GateDescriptor *gd, int offset, int selector, int ar)
 {
 	gd->offset_low		= offset & 0xffff;
 	gd->selector		= selector;

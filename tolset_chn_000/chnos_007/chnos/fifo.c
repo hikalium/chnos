@@ -1,7 +1,7 @@
 
 #include "core.h"
 
-void fifo32_init(struct FIFO32 *fifo, int size, uint *buf, struct TASK *task)
+void fifo32_init(DATA_FIFO *fifo, int size, uint *buf, UI_Task *task)
 {
 	fifo->size = size;
 	fifo->buf = buf;
@@ -13,7 +13,7 @@ void fifo32_init(struct FIFO32 *fifo, int size, uint *buf, struct TASK *task)
 	return;
 }
 
-int fifo32_put(struct FIFO32 *fifo, uint data)
+int fifo32_put(DATA_FIFO *fifo, uint data)
 {
 	int eflags;
 
@@ -40,7 +40,7 @@ int fifo32_put(struct FIFO32 *fifo, uint data)
 
 }
 
-int fifo32_get(struct FIFO32 *fifo)
+int fifo32_get(DATA_FIFO *fifo)
 {
 	int data;
 	if (fifo->free == fifo->size) {
@@ -55,7 +55,7 @@ int fifo32_get(struct FIFO32 *fifo)
 	return data;
 }
 
-int fifo32_status(struct FIFO32 *fifo)
+int fifo32_status(DATA_FIFO *fifo)
 {
 	return fifo->size - fifo->free;
 }

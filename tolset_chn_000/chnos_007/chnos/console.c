@@ -2,12 +2,12 @@
 #include "core.h"
 #include <string.h>
 
-void console_main(struct WINDOWINFO *win)
+void console_main(UI_Window *win)
 {
-	struct TIMER *timer;
-	struct TASK *task = task_now();
-	struct POSITION_2D cursor;
-	struct POSITION_2D prompt;
+	UI_Timer *timer;
+	UI_Task *task = task_now();
+	DATA_Position2D cursor;
+	DATA_Position2D prompt;
 	bool cursor_state = true;
 	bool cursor_on = false;
 	int i;
@@ -98,7 +98,7 @@ void cons_reset_cmdline(uchar *cmdline, uint *cmdlines, bool *cmdline_overflow)
 	return;
 }
 
-void cons_command_start(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, uchar *cmdline, uint *cmdlines, bool *cmdline_overflow)
+void cons_command_start(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor, uchar *cmdline, uint *cmdlines, bool *cmdline_overflow)
 {
 	uchar s[128], t[7];
 	uint i, j;
@@ -209,7 +209,7 @@ end:
 	return;
 }
 
-void cons_put_str(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, uchar *str)
+void cons_put_str(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor, uchar *str)
 {
 	int i;
 	uchar s[3];
@@ -239,7 +239,7 @@ void cons_put_str(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POS
 	return;
 }
 
-void cons_put_char(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor, uchar c)
+void cons_put_char(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor, uchar c)
 {
 	uchar s[2];
 	s[0] = c;
@@ -248,7 +248,7 @@ void cons_put_char(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct PO
 	return;
 }
 
-void cons_put_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor)
+void cons_put_prompt(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor)
 {
 	putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
 	putfonts_win(win, prompt->x, prompt->y, CONSOLE_COLOR_CHAR, CONSOLE_COLOR_BACKGROUND, ">");
@@ -257,7 +257,7 @@ void cons_put_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct 
 	return;
 }
 
-void cons_new_line(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor)
+void cons_new_line(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor)
 {
 	if(cursor->y <= system.sys.cons.org_ysize - 17){
 		prompt->y = cursor->y + 16;
@@ -271,7 +271,7 @@ void cons_new_line(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct PO
 	return;
 }
 
-void cons_new_line_no_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt, struct POSITION_2D *cursor)
+void cons_new_line_no_prompt(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor)
 {
 	if(cursor->y <= system.sys.cons.org_ysize - 17){
 		putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
@@ -285,14 +285,14 @@ void cons_new_line_no_prompt(struct WINDOWINFO *win, struct POSITION_2D *prompt,
 	return;
 }
 
-void cons_slide_line(struct WINDOWINFO *win)
+void cons_slide_line(UI_Window *win)
 {
 	scrool_win(win);
 	refresh_window(win);
 	return;
 }
 
-void cons_check_newline(struct WINDOWINFO *win, struct POSITION_2D *p, struct POSITION_2D *prompt)
+void cons_check_newline(UI_Window *win, DATA_Position2D *p, DATA_Position2D *prompt)
 {
 	if(p->x <= prompt->x){
 		if(p->y != prompt->y){

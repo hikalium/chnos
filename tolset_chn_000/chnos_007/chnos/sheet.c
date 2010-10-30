@@ -1,7 +1,7 @@
 
 #include "core.h"
 
-struct SHTCTL *ctl;
+UI_SheetControl *ctl;
 void (*sheet_refreshsub)(int vx0, int vy0, int vx1, int vy1, int h0, int h1);
 void (*sheet_refreshmap)(int vx0, int vy0, int vx1, int vy1, int h0);
 
@@ -22,11 +22,11 @@ void init_sheets(void *vram, int xsize, int ysize, uchar bits)
 			sheet_refreshmap = sheet_refreshmap32;
 			break;
 	}	
-	ctl = (struct SHTCTL *)sys_memman_alloc(sizeof(struct SHTCTL));
+	ctl = (UI_SheetControl *)sys_memman_alloc(sizeof(UI_SheetControl));
 	if(ctl == 0) goto err;
 	ctl->map = (uint *)sys_memman_alloc(xsize * ysize * 4);
 	if(ctl->map == 0){
-		sys_memman_free(ctl, sizeof(struct SHTCTL));
+		sys_memman_free(ctl, sizeof(UI_SheetControl));
 		goto err;
 	}
 	ctl->vram = vram;
@@ -41,9 +41,9 @@ err:
 
 }
 
-struct SHEET32 *sheet_alloc(void)
+UI_Sheet *sheet_alloc(void)
 {
-	struct SHEET32 *sht;
+	UI_Sheet *sht;
 	int i;
 	for(i = 0;i < MAX_SHEETS;i++){
 		if(ctl->sheets0[i].flags == initialized){
@@ -56,7 +56,7 @@ struct SHEET32 *sheet_alloc(void)
 	return 0;
 }
 
-void sheet_setbuf(struct SHEET32 *sht, void *buf,int xsize, int ysize, uint col_inv)
+void sheet_setbuf(UI_Sheet *sht, void *buf,int xsize, int ysize, uint col_inv)
 {
 	sht->buf = buf;
 	sht->bxsize = xsize;
@@ -65,7 +65,7 @@ void sheet_setbuf(struct SHEET32 *sht, void *buf,int xsize, int ysize, uint col_
 	return;
 }
 
-void sheet_updown(struct SHEET32 *sht, int height)
+void sheet_updown(UI_Sheet *sht, int height)
 {
 	int h, old = sht->height;
 	if(height > ctl->top + 1) height = ctl->top + 1;
@@ -113,7 +113,7 @@ void sheet_updown(struct SHEET32 *sht, int height)
 	return;
 }
 
-void sheet_refresh(struct SHEET32 *sht, int bx0, int by0, int bx1, int by1)
+void sheet_refresh(UI_Sheet *sht, int bx0, int by0, int bx1, int by1)
 {
 	if(sht->height >= 0){
 		sheet_refreshsub(sht->vx0 + bx0, sht->vy0 + by0, sht->vx0 + bx1, sht->vy0 + by1 , sht->height, sht->height);
@@ -121,18 +121,18 @@ void sheet_refresh(struct SHEET32 *sht, int bx0, int by0, int bx1, int by1)
 	return;
 }
 
-void sheet_refresh_full_alpha(struct SHEET32 *sht)
+void sheet_refresh_full_alpha(UI_Sheet *sht)
 {
 	sheet_refreshmap(sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, sht->height);
 	sheet_refresh_full(sht);
 }
 
-void sheet_refresh_full(struct SHEET32 *sht)
+void sheet_refresh_full(UI_Sheet *sht)
 {
 	sheet_refresh(sht, 0, 0, sht->bxsize, sht->bysize);
 }
 
-void sheet_slide(struct SHEET32 *sht, int vx0, int vy0)
+void sheet_slide(UI_Sheet *sht, int vx0, int vy0)
 {
 	int old_vx0 = sht->vx0, old_vy0 = sht->vy0;
 	sht->vx0 = vx0;
@@ -146,7 +146,7 @@ void sheet_slide(struct SHEET32 *sht, int vx0, int vy0)
 	return;
 }
 
-void sheet_free(struct SHEET32 *sht)
+void sheet_free(UI_Sheet *sht)
 {
 	if(sht->height >= 0) sheet_updown(sht, -1);
 	sht->flags = initialized;
@@ -158,7 +158,7 @@ void sheet_refreshsub32(int vx0, int vy0, int vx1, int vy1, int h0, int h1)
 	int h, bx, by, vx, vy, bx0, by0, bx1, by1;
 	uint *map = ctl->map,sid;
 	uint *buf, *vram = (uint *)ctl->vram;
-	struct SHEET32 *sht;
+	UI_Sheet *sht;
 
 	if(vx0 < 0) vx0 = 0;
 	if(vy0 < 0) vy0 = 0;
@@ -192,7 +192,7 @@ void sheet_refreshsub16(int vx0, int vy0, int vx1, int vy1, int h0, int h1)
 	int h, bx, by, vx, vy, bx0, by0, bx1, by1;
 	uint *map = ctl->map,sid;
 	ushort *buf, *vram = (ushort *)ctl->vram;
-	struct SHEET32 *sht;
+	UI_Sheet *sht;
 
 	if(vx0 < 0) vx0 = 0;
 	if(vy0 < 0) vy0 = 0;
@@ -226,7 +226,7 @@ void sheet_refreshsub8(int vx0, int vy0, int vx1, int vy1, int h0, int h1)
 	int h, bx, by, vx, vy, bx0, by0, bx1, by1;
 	uint *map = ctl->map,sid;
 	uchar *buf, *vram = (uchar *)ctl->vram;
-	struct SHEET32 *sht;
+	UI_Sheet *sht;
 
 	if(vx0 < 0) vx0 = 0;
 	if(vy0 < 0) vy0 = 0;
@@ -260,7 +260,7 @@ void sheet_refreshmap32(int vx0, int vy0, int vx1, int vy1, int h0)
 	int h, bx, by, vx, vy, bx0, by0, bx1, by1;
 	uint sid, *map = ctl->map;
 	uint *buf;
-	struct SHEET32 *sht;
+	UI_Sheet *sht;
 
 	if(vx0 < 0) vx0 = 0;
 	if(vy0 < 0) vy0 = 0;
@@ -294,7 +294,7 @@ void sheet_refreshmap16(int vx0, int vy0, int vx1, int vy1, int h0)
 	int h, bx, by, vx, vy, bx0, by0, bx1, by1;
 	uint sid, *map = ctl->map;
 	ushort *buf;
-	struct SHEET32 *sht;
+	UI_Sheet *sht;
 
 	if(vx0 < 0) vx0 = 0;
 	if(vy0 < 0) vy0 = 0;
@@ -328,7 +328,7 @@ void sheet_refreshmap8(int vx0, int vy0, int vx1, int vy1, int h0)
 	int h, bx, by, vx, vy, bx0, by0, bx1, by1;
 	uint sid, *map = ctl->map;
 	uchar *buf;
-	struct SHEET32 *sht;
+	UI_Sheet *sht;
 
 	if(vx0 < 0) vx0 = 0;
 	if(vy0 < 0) vy0 = 0;

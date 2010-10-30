@@ -3,7 +3,7 @@
 
 void inthandler20(int *esp)
 {
-	struct TIMER *timer;
+	UI_Timer *timer;
 	char ts = 0;
 	system.sys.timctl.count++;
 	io_out8(PIC0_OCW2, 0x60);	/* IRQ-00受付完了をPICに通知 。0x60+番号。*/
@@ -28,7 +28,7 @@ void inthandler20(int *esp)
 void init_pit(void)
 {
 	int i;
-	struct TIMER *watch;
+	UI_Timer *watch;
 	for(i = 0; i < MAX_TIMER; i++) {
 		system.sys.timctl.timer[i].flags = initialized;
 	}
@@ -46,7 +46,7 @@ void init_pit(void)
 	return;
 }
 
-struct TIMER *timer_alloc(void)
+UI_Timer *timer_alloc(void)
 {
 	int i;
 	for(i = 0; i < MAX_TIMER; i++){
@@ -58,23 +58,23 @@ struct TIMER *timer_alloc(void)
 	return 0;
 }
 
-void timer_free(struct TIMER *timer)
+void timer_free(UI_Timer *timer)
 {
 	timer->flags = initialized;
 	return;
 }
 
-void timer_init(struct TIMER *timer, struct FIFO32 *fifo, uint data)
+void timer_init(UI_Timer *timer, DATA_FIFO *fifo, uint data)
 {
 	timer->fifo = fifo;
 	timer->data = data;
 	return;
 }
 
-void timer_settime(struct TIMER *timer, uint timeout)
+void timer_settime(UI_Timer *timer, uint timeout)
 {
 	int ef;
-	struct TIMER *t, *s;
+	UI_Timer *t, *s;
 	timer->timeout = timeout + system.sys.timctl.count;
 	timer->flags = inuse;
 	ef = io_load_eflags();

@@ -50,7 +50,7 @@ char cursor[24][24] = {
 	"***.....................",
 };
 
-void putfonts_asc_sht_i(struct SHEET32 *sht, int x, int y, uint c, uint bc, const uchar *s)
+void putfonts_asc_sht_i(UI_Sheet *sht, int x, int y, uint c, uint bc, const uchar *s)
 {
 	int l;
 	l = strlen(s);
