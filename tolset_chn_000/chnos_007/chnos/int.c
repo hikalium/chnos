@@ -100,7 +100,7 @@ char *cpu_exception_infos[16] = {
 	"APP's SS "
 };
 
-void cpu_exception_alert(int exception, int *esp)
+void cpu_exception_abort(int exception, int *esp)
 {
 	int i;
 	char s[32];
@@ -130,163 +130,171 @@ void cpu_exception_alert(int exception, int *esp)
 	}
 }
 
+uint cpu_exception_fault(int exception, int *esp)
+{
+	UI_Task *task = task_now();
+
+	cons_put_str((UI_Window *) *((int *) 0x0fec), (DATA_Position2D *) *((int *) 0x0fe8), (DATA_Position2D *) *((int *) 0x0fe4), (uchar *)cpu_exceptions[exception]);
+	return (uint)&(task->tss.esp0);
+}
+
 void inthandler00(int *esp)
 {
-	cpu_exception_alert(0x00, esp);
+	cpu_exception_abort(0x00, esp);
 }
 
 void inthandler01(int *esp)
 {
-	cpu_exception_alert(0x01, esp);
+	cpu_exception_abort(0x01, esp);
 }
 
 void inthandler02(int *esp)
 {
-	cpu_exception_alert(0x02, esp);
+	cpu_exception_abort(0x02, esp);
 }
 
 void inthandler03(int *esp)
 {
-	cpu_exception_alert(0x03, esp);
+	cpu_exception_abort(0x03, esp);
 }
 
 void inthandler04(int *esp)
 {
-	cpu_exception_alert(0x04, esp);
+	cpu_exception_abort(0x04, esp);
 }
 
 void inthandler05(int *esp)
 {
-	cpu_exception_alert(0x05, esp);
+	cpu_exception_abort(0x05, esp);
 }
 
 void inthandler06(int *esp)
 {
-	cpu_exception_alert(0x06, esp);
+	cpu_exception_abort(0x06, esp);
 }
 
 void inthandler07(int *esp)
 {
-	cpu_exception_alert(0x07, esp);
+	cpu_exception_abort(0x07, esp);
 }
 
 void inthandler08(int *esp)
 {
-	cpu_exception_alert(0x08, esp);
+	cpu_exception_abort(0x08, esp);
 }
 
 void inthandler09(int *esp)
 {
-	cpu_exception_alert(0x09, esp);
+	cpu_exception_abort(0x09, esp);
 }
 
 void inthandler0a(int *esp)
 {
-	cpu_exception_alert(0x0a, esp);
+	cpu_exception_abort(0x0a, esp);
 }
 
 void inthandler0b(int *esp)
 {
-	cpu_exception_alert(0x0b, esp);
+	cpu_exception_abort(0x0b, esp);
 }
 
 void inthandler0c(int *esp)
 {
-	cpu_exception_alert(0x0c, esp);
+	cpu_exception_abort(0x0c, esp);
 }
 
 void inthandler0d(int *esp)
 {
-	cpu_exception_alert(0x0d, esp);
+	cpu_exception_fault(0x0d, esp);
 }
 
 void inthandler0e(int *esp)
 {
-	cpu_exception_alert(0x0e, esp);
+	cpu_exception_abort(0x0e, esp);
 }
 
 void inthandler0f(int *esp)
 {
-	cpu_exception_alert(0x0f, esp);
+	cpu_exception_abort(0x0f, esp);
 }
 
 void inthandler10(int *esp)
 {
-	cpu_exception_alert(0x10, esp);
+	cpu_exception_abort(0x10, esp);
 }
 
 void inthandler11(int *esp)
 {
-	cpu_exception_alert(0x11, esp);
+	cpu_exception_abort(0x11, esp);
 }
 
 void inthandler12(int *esp)
 {
-	cpu_exception_alert(0x12, esp);
+	cpu_exception_abort(0x12, esp);
 }
 
 void inthandler13(int *esp)
 {
-	cpu_exception_alert(0x13, esp);
+	cpu_exception_abort(0x13, esp);
 }
 
 void inthandler14(int *esp)
 {
-	cpu_exception_alert(0x14, esp);
+	cpu_exception_abort(0x14, esp);
 }
 
 void inthandler15(int *esp)
 {
-	cpu_exception_alert(0x15, esp);
+	cpu_exception_abort(0x15, esp);
 }
 
 void inthandler16(int *esp)
 {
-	cpu_exception_alert(0x16, esp);
+	cpu_exception_abort(0x16, esp);
 }
 
 void inthandler17(int *esp)
 {
-	cpu_exception_alert(0x17, esp);
+	cpu_exception_abort(0x17, esp);
 }
 
 void inthandler18(int *esp)
 {
-	cpu_exception_alert(0x18, esp);
+	cpu_exception_abort(0x18, esp);
 }
 
 void inthandler19(int *esp)
 {
-	cpu_exception_alert(0x19, esp);
+	cpu_exception_abort(0x19, esp);
 }
 
 void inthandler1a(int *esp)
 {
-	cpu_exception_alert(0x1a, esp);
+	cpu_exception_abort(0x1a, esp);
 }
 
 void inthandler1b(int *esp)
 {
-	cpu_exception_alert(0x1b, esp);
+	cpu_exception_abort(0x1b, esp);
 }
 
 void inthandler1c(int *esp)
 {
-	cpu_exception_alert(0x1c, esp);
+	cpu_exception_abort(0x1c, esp);
 }
 
 void inthandler1d(int *esp)
 {
-	cpu_exception_alert(0x1d, esp);
+	cpu_exception_abort(0x1d, esp);
 }
 
 void inthandler1e(int *esp)
 {
-	cpu_exception_alert(0x1e, esp);
+	cpu_exception_abort(0x1e, esp);
 }
 
 void inthandler1f(int *esp)
 {
-	cpu_exception_alert(0x1f, esp);
+	cpu_exception_abort(0x1f, esp);
 }
 

@@ -64,6 +64,7 @@ typedef unsigned int uint;
 #define AR_LDT		0x0082
 #define AR_TSS32	0x0089
 #define AR_INTGATE32	0x008e
+#define AR_APP		0x60
 
 #define MEMMAN_FREES	4096
 
@@ -475,7 +476,7 @@ extern char cursor[24][24];
 /*functions*/
 
 /*api.c*/
-void hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ecx, uint eax);
+uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ecx, uint eax);
 
 /*file.c*/
 void decode_fat(ushort *fat, bool backup);
@@ -539,6 +540,7 @@ int decode_mouse(int data);
 
 /*int.c*/
 void cpu_exception_alert(int exception, int *esp);
+uint cpu_exception_fault(int exception, int *esp);
 void init_pic(void);
 void inthandler27(int *esp);
 

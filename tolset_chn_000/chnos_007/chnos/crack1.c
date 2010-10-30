@@ -1,8 +1,7 @@
-void api_putchar(unsigned char c);
 void api_end(void);
 
 void CHNMain(void)
 {
-	api_putchar('A');
+	*((char *)0x00102600) = 0;
 	api_end();
 }

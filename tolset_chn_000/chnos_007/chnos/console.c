@@ -181,7 +181,8 @@ end:
 uint cons_app_hrb_start(uchar *cmdline)
 {
 	uint i, j;
-	char *p;
+	char *p, *q;
+	UI_Task *task = task_now();
 
 	i = search_file(cmdline);
 	if(i == 0xFFFFFFFF){
@@ -191,6 +192,7 @@ uint cons_app_hrb_start(uchar *cmdline)
 	if(i != 0xFFFFFFFF){
 		j = system.file.list[i].size;
 		p = system.io.mem.alloc(j);
+		q = system.io.mem.alloc(64 * 1024);
 		*((int *) 0x0fe0) = (int) p;
 		load_file(i, p);
 		if(j >= 8 && strncmp(p + 4, "Hari", 4) == 0){
@@ -201,9 +203,11 @@ uint cons_app_hrb_start(uchar *cmdline)
 			p[4] = 0x00;
 			p[5] = 0xcb;
 		}
-		set_segmdesc(system.sys.gdt + 1003, j - 1, (int)p, AR_CODE32_ER);
-		farcall(0, 1003 * 8);
+		set_segmdesc(system.sys.gdt + 1003, j - 1, (int)p, AR_CODE32_ER + AR_APP);
+		set_segmdesc(system.sys.gdt + 1004, 64 * 1024 - 1, (int)q, AR_DATA32_RW + AR_APP);
+		start_app(0, 1003 * 8, 64 * 1024, 1004 * 8, &(task->tss.esp0));
 		system.io.mem.free(p, j);
+		system.io.mem.free(q, 64 * 1024);
 		return i;
 	}
 	return 0xFFFFFFFF;
