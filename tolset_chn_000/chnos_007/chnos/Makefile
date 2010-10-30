@@ -1,5 +1,4 @@
 
-#OBJS_BOOTPACK = naskfunc.obj hankaku.obj graphic.obj grap_08.obj grap_16.obj grap_32.obj gdtidt.obj int.obj io.obj fifo.obj keyboard.obj timer.obj mouse.obj memory.obj sheet.obj window.obj system.obj bootpack.obj
 OBJS_BOOTPACK = naskfunc.obj hankaku.obj grap_08.obj grap_16.obj grap_32.obj graphic.obj memory.obj sheet.obj fifo.obj init.obj gdtidt.obj int.obj mouse.obj keyboard.obj timer.obj window.obj io.obj mtask.obj console.obj file.obj api.obj bootpack.obj
 TOOLPATH = ../../z_tools/
 INCPATH  = ../../z_tools/CHNOSProject/
@@ -77,6 +76,12 @@ crack1.bim : crack1.obj a_nask.obj Makefile
 crack1.hrb : crack1.bim Makefile
 	$(BIM2HRB) crack1.bim crack1.hrb 0
 
+bug1.bim : bug1.obj a_nask.obj Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:bug1.bim map:bug1.map bug1.obj a_nask.obj
+
+bug1.hrb : bug1.bim Makefile
+	$(BIM2HRB) bug1.bim bug1.hrb 0
+
 bootpack.bim : $(OBJS_BOOTPACK) Makefile
 	$(OBJ2BIM) @$(RULEFILE) out:bootpack.bim stack:3136k map:bootpack.map \
 		$(OBJS_BOOTPACK)
@@ -88,7 +93,7 @@ bootpack.hrb : bootpack.bim Makefile
 chnos.sys : asmhead.bin bootpack.hrb Makefile
 	copy /B asmhead.bin+bootpack.hrb chnos.sys
 
-chnos.img : chnipl.bin chnos.sys hello.hrb hello2.hrb hello3.hrb crack1.hrb crack2.hrb a.hrb Makefile
+chnos.img : chnipl.bin chnos.sys hello.hrb hello2.hrb hello3.hrb crack1.hrb crack2.hrb bug1.hrb a.hrb Makefile
 	$(EDIMG)   imgin:../../z_tools/fdimg0at.tek \
 		wbinimg src:chnipl.bin len:512 from:0 to:0 \
 		copy from:chnos.sys to:@: \
@@ -120,6 +125,7 @@ chnos.img : chnipl.bin chnos.sys hello.hrb hello2.hrb hello3.hrb crack1.hrb crac
 		copy from:hello3.hrb to:@: \
 		copy from:crack1.hrb to:@: \
 		copy from:crack2.hrb to:@: \
+		copy from:bug1.hrb to:@: \
 		imgout:chnos.img 
 
 #ˆê”Ê‹K‘¥

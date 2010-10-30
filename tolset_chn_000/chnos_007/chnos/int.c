@@ -59,8 +59,8 @@ char *cpu_exceptions[0x20] = {
 	"Exception 0x09:Coprocessor Segment Overrun.",
 	"Exception 0x0a:Invalid task status segment.",
 	"Exception 0x0b:Segment absent.",
-	"Exception 0x0c:Stack Segment Fault.",
-	"Exception 0x0d:General Protection Exception.",
+	"\nException 0x0c:Stack Segment Fault.",
+	"\nException 0x0d:General Protection Exception.",
 	"Exception 0x0e:Page fault.",
 	"Exception 0x0f:Reserved.",
 	"Exception 0x10:Floating point error.",
@@ -200,7 +200,7 @@ void inthandler0b(int *esp)
 
 void inthandler0c(int *esp)
 {
-	cpu_exception_abort(0x0c, esp);
+	cpu_exception_fault(0x0c, esp);
 }
 
 void inthandler0d(int *esp)
