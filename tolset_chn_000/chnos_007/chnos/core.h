@@ -135,6 +135,18 @@ typedef unsigned int uint;
 
 /*structures*/
 
+struct FORMAT_HRB {
+	uint DataSegmentSize;
+	uchar sign[4];
+	uint DataSegmentExtSize;
+	uint DefaultESP;
+	uint TransferToDataSegBytes;
+	uint OriginDataSection;
+	uint JMPCode;
+	uint EntryPoint;
+	uint StartMallocAddr;
+};
+
 struct FILEINFO {
 	uchar name[8];
 	uchar ext[3];
@@ -326,6 +338,7 @@ typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
 typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
 typedef struct BOOTINFO			DATA_BootInfo;
 typedef struct VESAINFO			DATA_VESAInfo;
+typedef struct FORMAT_HRB		FORMAT_Haribote;
 
 /*virtualclasses*/
 struct SYSTEM {

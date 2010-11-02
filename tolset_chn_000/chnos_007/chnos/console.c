@@ -183,6 +183,7 @@ uint cons_app_hrb_start(uchar *cmdline)
 	uint i, j;
 	char *p, *q;
 	UI_Task *task = task_now();
+	FORMAT_Haribote *head;
 
 	i = search_file(cmdline);
 	if(i == 0xFFFFFFFF){
@@ -192,22 +193,22 @@ uint cons_app_hrb_start(uchar *cmdline)
 	if(i != 0xFFFFFFFF){
 		j = system.file.list[i].size;
 		p = system.io.mem.alloc(j);
-		q = system.io.mem.alloc(64 * 1024);
-		*((int *) 0x0fe0) = (int) p;
+		head = (FORMAT_Haribote *) p;
 		load_file(i, p);
-		if(j >= 8 && strncmp(p + 4, "Hari", 4) == 0){
-			p[0] = 0xe8;
-			p[1] = 0x16;
-			p[2] = 0x00;
-			p[3] = 0x00;
-			p[4] = 0x00;
-			p[5] = 0xcb;
+		if(j >= 36 && strncmp(p + 4, "Hari", 4) == 0 && *p == 0x00){
+			q = system.io.mem.alloc(64 * 1024);
+			*((int *) 0x0fe0) = (int) q;
+			set_segmdesc(system.sys.gdt + 1003, j - 1, (int)p, AR_CODE32_ER + AR_APP);
+			set_segmdesc(system.sys.gdt + 1004, head->DataSegmentSize - 1, (int)q, AR_DATA32_RW + AR_APP);
+			for(i = 0; i < head->DataSegmentSize; i++){
+				q[head->DefaultESP + i] = p[head->OriginDataSection + i];
+			}
+			start_app(0x1b, 1003 * 8, head->DefaultESP, 1004 * 8, &(task->tss.esp0));
+			system.io.mem.free(q, head->DataSegmentSize);
+		} else{
+			cons_put_str((UI_Window *) *((int *) 0x0fec), (DATA_Position2D *) *((int *) 0x0fe8), (DATA_Position2D *) *((int *) 0x0fe4), ".hrbÌ§²ÙÌ«°Ï¯Ä´×°\n");
 		}
-		set_segmdesc(system.sys.gdt + 1003, j - 1, (int)p, AR_CODE32_ER + AR_APP);
-		set_segmdesc(system.sys.gdt + 1004, 64 * 1024 - 1, (int)q, AR_DATA32_RW + AR_APP);
-		start_app(0, 1003 * 8, 64 * 1024, 1004 * 8, &(task->tss.esp0));
 		system.io.mem.free(p, j);
-		system.io.mem.free(q, 64 * 1024);
 		return i;
 	}
 	return 0xFFFFFFFF;
