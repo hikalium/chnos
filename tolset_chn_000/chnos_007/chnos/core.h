@@ -472,6 +472,7 @@ struct SYSTEM {
 /*externs*/
 extern struct SYSTEM *sys_main_str_buf;
 extern char cursor[24][24];
+extern int key_shift;
 
 /*functions*/
 

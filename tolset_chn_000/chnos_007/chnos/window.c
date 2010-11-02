@@ -187,7 +187,6 @@ void scrool_win(UI_Window *winfo)
 void scrool_win_32(UI_Window *winfo, uint *vram)
 {
 	int x, y;
-
 	for (y = winfo->origin.y; y < winfo->ysize + winfo->origin.y; y++) {
 		for (x = winfo->origin.x; x < winfo->xsize + winfo->origin.x; x++) {
 			vram[x + y * winfo->winxsize] = vram[x + (y + 16) * winfo->winxsize];

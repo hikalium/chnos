@@ -113,6 +113,14 @@ void CHNMain(void)
 					} else if(key_to == 1){
 						system.data.fifo.put(&console_task->fifo, dec_key.c + SYS_FIFO_START_KEYB);
 					}
+				} else if(dec_key.make && dec_key.keycode == 0x3B && key_shift != 0){/*Shift + F1*/
+					if(console_task->tss.ss0 != 0){
+						cons_put_str((UI_Window *) *((int *) 0x0fec), (DATA_Position2D *) *((int *) 0x0fe8), (DATA_Position2D *) *((int *) 0x0fe4), "\nBreak(key) :\n");
+						io_cli();
+						console_task->tss.eax = (int)&(console_task->tss.esp0);
+						console_task->tss.eip = (int)asm_end_app;
+						io_sti();
+					}
 				} else if(dec_key.make && dec_key.keycode == 0x0E){/*BackSpace*/
 					if(key_to == 0){
 						boxfill_win(testwin, 0xFFFFFF, c_cursor.x, c_cursor.y, c_cursor.x + 8, c_cursor.y +16);

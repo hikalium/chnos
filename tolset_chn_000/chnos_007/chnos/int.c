@@ -59,8 +59,8 @@ char *cpu_exceptions[0x20] = {
 	"Exception 0x09:Coprocessor Segment Overrun.",
 	"Exception 0x0a:Invalid task status segment.",
 	"Exception 0x0b:Segment absent.",
-	"\nException 0x0c:Stack Segment Fault.",
-	"\nException 0x0d:General Protection Exception.",
+	"\nException 0x0c:Stack Segment Fault.\n",
+	"\nException 0x0d:General Protection Exception.\n",
 	"Exception 0x0e:Page fault.",
 	"Exception 0x0f:Reserved.",
 	"Exception 0x10:Floating point error.",
@@ -133,8 +133,12 @@ void cpu_exception_abort(int exception, int *esp)
 uint cpu_exception_fault(int exception, int *esp)
 {
 	UI_Task *task = task_now();
+	uchar s[64];
 
 	cons_put_str((UI_Window *) *((int *) 0x0fec), (DATA_Position2D *) *((int *) 0x0fe8), (DATA_Position2D *) *((int *) 0x0fe4), (uchar *)cpu_exceptions[exception]);
+	sprintf(s, "%s:0x%08X", cpu_exception_infos[11], esp[11]);
+	cons_put_str((UI_Window *) *((int *) 0x0fec), (DATA_Position2D *) *((int *) 0x0fe8), (DATA_Position2D *) *((int *) 0x0fe4), s);
+
 	return (uint)&(task->tss.esp0);
 }
 

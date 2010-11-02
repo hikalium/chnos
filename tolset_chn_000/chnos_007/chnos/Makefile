@@ -82,6 +82,18 @@ bug1.bim : bug1.obj a_nask.obj Makefile
 bug1.hrb : bug1.bim Makefile
 	$(BIM2HRB) bug1.bim bug1.hrb 0
 
+bug2.bim : bug2.obj a_nask.obj Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:bug2.bim map:bug2.map bug2.obj a_nask.obj
+
+bug2.hrb : bug2.bim Makefile
+	$(BIM2HRB) bug2.bim bug2.hrb 0
+
+bug3.bim : bug3.obj a_nask.obj Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:bug3.bim map:bug3.map bug3.obj a_nask.obj
+
+bug3.hrb : bug3.bim Makefile
+	$(BIM2HRB) bug3.bim bug3.hrb 0
+
 bootpack.bim : $(OBJS_BOOTPACK) Makefile
 	$(OBJ2BIM) @$(RULEFILE) out:bootpack.bim stack:3136k map:bootpack.map \
 		$(OBJS_BOOTPACK)
@@ -93,7 +105,7 @@ bootpack.hrb : bootpack.bim Makefile
 chnos.sys : asmhead.bin bootpack.hrb Makefile
 	copy /B asmhead.bin+bootpack.hrb chnos.sys
 
-chnos.img : chnipl.bin chnos.sys hello.hrb hello2.hrb hello3.hrb crack1.hrb crack2.hrb bug1.hrb a.hrb Makefile
+chnos.img : chnipl.bin chnos.sys hello.hrb hello2.hrb hello3.hrb crack1.hrb crack2.hrb bug1.hrb bug2.hrb bug3.hrb a.hrb Makefile
 	$(EDIMG)   imgin:../../z_tools/fdimg0at.tek \
 		wbinimg src:chnipl.bin len:512 from:0 to:0 \
 		copy from:chnos.sys to:@: \
@@ -126,6 +138,8 @@ chnos.img : chnipl.bin chnos.sys hello.hrb hello2.hrb hello3.hrb crack1.hrb crac
 		copy from:crack1.hrb to:@: \
 		copy from:crack2.hrb to:@: \
 		copy from:bug1.hrb to:@: \
+		copy from:bug2.hrb to:@: \
+		copy from:bug3.hrb to:@: \
 		imgout:chnos.img 
 
 #ˆê”Ê‹K‘¥

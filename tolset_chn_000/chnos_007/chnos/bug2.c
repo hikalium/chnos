@@ -1,0 +1,7 @@
+
+void CHNMain(void)
+{
+	for(;;){
+
+	}
+}

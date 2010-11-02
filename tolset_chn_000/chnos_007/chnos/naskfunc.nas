@@ -15,7 +15,6 @@
 		GLOBAL	_memtest_sub
 		GLOBAL	_farjmp, _farcall
 		GLOBAL	_start_app
-		GLOBAL	_end_app
 		GLOBAL  _asm_osselect_third
 		GLOBAL  _clts, _fnsave, _frstore
 		GLOBAL	_pit_beep_on, _pit_beep_off
@@ -42,17 +41,12 @@ _asm_hrb_api:
 	mov	es,ax
 	call _hrb_api
 	cmp	eax,0
-	jne	_end_app
+	jne	_asm_end_app
 	add	esp,32
 	popad
 	pop	es
 	pop	ds
 	iretd
-
-_end_app:
-	mov	esp,[eax]
-	popad
-	ret
 
 _asm_inthandler00:
 	push	es
@@ -256,6 +250,8 @@ _asm_inthandler0c:
 	mov	ds,ax
 	mov	es,ax
 	call	_inthandler0c
+	cmp	eax,0
+	jne	_asm_end_app
 	pop	eax
 	popad
 	pop	ds
@@ -273,7 +269,7 @@ _asm_inthandler0d:
 	mov	es,ax
 	call	_inthandler0d
 	cmp	eax,0
-	jne	_end_app
+	jne	_asm_end_app
 	pop	eax
 	popad
 	pop	ds
