@@ -80,6 +80,40 @@ err:
 	return winfo;
 }
 
+UI_Window *make_window_app(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf)
+{
+	UI_Window *winfo = window_alloc();
+
+	if(winfo == 0) goto err;
+	winfo->winxsize = xsize + 8;
+	winfo->winysize = ysize + 28;
+	winfo->xsize = xsize;
+	winfo->ysize = ysize;
+	winfo->position.x = px;
+	winfo->position.y = py;
+	winfo->origin.x = 4;
+	winfo->origin.y = 24;
+	winfo->win = sheet_alloc();
+	winfo->buf = buf;
+
+	sheet_setbuf(winfo->win, winfo->buf, winfo->winxsize, winfo->winysize,INV_COL32);	
+
+	change_window(winfo, title, active);
+	boxfill_win(winfo, 0xFFFFFF, 0, 0, winfo->xsize, winfo->ysize);
+
+	sheet_slide(winfo->win, px, py);
+	sheet_updown(winfo->win, height);	
+err:
+	return winfo;
+}
+
+UI_Window *make_window_app_hrb(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf)
+{
+	xsize = xsize - 8;
+	ysize = ysize - 28;
+	return make_window_app(title, xsize, ysize, px, py, height, active, buf);
+}
+
 void change_window(UI_Window *winfo, uchar *title, bool active)
 {
 	uint color = 0;

@@ -196,7 +196,7 @@ uint cons_app_hrb_start(uchar *cmdline)
 		head = (FORMAT_Haribote *) p;
 		load_file(i, p);
 		if(j >= 36 && strncmp(p + 4, "Hari", 4) == 0 && *p == 0x00){
-			q = system.io.mem.alloc(64 * 1024);
+			q = system.io.mem.alloc(head->DataSegmentSize);
 			*((int *) 0x0fe0) = (int) q;
 			set_segmdesc(system.sys.gdt + 1003, j - 1, (int)p, AR_CODE32_ER + AR_APP);
 			set_segmdesc(system.sys.gdt + 1004, head->DataSegmentSize - 1, (int)q, AR_DATA32_RW + AR_APP);

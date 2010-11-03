@@ -479,6 +479,7 @@ struct SYSTEM {
 		int keycmd_wait;
 		UI_KeyInfo keyinfo;
 		UI_Mouse mouse_decode;
+		UI_WindowControl *winctl;
 	} sys;
 };
 
@@ -491,6 +492,8 @@ extern int key_shift;
 
 /*api.c*/
 uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ecx, uint eax);
+uint GetWindowNumber(UI_Window *win);
+UI_Window *GetWindowInfo(uint n);
 
 /*file.c*/
 void decode_fat(ushort *fat, bool backup);
@@ -609,6 +612,9 @@ void putfonts_win(UI_Window *winfo, int x, int y, uint c, uint bc, const uchar *
 void scrool_win(UI_Window *winfo);
 void line_win(UI_Window *winfo, int x0, int y0, int x1, int y1, uint c);
 void draw_hexagon_win(UI_Window *winfo, int a, int x, int y, uint c);
+UI_Window *make_window_app(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf);
+UI_Window *make_window_app_hrb(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf);
+
 
 /*fifo.c*/
 void fifo32_init(DATA_FIFO *fifo, int size, uint *buf, UI_Task *task);
