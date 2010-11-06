@@ -60,6 +60,15 @@ void putfonts_asc_sht_i(UI_Sheet *sht, int x, int y, uint c, uint bc, const ucha
 	return;
 }
 
+void putfonts_asc_sht_i_no_bc(UI_Sheet *sht, int x, int y, uint c, const uchar *s)
+{
+	int l;
+	l = strlen(s);
+	putfonts_asc_i(sht->buf, sht->bxsize, x, y, c, s);
+	sheet_refresh(sht, x, y, x + l * 8, y + 16);
+	return;
+}
+
 void init_screen_i(void *desktop, void *taskbar, void *mousecursor)
 {
 	if(system.sys.bpp == 8){

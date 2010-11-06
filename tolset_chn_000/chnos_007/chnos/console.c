@@ -112,7 +112,7 @@ void cons_command_start(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D
 	if(strcmp(cmdline, "mem") == 0){
 		sprintf(s, "ÒÓØ°:%dMB\n", system.sys.memtotal >> 20);
 		cons_put_str(win, prompt, cursor, s);
-		sprintf(s, "±·:%dKB", system.io.mem.free_total() >> 10);
+		sprintf(s, "±·:%dKB\n", system.io.mem.free_total() >> 10);
 		cons_put_str(win, prompt, cursor, s);
 	} else if(strcmp(cmdline, "cls") == 0){
 		prompt->x = 0;

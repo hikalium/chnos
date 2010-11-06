@@ -209,6 +209,14 @@ err:
 	return;
 }
 
+void putfonts_win_no_bc(UI_Window *winfo, int x, int y, uint c, const uchar *s)
+{
+	if(x < 0 || y < 0 || x > winfo->xsize || y > winfo->ysize) goto err;
+	putfonts_asc_sht_i_no_bc(winfo->win, x + winfo->origin.x, y + winfo->origin.y, c, s);
+err:
+	return;
+}
+
 void scrool_win(UI_Window *winfo)
 {
 	if(system.sys.bpp == 8) scrool_win_8(winfo, winfo->buf);

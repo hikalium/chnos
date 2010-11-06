@@ -66,7 +66,7 @@ typedef unsigned int uint;
 #define AR_INTGATE32	0x008e
 #define AR_APP		0x60
 
-#define MEMMAN_FREES	4096
+#define MEMMAN_FREES	4000
 
 #define MAX_SHEETS	1024
 
@@ -614,7 +614,7 @@ void line_win(UI_Window *winfo, int x0, int y0, int x1, int y1, uint c);
 void draw_hexagon_win(UI_Window *winfo, int a, int x, int y, uint c);
 UI_Window *make_window_app(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf);
 UI_Window *make_window_app_hrb(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf);
-
+void putfonts_win_no_bc(UI_Window *winfo, int x, int y, uint c, const uchar *s);
 
 /*fifo.c*/
 void fifo32_init(DATA_FIFO *fifo, int size, uint *buf, UI_Task *task);
@@ -671,6 +671,7 @@ void draw_chnos_logo(void *vrami, int xsize, int a, int x, int y);
 uchar rgb_int2char (uint c32);
 ushort rgb_int2short (uint c32);
 void col_pat(void *vrami, int xsize, int ysize);
+void putfonts_asc_sht_i_no_bc(UI_Sheet *sht, int x, int y, uint c, const uchar *s);
 
 /*8bits*/
 void boxfill8(uchar *vram, int xsize, uchar c, int x0, int y0, int x1, int y1);

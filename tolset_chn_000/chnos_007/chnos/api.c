@@ -22,9 +22,23 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 		if(ebx == 0){
 			reg[7] = (esi * edi) * (system.sys.bpp >> 2);
 		} else{
-			win = make_window_app_hrb((uchar *)(ecx + app_ds_base), esi, edi, 100, 50, 4, true, (uint *)(ebx + app_ds_base));
+			win = make_window_app_hrb((uchar *)(ecx + app_ds_base), esi, edi, 200, 100, 4, true, (uint *)(ebx + app_ds_base));
 			reg[7] = GetWindowNumber(win);
 		}
+	} else if(edx == 6){
+		putfonts_win_no_bc(GetWindowInfo(ebx), esi, edi, eax, (uchar *)(ebp + app_ds_base));
+	} else if(edx == 7){
+		boxfill_win(GetWindowInfo(ebx), ebp, eax, ecx, esi, edi);
+	} else if(edx == 8){
+		memman_init((IO_MemoryControl *)(ebx + app_ds_base));
+		ecx &= 0xfffffff0;
+		memman_free((IO_MemoryControl *)(ebx + app_ds_base), (uchar *)eax, ecx);
+	} else if(edx == 9){
+		ecx = (ecx + 0x0f) & 0xfffffff0;
+		reg[7] = (uint)memman_alloc((IO_MemoryControl *)(ebx + app_ds_base), ecx);
+	} else if(edx == 10){
+		ecx = (ecx + 0x0f) & 0xfffffff0;
+		memman_free((IO_MemoryControl *)(ebx + app_ds_base), (uchar *)eax, ecx);
 	} else {
 		cons_put_str(conswin, prompt, cursor, "Unknown api number.");
 		return (uint)&(task->tss.esp0);
@@ -34,7 +48,7 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 
 uint GetWindowNumber(UI_Window *win)
 {
-	return (uint)win - (uint)&system.sys.winctl->winfos;
+	return (uint)(win - system.sys.winctl->winfos);
 }
 
 UI_Window *GetWindowInfo(uint n)
