@@ -6,6 +6,7 @@
 /*new object types*/
 typedef enum _bool { false, true} bool;
 typedef enum _state_alloc { none, initialized, allocated, configured, inuse} state_alloc;
+typedef enum _col_text { black, blue, green, skyblue, red, purple, brown, white} col_text;
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned int uint;
@@ -282,7 +283,7 @@ struct BOOTINFO {
 	char vmode; 
 	char reserve;
 	short scrnx, scrny;
-	char *vram;
+	uchar *vram;
 };
 
 struct VESAINFO {/*0xe00--->512byte*/
@@ -427,7 +428,7 @@ struct SYSTEM {
 		} fifo;
 	} data;
 	struct SYS_INFOS {
-		DATA_BootInfo	boot;
+		DATA_BootInfo boot;
 		DATA_VESAInfo vesa;	
 	} info;
 	struct SYS_APP {
@@ -489,6 +490,10 @@ extern char cursor[24][24];
 extern int key_shift;
 
 /*functions*/
+
+/*textmode.c*/
+void textmode_putfont(uchar c, col_text col, col_text backcol, int columns, int line, bool blink);
+void textmode_putstr(uchar *s, col_text col, col_text backcol, int columns, int line, bool blink);
 
 /*api.c*/
 uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ecx, uint eax);
@@ -668,8 +673,8 @@ void putblock_i(void *vram, int vxsize, int pxsize, int pysize, int px0, int py0
 void line_i(void *vrami, int xsize, int x0, int y0, int x1, int y1, uint c);
 void draw_hexagon_i(void *vrami, int xsize, int a, int x, int y, uint c);
 void draw_chnos_logo(void *vrami, int xsize, int a, int x, int y);
-uchar rgb_int2char (uint c32);
-ushort rgb_int2short (uint c32);
+uchar rgb_int2char(uint c32);
+ushort rgb_int2short(uint c32);
 void col_pat(void *vrami, int xsize, int ysize);
 void putfonts_asc_sht_i_no_bc(UI_Sheet *sht, int x, int y, uint c, const uchar *s);
 

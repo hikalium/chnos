@@ -13,12 +13,14 @@ void CHNMain(void)
 	DATA_Position2D c_cursor;
 	UI_Task *console_task;
 	uchar s[64];	
-	int i, mx = 0, my = 0;
+	int i, j, mx = 0, my = 0;
 	bool cursor = false;
 	bool cursor_on = true;
 	int key_to = 0;
 
 	init_system();
+
+	if(system.info.boot.vmode == 0) goto text_mode;
 
 	system.draw.init_screen(system.sys.sht.desktop_buf, system.sys.sht.taskbar_buf, *system.sys.sht.mouse_buf);
 
@@ -169,6 +171,18 @@ void CHNMain(void)
 			}
 		}
 	}
+
+text_mode:
+	for(i = 0;i < system.info.boot.scrny; i++){
+		for(j = 0; j < system.info.boot.scrnx; j++){
+			textmode_putfont(' ', white, white, j, i, false);
+		}
+	}
+	textmode_putstr("Hello,World!\nWelcome to CHNOSProject on TEXT mode.\\", white, black, 0, 0, false);
+	for(;;){
+		task_sleep(system.sys.task.main);
+		system.io.sti();
+	}
 }
 
 void check_newline(DATA_Position2D *p, int line_x, int line_y)
@@ -191,4 +205,3 @@ void check_newline(DATA_Position2D *p, int line_x, int line_y)
 	} 
 	return;
 }
-
