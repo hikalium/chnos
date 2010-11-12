@@ -618,8 +618,12 @@ void scrool_win(UI_Window *winfo);
 void line_win(UI_Window *winfo, int x0, int y0, int x1, int y1, uint c);
 void draw_hexagon_win(UI_Window *winfo, int a, int x, int y, uint c);
 UI_Window *make_window_app(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf);
-UI_Window *make_window_app_hrb(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf);
 void putfonts_win_no_bc(UI_Window *winfo, int x, int y, uint c, const uchar *s);
+void point_win(UI_Window *winfo, uint c, int x, int y);
+void putfonts_win_no_bc_compatible_hrb(UI_Window *winfo, int x, int y, uint c, const uchar *s);
+UI_Window *make_window_app_compatible_hrb(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf);
+void boxfill_win_compatible_hrb(UI_Window *winfo, uint c, int x0, int y0, int x1, int y1);
+void point_win_compatible_hrb(UI_Window *winfo, uint c, int x, int y);
 
 /*fifo.c*/
 void fifo32_init(DATA_FIFO *fifo, int size, uint *buf, UI_Task *task);

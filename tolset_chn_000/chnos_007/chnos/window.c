@@ -107,7 +107,7 @@ err:
 	return winfo;
 }
 
-UI_Window *make_window_app_hrb(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf)
+UI_Window *make_window_app_compatible_hrb(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf)
 {
 	xsize = xsize - 8;
 	ysize = ysize - 28;
@@ -201,6 +201,26 @@ err:
 	return;
 }
 
+void boxfill_win_compatible_hrb(UI_Window *winfo, uint c, int x0, int y0, int x1, int y1)
+{
+	boxfill_i(winfo->buf, winfo->winxsize, c, x0, y0, x1, y1);
+	sheet_refresh(winfo->win, x0, y0, x1, y1);
+	return;
+}
+
+void point_win(UI_Window *winfo, uint c, int x, int y)
+{
+	point_i(winfo->buf, x + winfo->origin.x, y + winfo->origin.y, c, winfo->winxsize);
+	return;
+}
+
+void point_win_compatible_hrb(UI_Window *winfo, uint c, int x, int y)
+{
+	point_i(winfo->buf, x, y, c, winfo->winxsize);
+	sheet_refresh(winfo->win, x, y, x + 1, y + 1);
+	return;
+}
+
 void putfonts_win(UI_Window *winfo, int x, int y, uint c, uint bc, const uchar *s)
 {
 	if(x < 0 || y < 0 || x > winfo->xsize || y > winfo->ysize) goto err;
@@ -214,6 +234,12 @@ void putfonts_win_no_bc(UI_Window *winfo, int x, int y, uint c, const uchar *s)
 	if(x < 0 || y < 0 || x > winfo->xsize || y > winfo->ysize) goto err;
 	putfonts_asc_sht_i_no_bc(winfo->win, x + winfo->origin.x, y + winfo->origin.y, c, s);
 err:
+	return;
+}
+
+void putfonts_win_no_bc_compatible_hrb(UI_Window *winfo, int x, int y, uint c, const uchar *s)
+{
+	putfonts_asc_sht_i_no_bc(winfo->win, x, y, c, s);
 	return;
 }
 

@@ -5,16 +5,25 @@ unsigned int api_openwin(unsigned int *buf, int xsize, int ysize, int col_inv, c
 void api_initmalloc(void);
 void *api_malloc(unsigned int size);
 void api_end(void);
+void api_point(unsigned int win, int x, int y, int c);
+
+int rand(void);
 
 void CHNMain(void)
 {
+	unsigned int *buf;
 	unsigned int winID;
-	unsigned int *win_buf;
+	int i, x, y;
 
 	api_initmalloc();
-	win_buf = api_malloc(150 * 50 * 4);
-	winID = api_openwin(win_buf, 150, 50, 0, "WinHelo3");
-	api_boxfilwin(winID, 0, 0, 10, 10, 0xFFFF00);
-	api_putstrwin(winID, 0, 0, 0x000000, 0, "hello,world");
+	buf = api_malloc(150*50*4);
+	winID = api_openwin(buf, 150, 100, -1, "stars");
+	api_boxfilwin(winID, 6, 26, 143, 93, 0x000000);
+	for(i = 0; i < 50; i++){
+		x = (rand() % 137) + 6;
+		y = (rand() % 67) + 26;
+		api_point(winID, x, y, 0xFFFF00);
+	}
 	api_end();
 }
+
