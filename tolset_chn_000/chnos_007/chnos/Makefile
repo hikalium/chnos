@@ -102,6 +102,12 @@ stars.bim : stars.obj a_nask.obj Makefile
 stars.hrb : stars.bim Makefile
 	$(BIM2HRB) stars.bim stars.hrb 0
 
+lines.bim : lines.obj a_nask.obj Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:lines.bim map:lines.map lines.obj a_nask.obj
+
+lines.hrb : lines.bim Makefile
+	$(BIM2HRB) lines.bim lines.hrb 0
+
 winhelo.bim : winhelo.obj a_nask.obj Makefile
 	$(OBJ2BIM) @$(RULEFILE) out:winhelo.bim stack:1k map:winhelo.map winhelo.obj a_nask.obj
 
@@ -160,7 +166,7 @@ bootpack.hrb : bootpack.bim Makefile
 chnos.sys : asmhead.bin bootpack.hrb Makefile
 	copy /B asmhead.bin+bootpack.hrb chnos.sys
 
-chnos.img : chnipl.bin chnos.sys a.hrb hello.hrb hello2.hrb hello3.hrb hello4.hrb hello5.hrb uuid.hrb star1.hrb stars.hrb winhelo.hrb winhelo2.hrb winhelo3.hrb crack1.hrb crack2.hrb bug1.hrb bug2.hrb bug3.hrb Makefile
+chnos.img : chnipl.bin chnos.sys a.hrb hello.hrb hello2.hrb hello3.hrb hello4.hrb hello5.hrb uuid.hrb star1.hrb lines.hrb stars.hrb winhelo.hrb winhelo2.hrb winhelo3.hrb crack1.hrb crack2.hrb bug1.hrb bug2.hrb bug3.hrb Makefile
 	$(EDIMG)   imgin:../../z_tools/fdimg0at.tek \
 		wbinimg src:chnipl.bin len:512 from:0 to:0 \
 		copy from:chnos.sys to:@: \
@@ -203,6 +209,7 @@ chnos.img : chnipl.bin chnos.sys a.hrb hello.hrb hello2.hrb hello3.hrb hello4.hr
 		copy from:uuid.hrb to:@: \
 		copy from:star1.hrb to:@: \
 		copy from:stars.hrb to:@: \
+		copy from:lines.hrb to:@: \
 		imgout:chnos.img 
 
 #ˆê”Ê‹K‘¥

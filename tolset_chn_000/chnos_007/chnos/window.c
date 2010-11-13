@@ -293,6 +293,12 @@ void line_win(UI_Window *winfo, int x0, int y0, int x1, int y1, uint c)
 	return;
 }
 
+void line_win_compatible_hrb(UI_Window *winfo, int x0, int y0, int x1, int y1, uint c)
+{
+	line_i(winfo->buf, winfo->winxsize, x0, y0, x1, y1, c);
+	return;
+}
+
 void draw_hexagon_win(UI_Window *winfo, int a, int x, int y, uint c)
 {
 	draw_hexagon_i(winfo->buf, winfo->winxsize, a, x + winfo->origin.x, y + winfo->origin.y, c);

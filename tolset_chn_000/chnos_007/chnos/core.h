@@ -624,6 +624,7 @@ void putfonts_win_no_bc_compatible_hrb(UI_Window *winfo, int x, int y, uint c, c
 UI_Window *make_window_app_compatible_hrb(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf);
 void boxfill_win_compatible_hrb(UI_Window *winfo, uint c, int x0, int y0, int x1, int y1);
 void point_win_compatible_hrb(UI_Window *winfo, uint c, int x, int y);
+void line_win_compatible_hrb(UI_Window *winfo, int x0, int y0, int x1, int y1, uint c);
 
 /*fifo.c*/
 void fifo32_init(DATA_FIFO *fifo, int size, uint *buf, UI_Task *task);

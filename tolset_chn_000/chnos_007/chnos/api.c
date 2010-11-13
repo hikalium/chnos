@@ -9,6 +9,7 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 	uint app_ds_base = *((uint *) 0x0fe0);
 	UI_Task *task = task_now();
 	UI_Window *win;
+	uchar s[64];
 
 	uint *reg = &eax + 1;
 
@@ -21,6 +22,8 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 	} else if(edx == 5){
 		win = make_window_app_compatible_hrb((uchar *)(ecx + app_ds_base), esi, edi, 200, 100, 4, true, (uint *)(ebx + app_ds_base));
 		reg[7] = GetWindowNumber(win);
+		sprintf(s, "winID = %u\n", reg[7]);
+		cons_put_str(conswin, prompt, cursor, s);
 	} else if(edx == 6){
 		putfonts_win_no_bc_compatible_hrb(GetWindowInfo(ebx), esi, edi, eax, (uchar *)(ebp + app_ds_base));
 	} else if(edx == 7){
@@ -37,6 +40,9 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 		memman_free((IO_MemoryControl *)(ebx + app_ds_base), (uchar *)eax, ecx);
 	} else if(edx == 11){
 		point_win_compatible_hrb(GetWindowInfo(ebx), eax, esi, edi);
+	} else if(edx == 13){
+		line_win_compatible_hrb(GetWindowInfo(ebx), eax, ecx, esi, edi, ebp);
+		refresh_window(GetWindowInfo(ebx));
 	} else {
 		cons_put_str(conswin, prompt, cursor, "Unknown api number.");
 		return (uint)&(task->tss.esp0);
