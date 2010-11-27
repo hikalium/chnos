@@ -19,10 +19,12 @@ void init_system(void)
 	system.io.mem.total				= i;
 	system.data.info.vesa				= *vesa;
 	system.data.info.boot				= *boot;
-	
-	init_serial();
-	init_paging();
+
 	init_gdtidt();
+	init_paging();
+	sys_memman_init();
+	sys_memman_free((void *)0x00400000, system.io.mem.total - sizeof(struct SYSTEM) - 0x00400000);
+	init_serial();
 
 	return;
 }

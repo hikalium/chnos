@@ -94,6 +94,8 @@
 
 #define TASKBAR_HEIGHT	40
 
+#define MEMMAN_FREES	4000
+
 /*new object types*/
 typedef enum _bool { false, true} bool;
 typedef enum _state_alloc { none, initialized, allocated, configured, inuse} state_alloc;
@@ -157,11 +159,19 @@ struct GATE_DESCRIPTOR {
 	short offset_high;
 };
 
+struct MEMMAN {
+	int frees,maxfrees,lostsize,losts;
+	struct MEM_FREEINFO {
+		uint addr, size;
+	} free[MEMMAN_FREES];
+};
+
 /*typedef structures*/
 typedef struct BOOTINFO			DATA_BootInfo;
 typedef struct VESAINFO			DATA_VESAInfo;
 typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
 typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
+typedef struct MEMMAN			IO_MemoryControl;
 
 /*virtual classes*/
 struct SYSTEM {
@@ -175,6 +185,7 @@ struct SYSTEM {
 				IO_SegmentDescriptor *gdt;
 			} segment;
 			uint total;
+			IO_MemoryControl ctrl;
 		} mem;
 		struct SYS_IO_INTERRUPT {
 			IO_GateDescriptor *idt;
@@ -288,6 +299,16 @@ void send_serial(uchar *s);
 
 /*memory.c*/
 uint memtest(uint start, uint end);
+void memman_init(IO_MemoryControl *man);
+uint memman_free_total(IO_MemoryControl *man);
+void *memman_alloc(IO_MemoryControl *man, uint size);
+int memman_free(IO_MemoryControl *man, void *addr0, uint size);
+void *memman_alloc_page(IO_MemoryControl *man);
+void sys_memman_init(void);
+uint sys_memman_free_total(void);
+void *sys_memman_alloc(uint size);
+int sys_memman_free(void *addr, uint size);
+void *sys_memman_alloc_page(void);
 
 /*paging.c*/
 void init_paging(void);
