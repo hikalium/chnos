@@ -5,6 +5,9 @@ void boxfill32(uint *vram, int xsize, uint c, int x0, int y0, int x1, int y1)
 {
 	int x, y;
 
+	y1 -= 1;
+	x1 -= 1;
+
 	for (y = y0;y <= y1;y++) {
 		for (x = x0; x <= x1; x++)
 		vram[y * xsize + x] = c;
@@ -16,18 +19,15 @@ void boxfill32(uint *vram, int xsize, uint c, int x0, int y0, int x1, int y1)
 void init_desktop32(uint *vram, uint xsize, uint ysize)
 {
 	boxfill32(vram, xsize, DESKTOP_COL32, 0, 0, xsize, ysize);
-	putfonts32_asc(vram, xsize, 168, 8, 0xFFFFFF, "welcome to CHNOSProject! on 32bit video mode .");
-	putfonts32_asc(vram, xsize, 168, 24, 0xFFFFFF, "Ö³º¿ CHNOSÌßÛ¼Þª¸ÄÍ!");
-	putfonts32_asc(vram, xsize, 168, 40, 0xFFFFFF, "¶ÀºÄÃÞ½¶Þ ÆÎÝºÞ¶Þ ¶¹ÙÖ³Æ ÅØÏ¼À");
 
 	return;	
 }
 
 void init_taskbar32(uint *vram, uint xsize)
 {
-	boxfill32(vram, xsize, TASKBAR_COL32, 0, 0, xsize, TASKBAR_HEIGHT);
-	boxfill32(vram, xsize, 0xFFFFFF, 0, 0, xsize, 1);
-	boxfill32(vram, xsize, 0xFFFFFF, xsize-2, 0, xsize, TASKBAR_HEIGHT);
+	boxfill32(vram, xsize, 0xFFFFFF, 0, 0, xsize, TASKBAR_HEIGHT);
+	boxfill32(vram, xsize, 0xFFFFFF, 0, 0, xsize - 2, TASKBAR_HEIGHT - 2);
+	boxfill32(vram, xsize, TASKBAR_COL32, 2, 2, xsize - 2, TASKBAR_HEIGHT - 2);
 
 	return;
 }

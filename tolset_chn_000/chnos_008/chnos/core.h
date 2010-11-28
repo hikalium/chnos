@@ -96,6 +96,13 @@
 
 #define MEMMAN_FREES	4000
 
+#define INV_COL32	0xFFFFFFFF
+#define INV_COL16	0x1192
+#define INV_COL8	0xFF
+
+#define MAX_SHEETS	1024
+
+
 /*new object types*/
 typedef enum _bool { false, true} bool;
 typedef enum _state_alloc { none, initialized, allocated, configured, inuse} state_alloc;
@@ -166,12 +173,29 @@ struct MEMMAN {
 	} free[MEMMAN_FREES];
 };
 
+struct SHEET {
+	void *buf;
+	uint col_inv;
+	int bxsize, bysize, vx0, vy0, height;
+	state_alloc flags; 
+};
+
+struct SHTCTL {
+	uint *map;
+	void *vram;
+	int xsize,ysize,top;
+	struct SHEET *sheets[MAX_SHEETS];
+	struct SHEET sheets0[MAX_SHEETS];
+};
+
 /*typedef structures*/
 typedef struct BOOTINFO			DATA_BootInfo;
 typedef struct VESAINFO			DATA_VESAInfo;
 typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
 typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
 typedef struct MEMMAN			IO_MemoryControl;
+typedef struct SHEET			UI_Sheet;
+typedef struct SHTCTL			UI_SheetControl;
 
 /*virtual classes*/
 struct SYSTEM {
@@ -191,6 +215,18 @@ struct SYSTEM {
 			IO_GateDescriptor *idt;
 		} interrupt;
 	} io;
+	struct SYS_DRAW {
+		struct SYS_DRAW_SHT {
+			UI_Sheet *core;
+			UI_Sheet *desktop;
+			UI_Sheet *taskbar;
+			UI_Sheet *mouse;
+			void *core_buf;
+			void *desktop_buf;
+			void *taskbar_buf;
+			void *mouse_buf;
+		} sht;
+	} draw;
 	struct SYS_DATA {
 		struct SYS_DATA_INFO {
 			DATA_BootInfo boot;
@@ -229,6 +265,10 @@ void draw_chnos_logo(void *vrami, int xsize, int a, int x, int y);
 uchar rgb_int2char (uint c32);
 ushort rgb_int2short (uint c32);
 void col_pat(void *vrami, int xsize, int ysize);
+
+void putfonts_asc_sht_i(UI_Sheet *sht, int x, int y, uint c, uint bc, const uchar *s);
+void putfonts_asc_sht_i_no_bc(UI_Sheet *sht, int x, int y, uint c, const uchar *s);
+
 /*08Bits*/
 void boxfill8(uchar *vram, int xsize, uchar c, int x0, int y0, int x1, int y1);
 void init_desktop8(uchar *vram, uint xsize, uint ysize);
@@ -315,6 +355,22 @@ void init_paging(void);
 void paging_set_dir(uint *dir_entry, uint *table_base, uint attribute, uint available);
 void paging_set_table(uint *table_entry, uint *page_base, uint attribute, uint available);
 
+/*sheet.c*/
+void init_sheets(void *vram, int xsize, int ysize, uchar bits);
+UI_Sheet *sheet_alloc(void);
+void sheet_setbuf(UI_Sheet *sht, void *buf,int xsize, int ysize, uint col_inv);
+void sheet_updown(UI_Sheet *sht, int height);
+void sheet_refresh(UI_Sheet *sht, int bx0, int by0, int bx1, int by1);
+void sheet_refresh_full_alpha(UI_Sheet *sht);
+void sheet_refresh_full(UI_Sheet *sht);
+void sheet_slide(UI_Sheet *sht, int vx0, int vy0);
+void sheet_free(UI_Sheet *sht);
+void sheet_refreshsub32(int vx0, int vy0, int vx1, int vy1, int h0, int h1);
+void sheet_refreshsub16(int vx0, int vy0, int vx1, int vy1, int h0, int h1);
+void sheet_refreshsub8(int vx0, int vy0, int vx1, int vy1, int h0, int h1);
+void sheet_refreshmap32(int vx0, int vy0, int vx1, int vy1, int h0);
+void sheet_refreshmap16(int vx0, int vy0, int vx1, int vy1, int h0);
+void sheet_refreshmap8(int vx0, int vy0, int vx1, int vy1, int h0);
 
 /* naskfunc.nas */
 void pipelineflush(void);

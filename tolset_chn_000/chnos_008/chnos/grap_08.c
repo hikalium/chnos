@@ -5,6 +5,9 @@ void boxfill8(uchar *vram, int xsize, uchar c, int x0, int y0, int x1, int y1)
 {
 	int x, y;
 
+	y1 -= 1;
+	x1 -= 1;
+
 	for (y = y0; y <= y1; y++) {
 		for (x = x0; x <= x1; x++)
 			vram[y * xsize + x] = c;
@@ -16,18 +19,15 @@ void boxfill8(uchar *vram, int xsize, uchar c, int x0, int y0, int x1, int y1)
 void init_desktop8(uchar *vram, uint xsize, uint ysize)
 {
 	boxfill8(vram, xsize, DESKTOP_COL8, 0, 0, xsize, ysize);
-	putfonts8_asc(vram, xsize, 168, 8, COL8_FFFFFF, "welcome to CHNOSProject! on 8bit video mode .");
-	putfonts8_asc(vram, xsize, 168, 24, COL8_FFFFFF, "Ö³º¿ CHNOSÌßÛ¼Þª¸ÄÍ!");
-	putfonts8_asc(vram, xsize, 168, 40, COL8_FFFFFF, "¶ÀºÄÃÞ½¶Þ ÆÎÝºÞ¶Þ ¶¹ÙÖ³Æ ÅØÏ¼À");
 
 	return;	
 }
 
 void init_taskbar8(uchar *vram, uint xsize)
 {
-	boxfill8(vram, xsize, TASKBAR_COL8, 0, 0, xsize, TASKBAR_HEIGHT);
-	boxfill8(vram, xsize, COL8_FFFFFF, 0, 0, xsize, 1);
-	boxfill8(vram, xsize, COL8_FFFFFF, xsize-2, 0, xsize, TASKBAR_HEIGHT);
+	boxfill8(vram, xsize, COL8_FFFFFF, 0, 0, xsize, TASKBAR_HEIGHT);
+	boxfill8(vram, xsize, COL8_FFFFFF, 0, 0, xsize - 2, TASKBAR_HEIGHT - 2);
+	boxfill8(vram, xsize, TASKBAR_COL8, 2, 2, xsize - 2, TASKBAR_HEIGHT - 2);
 
 	return;
 }

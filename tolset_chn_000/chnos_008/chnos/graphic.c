@@ -47,7 +47,6 @@ char cursor[24][24] = {
 	"***.....................",
 };
 
-/*
 void putfonts_asc_sht_i(UI_Sheet *sht, int x, int y, uint c, uint bc, const uchar *s)
 {
 	int l;
@@ -66,7 +65,6 @@ void putfonts_asc_sht_i_no_bc(UI_Sheet *sht, int x, int y, uint c, const uchar *
 	sheet_refresh(sht, x, y, x + l * 8, y + 16);
 	return;
 }
-*/
 
 void init_screen_i(void *desktop, void *taskbar, void *mousecursor)
 {
@@ -107,15 +105,17 @@ void init_desktop_i(void *vrami)
 void init_taskbar_i(void *vrami)
 {
 	uchar bpp;
+	uint xsize;
 
 	bpp = system.data.info.vesa.BitsPerPixel;
+	xsize = system.data.info.boot.scrnx;
 
 	if(bpp == 8){
-		init_taskbar8(vrami, bpp);
+		init_taskbar8(vrami, xsize);
 	} else if(bpp == 16){
-		init_taskbar16(vrami, bpp);
+		init_taskbar16(vrami, xsize);
 	} else if(bpp == 32){
-		init_taskbar32(vrami, bpp);
+		init_taskbar32(vrami, xsize);
 	}
 	return;	
 }
@@ -191,9 +191,6 @@ void point_i(void *vrami, int x, int y, uint c, int xsize)
 
 void boxfill_i(void *vrami, int xsize, uint c, int x0, int y0, int x1, int y1)
 {
-	y1 -= 1;
-	x1 -= 1;
-
 	if(system.data.info.vesa.BitsPerPixel == 8){
 		uchar c8 = rgb_int2char(c);
 		boxfill8(vrami, xsize, c8, x0, y0, x1, y1);	

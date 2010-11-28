@@ -5,6 +5,9 @@ void boxfill16(ushort *vram, int xsize, ushort c, int x0, int y0, int x1, int y1
 {
 	int x, y;
 
+	y1 -= 1;
+	x1 -= 1;
+
 	for (y = y0;y <= y1;y++) {
 		for (x = x0; x <= x1; x++)
 		vram[y * xsize + x] = c;
@@ -15,18 +18,15 @@ void boxfill16(ushort *vram, int xsize, ushort c, int x0, int y0, int x1, int y1
 void init_desktop16(ushort *vram, uint xsize, uint ysize)
 {
 	boxfill16(vram, xsize, DESKTOP_COL16, 0, 0, xsize, ysize);
-	putfonts16_asc(vram, xsize, 168, 8, RGB16(31,62,31), "welcome to CHNOSProject! on 16bit video mode .");
-	putfonts16_asc(vram, xsize, 168, 24, RGB16(31,62,31), "Ö³º¿ CHNOSÌßÛ¼Þª¸ÄÍ!");
-	putfonts16_asc(vram, xsize, 168, 40, RGB16(31,62,31), "¶ÀºÄÃÞ½¶Þ ÆÎÝºÞ¶Þ ¶¹ÙÖ³Æ ÅØÏ¼À");
 
 	return;	
 }
 
 void init_taskbar16(ushort *vram, uint xsize)
 {
-	boxfill16(vram, xsize, TASKBAR_COL16, 0, 0, xsize, TASKBAR_HEIGHT);
-	boxfill16(vram, xsize, RGB16(31,62,31), 0, 0, xsize, 1);
-	boxfill16(vram, xsize, RGB16(31,62,31), xsize-2, 0, xsize, TASKBAR_HEIGHT);
+	boxfill16(vram, xsize, RGB16(31,62,31), 0, 0, xsize, TASKBAR_HEIGHT);
+	boxfill16(vram, xsize, RGB16(31,62,31), 0, 0, xsize - 2, TASKBAR_HEIGHT - 2);
+	boxfill16(vram, xsize, TASKBAR_COL16, 2, 2, xsize - 2, TASKBAR_HEIGHT - 2);
 
 	return;
 }
