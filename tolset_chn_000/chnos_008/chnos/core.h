@@ -115,6 +115,19 @@
 #define PIC1_ICW3	0x00a1
 #define PIC1_ICW4	0x00a1
 
+#define MAX_TASKS	1000
+#define TASK_GDT_START	3
+#define MAX_LEVEL_TASKS	100
+#define MAX_LEVELS	10
+
+#define MAX_TIMER	512
+
+#define FIFO32_PUT_OVERFLOW	0x0001
+
+#define SYS_FIFOSIZE	256
+
+#define PIT_CTRL	0x0043
+#define PIT_CNT0	0x0040
 
 /*new object types*/
 typedef enum _bool { false, true} bool;
@@ -201,6 +214,52 @@ struct SHTCTL {
 	struct SHEET sheets0[MAX_SHEETS];
 };
 
+struct TSS32 {
+	int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
+	int eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
+	int es, cs, ss, ds, fs, gs;
+	int ldtr, iomap;
+};
+
+struct FIFO32 {
+	uint *buf;
+	int p, q, size, free, flags;
+	struct TASK *task;
+};
+
+struct TASK {
+	int selector;
+	state_alloc flags;
+	int level, priority;
+	struct FIFO32 fifo;
+	struct TSS32 tss;
+};
+
+struct TASKCTL {
+	int level_now;
+	bool change_lv_next;
+	struct TASKLEVEL {
+		int running_tasks;
+		int task_now;
+		struct TASK *tasks[MAX_LEVEL_TASKS];
+	} level[MAX_LEVELS];
+	struct TASK tasks0[MAX_TASKS];
+};
+
+struct TIMER {
+	struct TIMER *next_timer;
+	uint timeout;
+	struct FIFO32 *fifo;
+	uint data;
+	state_alloc flags;
+};
+
+struct TIMERCTL {
+	uint count, next_count;
+	struct TIMER timer[MAX_TIMER];
+	struct TIMER *timers;
+};
+
 /*typedef structures*/
 typedef struct BOOTINFO			DATA_BootInfo;
 typedef struct VESAINFO			DATA_VESAInfo;
@@ -209,6 +268,12 @@ typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
 typedef struct MEMMAN			IO_MemoryControl;
 typedef struct SHEET			UI_Sheet;
 typedef struct SHTCTL			UI_SheetControl;
+typedef struct FIFO32			DATA_FIFO;
+typedef struct TSS32			IO_TaskStatusSegment32;
+typedef struct TASK			UI_Task;
+typedef struct TASKCTL			UI_TaskControl;
+typedef struct TIMER			UI_Timer;
+typedef struct TIMERCTL			UI_TimerControl;
 
 /*virtual classes*/
 struct SYSTEM {
@@ -228,23 +293,37 @@ struct SYSTEM {
 			IO_GateDescriptor *idt;
 		} interrupt;
 	} io;
-	struct SYS_DRAW {
-		struct SYS_DRAW_SHT {
-			UI_Sheet *core;
-			UI_Sheet *desktop;
-			UI_Sheet *taskbar;
-			UI_Sheet *mouse;
-			void *core_buf;
-			void *desktop_buf;
-			void *taskbar_buf;
-			void *mouse_buf;
-		} sht;
-	} draw;
+	struct SYS_UI {
+		struct SYS_UI_DRAW {
+			struct SYS_UI_DRAW_SHT {
+				UI_Sheet *core;
+				UI_Sheet *desktop;
+				UI_Sheet *taskbar;
+				UI_Sheet *mouse;
+				void *core_buf;
+				void *desktop_buf;
+				void *taskbar_buf;
+				void *mouse_buf;
+			} sht;
+		} draw;
+		struct SYS_UI_TASK {
+			UI_Task *idle;
+			UI_Task *main;
+		} task;
+		struct SYS_UI_TIMER {
+			UI_Timer *taskswitch;
+			UI_TimerControl ctrl;
+		} timer;
+	} ui;
 	struct SYS_DATA {
 		struct SYS_DATA_INFO {
 			DATA_BootInfo boot;
 			DATA_VESAInfo vesa;
 		} info;
+		struct SYS_DATA_FIFO {
+			DATA_FIFO main;
+			uint main_buf[SYS_FIFOSIZE];
+		} fifo;
 	} data;
 };
 
@@ -255,6 +334,33 @@ extern char cursor[24][24];
 
 /*functions*/
 /*bootpack.c*/
+
+/*fifo.c*/
+void fifo32_init(DATA_FIFO *fifo, int size, uint *buf, UI_Task *task);
+int fifo32_put(DATA_FIFO *fifo, uint data);
+int fifo32_get(DATA_FIFO *fifo);
+int fifo32_status(DATA_FIFO *fifo);
+
+/*mtask.c*/
+void task_init(void);
+UI_Task *task_alloc(void);
+void task_run(UI_Task *task, int level, int priority);
+void task_switch(void);
+void task_sleep(UI_Task *task);
+void task_arguments(UI_Task *task, int args, ...);
+UI_Task *task_now(void);
+void task_add(UI_Task *task);
+void task_remove(UI_Task *task);
+void task_switchsub(void);
+void task_idle(void);
+
+/*timer.c*/
+void inthandler20(int *esp);
+void init_pit(void);
+UI_Timer *timer_alloc(void);
+void timer_free(UI_Timer *timer);
+void timer_init(UI_Timer *timer, DATA_FIFO *fifo, uint data);
+void timer_settime(UI_Timer *timer, uint timeout);
 
 /*gdtidt.c*/
 void init_gdtidt(void);
@@ -351,6 +457,7 @@ void inthandler1f(int *esp);
 /*io.c*/
 void init_serial(void);
 void send_serial(uchar *s);
+uint readcmos(uchar addr);
 
 /*memory.c*/
 uint memtest(uint start, uint end);

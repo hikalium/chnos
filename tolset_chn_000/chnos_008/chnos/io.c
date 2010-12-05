@@ -33,3 +33,10 @@ void send_serial(uchar *s)
 
 	return;
 }
+
+uint readcmos(uchar addr)
+{
+    io_out8(0x70, addr);
+    return io_in8(0x71);
+}
+
