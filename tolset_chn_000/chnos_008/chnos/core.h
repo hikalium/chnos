@@ -102,6 +102,19 @@
 
 #define MAX_SHEETS	1024
 
+#define PIC0_ICW1	0x0020
+#define PIC0_OCW2	0x0020
+#define PIC0_IMR	0x0021
+#define PIC0_ICW2	0x0021
+#define PIC0_ICW3	0x0021
+#define PIC0_ICW4	0x0021
+#define PIC1_ICW1	0x00a0
+#define PIC1_OCW2	0x00a0
+#define PIC1_IMR	0x00a1
+#define PIC1_ICW2	0x00a1
+#define PIC1_ICW3	0x00a1
+#define PIC1_ICW4	0x00a1
+
 
 /*new object types*/
 typedef enum _bool { false, true} bool;
@@ -300,6 +313,8 @@ void putblock32_32(uint *vram, int vxsize, int pxsize,int pysize, int px0, int p
 void init_system(void);
 
 /*intrpt.c*/
+void init_pic(void);
+void inthandler27(int *esp);
 void cpu_exception_abort(int exception, int *esp);
 void inthandler00(int *esp);
 void inthandler01(int *esp);
@@ -438,3 +453,4 @@ void asm_inthandler1c(void);
 void asm_inthandler1d(void);
 void asm_inthandler1e(void);
 void asm_inthandler1f(void);
+void asm_inthandler27(void);

@@ -78,7 +78,6 @@ void init_screen_i(void *desktop, void *taskbar, void *mousecursor)
 	init_desktop_i(desktop);
 	init_taskbar_i(taskbar);
 	init_mousecursor_i(mousecursor);
-	col_pat(desktop, system.data.info.boot.scrnx, system.data.info.boot.scrny);
 
 	return;
 }
