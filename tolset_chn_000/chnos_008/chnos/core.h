@@ -560,4 +560,5 @@ void asm_inthandler1c(void);
 void asm_inthandler1d(void);
 void asm_inthandler1e(void);
 void asm_inthandler1f(void);
+void asm_inthandler20(void);
 void asm_inthandler27(void);

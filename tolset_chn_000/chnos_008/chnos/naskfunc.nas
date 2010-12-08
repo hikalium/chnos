@@ -28,7 +28,26 @@
 	GLOBAL	_asm_inthandler27
 	EXTERN	_inthandler27
 
+	GLOBAL	_asm_inthandler20
+	EXTERN	_inthandler20
+
 [SECTION .text]
+
+_asm_inthandler20:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler20
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
 
 _pipelineflush:
 	jmp	flush

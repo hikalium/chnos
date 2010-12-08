@@ -42,6 +42,7 @@ void init_pit(void)
 	io_out8(PIT_CTRL, 0x34);
 	io_out8(PIT_CNT0, 0x9c);
 	io_out8(PIT_CNT0, 0x2e);
+	set_gatedesc(system.io.interrupt.idt + 0x20, (int) asm_inthandler20, 2 * 8, AR_INTGATE32);
 	io_out8(PIC0_IMR, io_in8(PIC0_IMR) & 0xfe);
 	system.ui.timer.ctrl.count = 0;
 	return;
