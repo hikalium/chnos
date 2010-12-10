@@ -37,3 +37,33 @@ void CHNMain(void)
 		}
 	}
 }
+
+void KeyBoardControlTask(void)
+{
+	int i;
+	uchar s[128];
+	UI_KeyInfo dec_key;
+
+	for(;;){
+		if(fifo32_status(&system.data.fifo.keycmd) > 0 && system.io.keyboard.cmd_wait < 0){
+			system.io.keyboard.cmd_wait = fifo32_get(&system.data.fifo.keycmd);
+			wait_KBC_sendready();
+			io_out8(KEYB_DATA, system.io.keyboard.cmd_wait);
+		}
+		io_cli();
+		if(fifo32_status(&system.data.fifo.keyctrl) == 0){
+			task_sleep(system.ui.task.keyctrl);
+			io_sti();
+		} else{
+			i = fifo32_get(&system.data.fifo.keyctrl);
+			if(0x100 <= i && i <= 0x1ff){
+				decode_key(&dec_key, i - 0x100);
+				if(dec_key.make && dec_key.c != 0){/*’Êí•¶Žš*/
+					sprintf(s, "[ ]");
+					s[1] = dec_key.c;
+					putfonts_asc_sht_i(system.ui.draw.sht.taskbar, (system.data.info.boot.scrnx - (8 * (19 + 1 + 3))) - 5, 5, 0x000000, 0xffffff, s);
+				}
+			}
+		}
+	}
+}

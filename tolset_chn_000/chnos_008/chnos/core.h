@@ -125,9 +125,21 @@
 #define FIFO32_PUT_OVERFLOW	0x0001
 
 #define SYS_FIFOSIZE	256
+#define KEYCMD_FIFOSIZE	128
+#define KEYCTRL_FIFOSIZE	128
 
 #define PIT_CTRL	0x0043
 #define PIT_CNT0	0x0040
+
+#define KEYB_DATA	0x0060
+#define PORT_KEYSTA	0x0064
+#define KEYSTA_SEND_NOTREADY	0x02
+#define KEYCMD_WRITE_MODE	0x60
+#define KBC_MODE	0x47
+#define PORT_KEYCMD	0x0064
+#define KEYCMD_SENDTO_MOUSE	0xd4
+#define MOUSECMD_ENABLE	0xf4
+#define KEYCMD_LED	0xed
 
 /*new object types*/
 typedef enum _bool { false, true} bool;
@@ -139,11 +151,11 @@ typedef unsigned int uint;
 
 /*structures*/
 struct BOOTINFO { 
-	char cyls; 
-	char leds; 
-	char vmode; 
-	char reserve;
-	short scrnx, scrny;
+	uchar cyls; 
+	uchar leds; 
+	uchar vmode; 
+	uchar reserve;
+	ushort scrnx, scrny;
 	uchar *vram;
 };
 
@@ -223,7 +235,7 @@ struct TSS32 {
 
 struct FIFO32 {
 	uint *buf;
-	int p, q, size, free, flags;
+	uint p, q, size, free, flags;
 	struct TASK *task;
 };
 
@@ -260,6 +272,13 @@ struct TIMERCTL {
 	struct TIMER *timers;
 };
 
+struct KEYINFO {
+	uchar c;
+	uint keycode;
+	bool make;
+	bool alphabet;
+};
+
 /*typedef structures*/
 typedef struct BOOTINFO			DATA_BootInfo;
 typedef struct VESAINFO			DATA_VESAInfo;
@@ -274,6 +293,7 @@ typedef struct TASK			UI_Task;
 typedef struct TASKCTL			UI_TaskControl;
 typedef struct TIMER			UI_Timer;
 typedef struct TIMERCTL			UI_TimerControl;
+typedef struct KEYINFO			UI_KeyInfo;
 
 /*virtual classes*/
 struct SYSTEM {
@@ -292,6 +312,9 @@ struct SYSTEM {
 		struct SYS_IO_INTERRUPT {
 			IO_GateDescriptor *idt;
 		} interrupt;
+		struct SYS_IO_KEYBOARD {
+			int cmd_wait;
+		} keyboard;
 	} io;
 	struct SYS_UI {
 		struct SYS_UI_DRAW {
@@ -309,6 +332,7 @@ struct SYSTEM {
 		struct SYS_UI_TASK {
 			UI_Task *idle;
 			UI_Task *main;
+			UI_Task *keyctrl;
 		} task;
 		struct SYS_UI_TIMER {
 			UI_Timer *taskswitch;
@@ -323,6 +347,10 @@ struct SYSTEM {
 		struct SYS_DATA_FIFO {
 			DATA_FIFO main;
 			uint main_buf[SYS_FIFOSIZE];
+			DATA_FIFO keycmd;
+			uint keycmd_buf[KEYCMD_FIFOSIZE];
+			DATA_FIFO keyctrl;
+			uint keyctrl_buf[KEYCTRL_FIFOSIZE];
 		} fifo;
 	} data;
 };
@@ -334,12 +362,20 @@ extern char cursor[24][24];
 
 /*functions*/
 /*bootpack.c*/
+void KeyBoardControlTask(void);
+
+/*keyboard.c*/
+void init_keyboard(uint offset);
+void inthandler21(int *esp);
+void decode_key(UI_KeyInfo *info, uint data);
+void keylock(uint led);
+void wait_KBC_sendready(void);
 
 /*fifo.c*/
-void fifo32_init(DATA_FIFO *fifo, int size, uint *buf, UI_Task *task);
+void fifo32_init(DATA_FIFO *fifo, uint size, uint *buf, UI_Task *task);
 int fifo32_put(DATA_FIFO *fifo, uint data);
-int fifo32_get(DATA_FIFO *fifo);
-int fifo32_status(DATA_FIFO *fifo);
+uint fifo32_get(DATA_FIFO *fifo);
+uint fifo32_status(DATA_FIFO *fifo);
 
 /*mtask.c*/
 void task_init(void);
@@ -562,4 +598,5 @@ void asm_inthandler1d(void);
 void asm_inthandler1e(void);
 void asm_inthandler1f(void);
 void asm_inthandler20(void);
+void asm_inthandler21(void);
 void asm_inthandler27(void);

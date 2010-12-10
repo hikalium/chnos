@@ -1,7 +1,7 @@
 
 #include "core.h"
 
-void fifo32_init(DATA_FIFO *fifo, int size, uint *buf, UI_Task *task)
+void fifo32_init(DATA_FIFO *fifo, uint size, uint *buf, UI_Task *task)
 {
 	fifo->size = size;
 	fifo->buf = buf;
@@ -40,22 +40,23 @@ int fifo32_put(DATA_FIFO *fifo, uint data)
 
 }
 
-int fifo32_get(DATA_FIFO *fifo)
+uint fifo32_get(DATA_FIFO *fifo)
 {
 	int data;
 	if (fifo->free == fifo->size) {
-		return -1;
-		}
+		if(fifo->q == 0) return fifo->buf[fifo->size];
+		return fifo->buf[fifo->q - 1];
+	}
 	data = fifo->buf[fifo->q];
 	fifo->q++;
 	if (fifo->q == fifo->size) {
-		fifo->q =0;
-		}
+		fifo->q = 0;
+	}
 	fifo->free++;
 	return data;
 }
 
-int fifo32_status(DATA_FIFO *fifo)
+uint fifo32_status(DATA_FIFO *fifo)
 {
 	return fifo->size - fifo->free;
 }
