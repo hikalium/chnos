@@ -361,6 +361,7 @@ UI_Timer *timer_alloc(void);
 void timer_free(UI_Timer *timer);
 void timer_init(UI_Timer *timer, DATA_FIFO *fifo, uint data);
 void timer_settime(UI_Timer *timer, uint timeout);
+void timer_settime_millisec(UI_Timer *timer, uint timeout_ms);
 
 /*gdtidt.c*/
 void init_gdtidt(void);
