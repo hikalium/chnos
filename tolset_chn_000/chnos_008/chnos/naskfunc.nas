@@ -34,7 +34,26 @@
 	GLOBAL	_asm_inthandler21
 	EXTERN	_inthandler21
 
+	GLOBAL	_asm_inthandler2c
+	EXTERN	_inthandler2c
+
 [SECTION .text]
+
+_asm_inthandler2c:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_inthandler2c
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
 
 _asm_inthandler21:
 	push	es

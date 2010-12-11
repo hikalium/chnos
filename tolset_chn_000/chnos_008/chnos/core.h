@@ -127,6 +127,7 @@
 #define SYS_FIFOSIZE	256
 #define KEYCMD_FIFOSIZE	128
 #define KEYCTRL_FIFOSIZE	128
+#define MOUSECTRL_FIFOSIZE	128
 
 #define PIT_CTRL	0x0043
 #define PIT_CNT0	0x0040
@@ -279,6 +280,12 @@ struct KEYINFO {
 	bool alphabet;
 };
 
+struct MOUSE_DECODE {
+	uint buf[4], scrool;
+	int x, y, btn, whinfo;
+	uchar phase; 
+};
+
 /*typedef structures*/
 typedef struct BOOTINFO			DATA_BootInfo;
 typedef struct VESAINFO			DATA_VESAInfo;
@@ -294,6 +301,7 @@ typedef struct TASKCTL			UI_TaskControl;
 typedef struct TIMER			UI_Timer;
 typedef struct TIMERCTL			UI_TimerControl;
 typedef struct KEYINFO			UI_KeyInfo;
+typedef struct MOUSE_DECODE		UI_Mouse;
 
 /*virtual classes*/
 struct SYSTEM {
@@ -315,6 +323,9 @@ struct SYSTEM {
 		struct SYS_IO_KEYBOARD {
 			int cmd_wait;
 		} keyboard;
+		struct SYS_IO_MOUSE {
+			UI_Mouse decode;
+		} mouse;
 	} io;
 	struct SYS_UI {
 		struct SYS_UI_DRAW {
@@ -333,6 +344,7 @@ struct SYSTEM {
 			UI_Task *idle;
 			UI_Task *main;
 			UI_Task *keyctrl;
+			UI_Task *mousectrl;
 		} task;
 		struct SYS_UI_TIMER {
 			UI_Timer *taskswitch;
@@ -350,7 +362,9 @@ struct SYSTEM {
 			DATA_FIFO keycmd;
 			uint keycmd_buf[KEYCMD_FIFOSIZE];
 			DATA_FIFO keyctrl;
-			uint keyctrl_buf[KEYCTRL_FIFOSIZE];
+			uint keyctrl_buf[MOUSECTRL_FIFOSIZE];
+			DATA_FIFO mousectrl;
+			uint mousectrl_buf[MOUSECTRL_FIFOSIZE];
 		} fifo;
 	} data;
 };
@@ -363,6 +377,13 @@ extern char cursor[24][24];
 /*functions*/
 /*bootpack.c*/
 void KeyBoardControlTask(void);
+void MouseControlTask(void);
+
+/*mouse.c*/
+void init_mouse(uint offset);
+void inthandler2c(int *esp);
+int decode_mouse(uint data);
+void sendto_mouse(uint data);
 
 /*keyboard.c*/
 void init_keyboard(uint offset);
@@ -600,3 +621,4 @@ void asm_inthandler1f(void);
 void asm_inthandler20(void);
 void asm_inthandler21(void);
 void asm_inthandler27(void);
+void asm_inthandler2c(void);

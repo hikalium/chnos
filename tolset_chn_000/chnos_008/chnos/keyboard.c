@@ -24,11 +24,11 @@ uchar keytable1[0x80] = {
 };
 
 uint key_shift = 0, key_leds;
-uint offset_data;
+uint offset_data_k;
 
 void init_keyboard(uint offset)
 {
-	offset_data = offset;
+	offset_data_k = offset;
 
 	wait_KBC_sendready();
 	io_out8(PORT_KEYCMD, KEYCMD_WRITE_MODE);
@@ -50,7 +50,7 @@ void inthandler21(int *esp)
 	int data;
 	data = io_in8(KEYB_DATA);
 	io_out8(PIC0_OCW2, 0x61);	/* IRQ-01受付完了をPICに通知 。0x60+番号。*/
-	fifo32_put(&system.data.fifo.keyctrl, data + offset_data);
+	fifo32_put(&system.data.fifo.keyctrl, data + offset_data_k);
 	return;
 }
 
