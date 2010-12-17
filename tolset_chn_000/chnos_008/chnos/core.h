@@ -142,6 +142,14 @@
 #define MOUSECMD_ENABLE	0xf4
 #define KEYCMD_LED	0xed
 
+#define MAX_WINDOWS	256
+#define WIN_COL8_ACTIVE		0x000084
+#define WIN_COL8_INACTIVE	0x848484
+#define WIN_COL16_ACTIVE	0x60F8f0
+#define WIN_COL16_INACTIVE	0xBCFCF8
+#define WIN_COL32_ACTIVE	0x93D9FF
+#define WIN_COL32_INACTIVE	0xD0EFFF
+
 /*new object types*/
 typedef enum _bool { false, true} bool;
 typedef enum _state_alloc { none, initialized, allocated, configured, inuse} state_alloc;
@@ -222,7 +230,7 @@ struct SHEET {
 struct SHTCTL {
 	uint *map;
 	void *vram;
-	int xsize,ysize,top;
+	int xsize, ysize, top;
 	struct SHEET *sheets[MAX_SHEETS];
 	struct SHEET sheets0[MAX_SHEETS];
 };
@@ -286,6 +294,25 @@ struct MOUSE_DECODE {
 	uchar phase; 
 };
 
+struct POSITION_2D {
+	int x, y;
+};
+
+struct WINDOWINFO {
+	char title[32];
+	struct SHEET *win;
+	void *buf;
+	int winxsize, winysize, xsize, ysize;
+	struct POSITION_2D position;
+	struct POSITION_2D origin;
+	state_alloc flags;
+	bool active;
+};
+
+struct WINCTL {
+	struct WINDOWINFO winfos[MAX_WINDOWS];
+};
+
 /*typedef structures*/
 typedef struct BOOTINFO			DATA_BootInfo;
 typedef struct VESAINFO			DATA_VESAInfo;
@@ -302,6 +329,9 @@ typedef struct TIMER			UI_Timer;
 typedef struct TIMERCTL			UI_TimerControl;
 typedef struct KEYINFO			UI_KeyInfo;
 typedef struct MOUSE_DECODE		UI_Mouse;
+typedef struct POSITION_2D		DATA_Position2D;
+typedef struct WINDOWINFO		UI_Window;
+typedef struct WINCTL			UI_WindowControl;
 
 /*virtual classes*/
 struct SYSTEM {
@@ -378,6 +408,34 @@ extern char cursor[24][24];
 /*bootpack.c*/
 void KeyBoardControlTask(void);
 void MouseControlTask(void);
+
+/*window.c*/
+void init_windows(void);
+UI_Window *window_alloc(void);
+UI_Window *make_window(uchar *title, int xsize, int ysize, int px, int py, int height, bool active);
+UI_Window *make_window_app(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf);
+UI_Window *make_window_app_compatible_hrb(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf);
+void change_window(UI_Window *winfo, uchar *title, bool active);
+void change_window_title(UI_Window *winfo, uchar *title);
+void change_window_active(UI_Window *winfo, bool active);
+void slide_window(UI_Window *winfo, int px, int py);
+void refresh_window(UI_Window *winfo);
+void refresh_window_alpha(UI_Window *winfo);
+void boxfill_win(UI_Window *winfo, uint c, int x0, int y0, int x1, int y1);
+void boxfill_win_compatible_hrb(UI_Window *winfo, uint c, int x0, int y0, int x1, int y1);
+void point_win(UI_Window *winfo, uint c, int x, int y);
+void point_win_compatible_hrb(UI_Window *winfo, uint c, int x, int y);
+void putfonts_win(UI_Window *winfo, int x, int y, uint c, uint bc, const uchar *s);
+void putfonts_win_no_bc(UI_Window *winfo, int x, int y, uint c, const uchar *s);
+void putfonts_win_no_bc_compatible_hrb(UI_Window *winfo, int x, int y, uint c, const uchar *s);
+void scrool_win(UI_Window *winfo);
+void scrool_win_32(UI_Window *winfo, uint *vram);
+void scrool_win_16(UI_Window *winfo, ushort *vram);
+void scrool_win_8(UI_Window *winfo, uchar *vram);
+void line_win(UI_Window *winfo, int x0, int y0, int x1, int y1, uint c);
+void line_win_compatible_hrb(UI_Window *winfo, int x0, int y0, int x1, int y1, uint c);
+void draw_hexagon_win(UI_Window *winfo, int a, int x, int y, uint c);
+
 
 /*mouse.c*/
 void init_mouse(uint offset);
@@ -551,6 +609,7 @@ void sheet_refreshsub8(int vx0, int vy0, int vx1, int vy1, int h0, int h1);
 void sheet_refreshmap32(int vx0, int vy0, int vx1, int vy1, int h0);
 void sheet_refreshmap16(int vx0, int vy0, int vx1, int vy1, int h0);
 void sheet_refreshmap8(int vx0, int vy0, int vx1, int vy1, int h0);
+int sheet_get_topheight(void);
 
 /* naskfunc.nas */
 void pipelineflush(void);

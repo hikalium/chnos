@@ -93,6 +93,7 @@ void init_system(void)
 
 	init_keyboard(0x100);
 	init_mouse(0x100);
+	init_windows();
 
 	return;
 }

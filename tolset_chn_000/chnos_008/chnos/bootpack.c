@@ -8,6 +8,7 @@ void CHNMain(void)
 	uchar s[128];
 	int i;
 	UI_Timer *t_1sec;
+	UI_Window *testwin;
 
 	init_system();
 
@@ -21,6 +22,9 @@ void CHNMain(void)
 	t_1sec = timer_alloc();
 	timer_init(t_1sec, &system.data.fifo.main, 1);
 	timer_settime_millisec(t_1sec, 1000);
+
+	testwin = make_window("Ã½Ä³¨ÝÄÞ³", 200, 100, 50, 50, sheet_get_topheight(), true);
+
 
 	for(;;){
 		io_cli();
