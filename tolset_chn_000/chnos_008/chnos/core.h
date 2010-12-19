@@ -150,6 +150,18 @@
 #define WIN_COL32_ACTIVE	0x93D9FF
 #define WIN_COL32_INACTIVE	0xD0EFFF
 
+#define CONSOLE_FIFO_BUF_SIZE	128
+#define CONSOLE_FIFO_START_KEYB	128
+#define CONSOLE_FIFO_CURSOR_START	2
+#define CONSOLE_FIFO_CURSOR_STOP	3
+#define CONSOLE_COLOR_BACKGROUND	0x000000
+#define CONSOLE_COLOR_CHAR	0xFFFFFF
+#define CONSOLE_CMDLINE_BUF_SIZE	128
+
+#define DATA_BYTE	0xFF
+#define DATA_WORD	0xFFFF
+#define DATA_DWORD	0xFFFFFFFF
+
 /*new object types*/
 typedef enum _bool { false, true} bool;
 typedef enum _state_alloc { none, initialized, allocated, configured, inuse} state_alloc;
@@ -380,6 +392,16 @@ struct SYSTEM {
 			UI_Timer *taskswitch;
 			UI_TimerControl ctrl;
 		} timer;
+		struct SYS_UI_CONSOLE {
+			int org_xsize;
+			int org_ysize;
+			int org_xchars;
+			int org_ychars;
+			struct SYS_UI_CONSOLES {
+				UI_Task *task;
+				UI_Window *win;
+			} consoles;
+		} console;
 	} ui;
 	struct SYS_DATA {
 		struct SYS_DATA_INFO {
@@ -408,6 +430,19 @@ extern char cursor[24][24];
 /*bootpack.c*/
 void KeyBoardControlTask(void);
 void MouseControlTask(void);
+
+/*console.c*/
+void console_main(UI_Window *win);
+void cons_reset_cmdline(uchar *cmdline, uint *cmdlines, bool *cmdline_overflow);
+void cons_command_start(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor, uchar *cmdline, uint *cmdlines, bool *cmdline_overflow);
+//uint cons_app_hrb_start(uchar *cmdline);
+void cons_put_str(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor, uchar *str);
+void cons_put_char(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor, uchar c);
+void cons_put_prompt(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor);
+void cons_new_line(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor);
+void cons_new_line_no_prompt(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor);
+void cons_slide_line(UI_Window *win);
+void cons_check_newline(UI_Window *win, DATA_Position2D *p, DATA_Position2D *prompt);
 
 /*window.c*/
 void init_windows(void);
@@ -574,6 +609,10 @@ void inthandler1f(int *esp);
 void init_serial(void);
 void send_serial(uchar *s);
 uint readcmos(uchar addr);
+void readrtc(uchar *t);
+void fdc_motor_on(uchar d);
+void fdc_motor_off(uchar d);
+void reset_cpu(void);
 
 /*memory.c*/
 uint memtest(uint start, uint end);

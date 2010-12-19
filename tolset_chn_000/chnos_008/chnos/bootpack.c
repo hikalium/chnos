@@ -8,7 +8,6 @@ void CHNMain(void)
 	uchar s[128];
 	int i;
 	UI_Timer *t_1sec;
-	UI_Window *testwin;
 
 	init_system();
 
@@ -23,8 +22,18 @@ void CHNMain(void)
 	timer_init(t_1sec, &system.data.fifo.main, 1);
 	timer_settime_millisec(t_1sec, 1000);
 
-	testwin = make_window("Ã½Ä³¨ÝÄÞ³", 200, 100, 50, 50, sheet_get_topheight(), true);
-
+	system.ui.console.consoles.win = make_window("console", system.ui.console.org_xsize, system.ui.console.org_ysize, 10, 10, sheet_get_topheight(), false);
+	system.ui.console.consoles.task = task_alloc();
+	system.ui.console.consoles.task->tss.esp = (int)sys_memman_alloc(64 * 1024) + 64 * 1024;
+	system.ui.console.consoles.task->tss.eip = (int)&console_main;
+	system.ui.console.consoles.task->tss.es = 1 * 8;
+	system.ui.console.consoles.task->tss.cs = 2 * 8;
+	system.ui.console.consoles.task->tss.ss = 1 * 8;
+	system.ui.console.consoles.task->tss.ds = 1 * 8;
+	system.ui.console.consoles.task->tss.fs = 1 * 8;
+	system.ui.console.consoles.task->tss.gs = 1 * 8;
+	task_arguments(system.ui.console.consoles.task, 2, system.ui.console.consoles.win);
+	task_run(system.ui.console.consoles.task, 2, 2);
 
 	for(;;){
 		io_cli();
@@ -49,6 +58,9 @@ void KeyBoardControlTask(void)
 	int i;
 	uchar s[128];
 	UI_KeyInfo dec_key;
+	DATA_FIFO *key_to;
+
+	key_to = (DATA_FIFO *)0;
 
 	for(;;){
 		if(fifo32_status(&system.data.fifo.keycmd) > 0 && system.io.keyboard.cmd_wait < 0){
@@ -68,6 +80,21 @@ void KeyBoardControlTask(void)
 					sprintf(s, "[ ]");
 					s[1] = dec_key.c;
 					putfonts_asc_sht_i(system.ui.draw.sht.taskbar, (system.data.info.boot.scrnx - (8 * (10 + 1 + 3))) - 4, 4, 0x000000, 0xffffff, s);
+					if(key_to != 0) fifo32_put(key_to, dec_key.c + CONSOLE_FIFO_START_KEYB);
+				} else if(dec_key.make && dec_key.keycode == 0x0E){/*BackSpace*/
+					if(key_to != 0) fifo32_put(key_to, 0x0e + CONSOLE_FIFO_START_KEYB);
+				} else if(dec_key.make && dec_key.keycode == 0x0f){/*Tab*/
+					if(key_to == 0){
+						key_to = &system.ui.console.consoles.task->fifo;
+						change_window_active(system.ui.console.consoles.win, true);
+						fifo32_put(key_to, CONSOLE_FIFO_CURSOR_START);
+					} else{
+						fifo32_put(key_to, CONSOLE_FIFO_CURSOR_STOP);
+						key_to = (DATA_FIFO *)0;
+						change_window_active(system.ui.console.consoles.win, false);
+					}
+				} else if(dec_key.make && dec_key.keycode == 0x1c){/*Enter*/
+					if(key_to != 0) fifo32_put(key_to, 0x0a + CONSOLE_FIFO_START_KEYB);
 				}
 			}
 		}

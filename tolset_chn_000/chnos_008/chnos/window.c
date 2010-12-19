@@ -146,8 +146,8 @@ void change_window(UI_Window *winfo, uchar *title, bool active)
 
 	line_i(winfo->buf, winfo->winxsize, 0, 0, winfo->winxsize - 1, 0, 0xFFFFFF);
 	line_i(winfo->buf, winfo->winxsize, 0, 0, 0, winfo->winysize - 1, 0xFFFFFF);
-	line_i(winfo->buf, winfo->winxsize, winfo->winxsize - 1, 0, winfo->winxsize - 1, winfo->winysize - 1, 0xFFFFFF);
-	line_i(winfo->buf, winfo->winxsize, 0, winfo->winysize - 1, winfo->winxsize - 1, winfo->winysize - 1, 0xFFFFFF);
+	line_i(winfo->buf, winfo->winxsize, winfo->winxsize - 1, 0, winfo->winxsize - 1, winfo->winysize - 1, 0x000000);
+	line_i(winfo->buf, winfo->winxsize, 0, winfo->winysize - 1, winfo->winxsize - 1, winfo->winysize - 1, 0x000000);
 
 	putfonts_asc_sht_i(winfo->win, 4, 4, 0xFFFFFF, color, winfo->title);
 

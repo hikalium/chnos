@@ -20,6 +20,11 @@ void init_system(void)
 	system.data.info.vesa				= *vesa;
 	system.data.info.boot				= *boot;
 
+	system.ui.console.org_xsize			= (system.data.info.boot.scrnx >> 1) & 0xfffffff7;
+	system.ui.console.org_ysize			= (system.data.info.boot.scrny >> 1) & 0xffffffef;
+	system.ui.console.org_xchars			= system.ui.console.org_xsize >> 3;
+	system.ui.console.org_ychars			= system.ui.console.org_ysize >> 4;
+
 	init_gdtidt();
 	init_pic();
 	init_serial();
