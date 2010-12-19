@@ -25,6 +25,8 @@ void init_system(void)
 	system.ui.console.org_xchars			= system.ui.console.org_xsize >> 3;
 	system.ui.console.org_ychars			= system.ui.console.org_ysize >> 4;
 
+	system.io.file.list				= (IO_FileInfo *)(ADR_DISKIMG + 0x00002600);
+
 	init_gdtidt();
 	init_pic();
 	init_serial();
@@ -99,6 +101,8 @@ void init_system(void)
 	init_keyboard(0x100);
 	init_mouse(0x100);
 	init_windows();
+
+	fdc_motor_off(4);
 
 	return;
 }

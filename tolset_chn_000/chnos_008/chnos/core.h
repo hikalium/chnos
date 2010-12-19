@@ -13,6 +13,7 @@
 
 #define ADR_BOOTINFO	0x00000ff0
 #define ADR_VESAINFO	0x00000e00
+#define ADR_DISKIMG	0x00100000
 
 #define EFLAGS_AC_BIT	0x00040000
 
@@ -325,6 +326,22 @@ struct WINCTL {
 	struct WINDOWINFO winfos[MAX_WINDOWS];
 };
 
+struct FILEINFO {
+	uchar name[8];
+	uchar ext[3];
+	uchar type;
+	uchar reserve;
+	uchar VFAT_createTimeMs;
+	ushort VFAT_createTime;
+	ushort VFAT_createDate;
+	ushort VFAT_accessDate;
+	ushort VFAT_clusterHighWord;
+	ushort time;
+	ushort date;
+	ushort clustno;
+	uint size;
+};
+
 /*typedef structures*/
 typedef struct BOOTINFO			DATA_BootInfo;
 typedef struct VESAINFO			DATA_VESAInfo;
@@ -344,6 +361,7 @@ typedef struct MOUSE_DECODE		UI_Mouse;
 typedef struct POSITION_2D		DATA_Position2D;
 typedef struct WINDOWINFO		UI_Window;
 typedef struct WINCTL			UI_WindowControl;
+typedef struct FILEINFO			IO_FileInfo;
 
 /*virtual classes*/
 struct SYSTEM {
@@ -368,6 +386,9 @@ struct SYSTEM {
 		struct SYS_IO_MOUSE {
 			UI_Mouse decode;
 		} mouse;
+		struct SYS_IO_FILE {
+			IO_FileInfo *list;
+		} file;
 	} io;
 	struct SYS_UI {
 		struct SYS_UI_DRAW {
