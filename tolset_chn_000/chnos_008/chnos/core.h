@@ -397,6 +397,7 @@ struct SYSTEM {
 		} mouse;
 		struct SYS_IO_FILE {
 			IO_FileInfo *list;
+			ushort *fat;
 		} file;
 	} io;
 	struct SYS_UI {
@@ -457,6 +458,11 @@ extern char cursor[24][24];
 /*bootpack.c*/
 void KeyBoardControlTask(void);
 void MouseControlTask(void);
+
+/*file.c*/
+void decode_fat(ushort *fat, bool backup);
+void load_file(uint finfo_no, uchar *buf);
+uint search_file(char *name);
 
 /*console.c*/
 void console_main(UI_Console *cons);

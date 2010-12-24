@@ -176,26 +176,26 @@ void cons_command_start(UI_Console *cons, uchar *cmdline, uint *cmdlines, bool *
 				}
 			}
 		}
-//	} else if(strncmp(cmdline, "type ", 5) == 0){
-//		j = 0;
-//		for(i = 5; cmdline[i] != 0x00; i++){
-//			s[i - 5] = cmdline[i];
-//			s[i - 4] = 0x00;
-//		}
-//		i = search_file(s);
-//		if(i != 0xFFFFFFFF){
-//			j = system.file.list[i].size;
-//			p = system.io.mem.alloc(j); 
-//			load_file(i, p);
-//			for(i = 0; i < j; i++){
-//				s[0] = p[i];
-//				s[1] = 0x00;
-//				cons_put_str(win, prompt, cursor, s);
-//			}
-//			system.io.mem.free(p, j);
-//		} else{
-//			cons_put_str(win, prompt, cursor, "File not found...\n");
-//		}
+	} else if(strncmp(cmdline, "type ", 5) == 0){
+		j = 0;
+		for(i = 5; cmdline[i] != 0x00; i++){
+			s[i - 5] = cmdline[i];
+			s[i - 4] = 0x00;
+		}
+		i = search_file(s);
+		if(i != 0xFFFFFFFF){
+			j = system.io.file.list[i].size;
+			p = sys_memman_alloc(j); 
+			load_file(i, p);
+			for(i = 0; i < j; i++){
+				s[0] = p[i];
+				s[1] = 0x00;
+				cons_put_str(cons, s);
+			}
+			sys_memman_free(p, j);
+		} else{
+			cons_put_str(cons, "File not found...\n");
+		}
 	} else if(cmdline[0] != 0x00){
 		for(i = 0; i < 11 && cmdline[i] != 0x00; i++){
 			if(cmdline[i] <= ' ' || cmdline[i] == '.') break;

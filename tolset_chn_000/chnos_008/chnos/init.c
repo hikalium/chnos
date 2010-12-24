@@ -3,12 +3,12 @@
 
 void init_system(void)
 {
-	DATA_VESAInfo *vesa = (DATA_VESAInfo *) ADR_VESAINFO;
-	DATA_BootInfo *boot = (DATA_BootInfo *) ADR_BOOTINFO;
+	DATA_VESAInfo *vesa 				= (DATA_VESAInfo *) ADR_VESAINFO;
+	DATA_BootInfo *boot 				= (DATA_BootInfo *) ADR_BOOTINFO;
 	uint i;
 
-	i = memtest(0x00400000, 0xbfffffff);
-	sys_main_str_buf = (struct SYSTEM *)(i - sizeof(struct SYSTEM));
+	i 						= memtest(0x00400000, 0xbfffffff);
+	sys_main_str_buf 				= (struct SYSTEM *)(i - sizeof(struct SYSTEM));
 
 	system.io.mem.paging.dir			= (uint *)0x00400000;
 	(uint)system.io.mem.paging.table		= 0x00400000 + (1024 * 4);
@@ -69,30 +69,30 @@ void init_system(void)
 	init_pit();
 	task_init();
 
-	system.ui.task.keyctrl = task_alloc();
-	system.ui.task.keyctrl->tss.esp = (int)sys_memman_alloc(64 * 1024) + 64 * 1024;
-	system.ui.task.keyctrl->tss.eip = (int)&KeyBoardControlTask;
-	system.ui.task.keyctrl->tss.es = 1 * 8;
-	system.ui.task.keyctrl->tss.cs = 2 * 8;
-	system.ui.task.keyctrl->tss.ss = 1 * 8;
-	system.ui.task.keyctrl->tss.ds = 1 * 8;
-	system.ui.task.keyctrl->tss.fs = 1 * 8;
-	system.ui.task.keyctrl->tss.gs = 1 * 8;
+	system.ui.task.keyctrl 				= task_alloc();
+	system.ui.task.keyctrl->tss.esp 		= (int)sys_memman_alloc(64 * 1024) + 64 * 1024;
+	system.ui.task.keyctrl->tss.eip 		= (int)&KeyBoardControlTask;
+	system.ui.task.keyctrl->tss.es 			= 1 * 8;
+	system.ui.task.keyctrl->tss.cs 			= 2 * 8;
+	system.ui.task.keyctrl->tss.ss 			= 1 * 8;
+	system.ui.task.keyctrl->tss.ds 			= 1 * 8;
+	system.ui.task.keyctrl->tss.fs 			= 1 * 8;
+	system.ui.task.keyctrl->tss.gs 			= 1 * 8;
 
-	system.ui.task.mousectrl = task_alloc();
-	system.ui.task.mousectrl->tss.esp = (int)sys_memman_alloc(64 * 1024) + 64 * 1024;
-	system.ui.task.mousectrl->tss.eip = (int)&MouseControlTask;
-	system.ui.task.mousectrl->tss.es = 1 * 8;
-	system.ui.task.mousectrl->tss.cs = 2 * 8;
-	system.ui.task.mousectrl->tss.ss = 1 * 8;
-	system.ui.task.mousectrl->tss.ds = 1 * 8;
-	system.ui.task.mousectrl->tss.fs = 1 * 8;
-	system.ui.task.mousectrl->tss.gs = 1 * 8;
+	system.ui.task.mousectrl 			= task_alloc();
+	system.ui.task.mousectrl->tss.esp 		= (int)sys_memman_alloc(64 * 1024) + 64 * 1024;
+	system.ui.task.mousectrl->tss.eip 		= (int)&MouseControlTask;
+	system.ui.task.mousectrl->tss.es 		= 1 * 8;
+	system.ui.task.mousectrl->tss.cs 		= 2 * 8;
+	system.ui.task.mousectrl->tss.ss 		= 1 * 8;
+	system.ui.task.mousectrl->tss.ds 		= 1 * 8;
+	system.ui.task.mousectrl->tss.fs 		= 1 * 8;
+	system.ui.task.mousectrl->tss.gs 		= 1 * 8;
 
-	system.data.fifo.main.task = system.ui.task.main;
-	system.data.fifo.keycmd.task = system.ui.task.keyctrl;
-	system.data.fifo.keyctrl.task = system.ui.task.keyctrl;
-	system.data.fifo.mousectrl.task = system.ui.task.mousectrl;
+	system.data.fifo.main.task 			= system.ui.task.main;
+	system.data.fifo.keycmd.task 			= system.ui.task.keyctrl;
+	system.data.fifo.keyctrl.task 			= system.ui.task.keyctrl;
+	system.data.fifo.mousectrl.task 		= system.ui.task.mousectrl;
 
 	task_run(system.ui.task.main, 1, 0);
 	task_run(system.ui.task.keyctrl, 1, 1);
@@ -103,6 +103,9 @@ void init_system(void)
 	init_windows();
 
 	fdc_motor_off(4);
+
+	system.io.file.fat 				= sys_memman_alloc(2 * 2880);
+	decode_fat(system.io.file.fat, false);
 
 	return;
 }
