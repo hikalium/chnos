@@ -2,12 +2,9 @@
 #include "core.h"
 #include <string.h>
 
-void console_main(UI_Window *win)
+void console_main(UI_Console *cons)
 {
 	UI_Timer *timer;
-	UI_Task *task = task_now();
-	DATA_Position2D cursor;
-	DATA_Position2D prompt;
 	bool cursor_state = true;
 	bool cursor_on = false;
 	int i;
@@ -18,30 +15,26 @@ void console_main(UI_Window *win)
 	uint cmdlines;
 	bool cmdline_overflow;
 
-	prompt.x = 0;
-	prompt.y = 0;
+	cons->prompt.x = 0;
+	cons->prompt.y = 0;
 
-	*((int *) 0x0fec) = (int) win;
-	*((int *) 0x0fe8) = (int) &prompt;
-	*((int *) 0x0fe4) = (int) &cursor;
-
-	fifo32_init(&task->fifo, CONSOLE_FIFO_BUF_SIZE, fifobuf, task);
+	fifo32_init(&cons->task->fifo, CONSOLE_FIFO_BUF_SIZE, fifobuf, cons->task);
 	timer = timer_alloc();
-	timer_init(timer, &task->fifo, 1);
+	timer_init(timer, &cons->task->fifo, 1);
 	timer_settime(timer, 50);
 
-	boxfill_win(win, CONSOLE_COLOR_BACKGROUND, 0, 0, win->xsize, win->ysize);
-	cons_put_prompt(win, &prompt, &cursor);
+	boxfill_win(cons->win, CONSOLE_COLOR_BACKGROUND, 0, 0, cons->win->xsize, cons->win->ysize);
+	cons_put_prompt(cons);
 
 	cons_reset_cmdline(cmdline, &cmdlines, &cmdline_overflow);
 
 	for(;;){
 		io_cli();
-		if(fifo32_status(&task->fifo) == 0){
-			task_sleep(task);
+		if(fifo32_status(&cons->task->fifo) == 0){
+			task_sleep(cons->task);
 			io_sti();
 		} else {
-			i = fifo32_get(&task->fifo);
+			i = fifo32_get(&cons->task->fifo);
 			io_sti();
 			if(i == 1){
 				if(cursor_on){
@@ -52,31 +45,31 @@ void console_main(UI_Window *win)
 						cursor_c = CONSOLE_COLOR_BACKGROUND;
 						cursor_state = true;
 					}
-					boxfill_win(win, cursor_c, cursor.x, cursor.y, cursor.x + 8, cursor.y +16);
+					boxfill_win(cons->win, cursor_c, cons->cursor.x, cons->cursor.y, cons->cursor.x + 8, cons->cursor.y +16);
 				}
 				timer_settime(timer, 50);
 			} else if(i == CONSOLE_FIFO_CURSOR_START){
 				cursor_on = true;
 			} else if(i == CONSOLE_FIFO_CURSOR_STOP){
 				cursor_on = false;
-				boxfill_win(win, CONSOLE_COLOR_BACKGROUND, cursor.x, cursor.y, cursor.x + 8, cursor.y +16);
+				boxfill_win(cons->win, CONSOLE_COLOR_BACKGROUND, cons->cursor.x, cons->cursor.y, cons->cursor.x + 8, cons->cursor.y +16);
 			} else if(CONSOLE_FIFO_START_KEYB <= i && i <= CONSOLE_FIFO_START_KEYB + DATA_BYTE){
 				i -= CONSOLE_FIFO_START_KEYB;
 				if(i == 0x0e){
-					putfonts_win(win, cursor.x, cursor.y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
-					cursor.x -= 8;
-					cons_check_newline(win, &cursor, &prompt);
-					putfonts_win(win, cursor.x, cursor.y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
+					putfonts_win(cons->win, cons->cursor.x, cons->cursor.y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
+					cons->cursor.x -= 8;
+					cons_check_newline(cons);
+					putfonts_win(cons->win, cons->cursor.x, cons->cursor.y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
 					if(cmdlines != 0){
 						cmdlines--;
 						cmdline[cmdlines] = 0x00;
 					}
 				} else if(i == 0x0a){
-					cons_command_start(win, &prompt, &cursor, cmdline, &cmdlines, &cmdline_overflow);
+					cons_command_start(cons, cmdline, &cmdlines, &cmdline_overflow);
 				} else{
 					s[0] = (uchar)i;
 					s[1] = 0x00;
-					cons_put_str(win, &prompt, &cursor, s);
+					cons_put_str(cons, s);
 					if(cmdlines >= CONSOLE_CMDLINE_BUF_SIZE){
 						cmdline_overflow = true;
 						cmdlines = 0;
@@ -98,7 +91,7 @@ void cons_reset_cmdline(uchar *cmdline, uint *cmdlines, bool *cmdline_overflow)
 	return;
 }
 
-void cons_command_start(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor, uchar *cmdline, uint *cmdlines, bool *cmdline_overflow)
+void cons_command_start(UI_Console *cons, uchar *cmdline, uint *cmdlines, bool *cmdline_overflow)
 {
 	uchar s[128], t[7];
 	uint i, j;
@@ -107,19 +100,19 @@ void cons_command_start(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D
 	i = 0;
 
 	if(cmdline[0] != 0x00){
-		cons_new_line_no_prompt(win, prompt, cursor);
+		cons_new_line_no_prompt(cons);
 	}
 	if(strcmp(cmdline, "mem") == 0){
 		sprintf(s, "ÒÓØ°:%dMB\n", system.io.mem.total >> 20);
-		cons_put_str(win, prompt, cursor, s);
+		cons_put_str(cons, s);
 		sprintf(s, "±·:%dKB\n", sys_memman_free_total() >> 10);
-		cons_put_str(win, prompt, cursor, s);
+		cons_put_str(cons, s);
 	} else if(strcmp(cmdline, "cls") == 0){
-		prompt->x = 0;
-		prompt->y = 0;
-		boxfill_win(win, CONSOLE_COLOR_BACKGROUND, 0, 0, win->xsize, win->ysize);
+		cons->prompt.x = 0;
+		cons->prompt.y = 0;
+		boxfill_win(cons->win, CONSOLE_COLOR_BACKGROUND, 0, 0, cons->win->xsize, cons->win->ysize);
 		cons_reset_cmdline(cmdline, cmdlines, cmdline_overflow);
-		cons_put_prompt(win, prompt, cursor);
+		cons_put_prompt(cons);
 		goto end;
 	} else if(strcmp(cmdline, "dir") == 0){
 		for(i = 0; i < 0xe0; i++){
@@ -133,7 +126,7 @@ void cons_command_start(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D
 					s[ 9] = system.io.file.list[i].ext[0];
 					s[10] = system.io.file.list[i].ext[1];
 					s[11] = system.io.file.list[i].ext[2];
-					cons_put_str(win, prompt, cursor, s);
+					cons_put_str(cons, s);
 				}
 			}
 		}
@@ -142,19 +135,19 @@ void cons_command_start(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D
 	} else if(strcmp(cmdline, "date") == 0){
 		readrtc(t);
 		sprintf(s, "%02X%02X.%02X.%02X %02X:%02X:%02X\n", t[6], t[5], t[4], t[3], t[2], t[1], t[0]);
-		cons_put_str(win, prompt, cursor, s);
+		cons_put_str(cons, s);
 	} else if(strncmp(cmdline, "fdc", 3) == 0){
-		cons_put_str(win, prompt, cursor, "FDCconfig...\n");
+		cons_put_str(cons, "FDCconfig...\n");
 		if(cmdline[3] == 0x00){
 			i = io_in8(0x03f2);
-			if((i & 0x10) != 0) cons_put_str(win, prompt, cursor, "FD0 Motor-ON\n");
-			else cons_put_str(win, prompt, cursor, "FD0 Motor-OFF\n");
-			if((i & 0x20) != 0) cons_put_str(win, prompt, cursor, "FD1 Motor-ON\n");
-			else cons_put_str(win, prompt, cursor, "FD1 Motor-OFF\n");
-			if((i & 0x40) != 0) cons_put_str(win, prompt, cursor, "FD2 Motor-ON\n");
-			else cons_put_str(win, prompt, cursor, "FD2 Motor-OFF\n");
-			if((i & 0x80) != 0) cons_put_str(win, prompt, cursor, "FD3 Motor-ON\n");
-			else cons_put_str(win, prompt, cursor, "FD3 Motor-OFF\n");
+			if((i & 0x10) != 0) cons_put_str(cons, "FD0 Motor-ON\n");
+			else cons_put_str(cons, "FD0 Motor-OFF\n");
+			if((i & 0x20) != 0) cons_put_str(cons, "FD1 Motor-ON\n");
+			else cons_put_str(cons, "FD1 Motor-OFF\n");
+			if((i & 0x40) != 0) cons_put_str(cons, "FD2 Motor-ON\n");
+			else cons_put_str(cons, "FD2 Motor-OFF\n");
+			if((i & 0x80) != 0) cons_put_str(cons, "FD3 Motor-ON\n");
+			else cons_put_str(cons, "FD3 Motor-OFF\n");
 		}
 		if(cmdline[3] == ' '){
 			if(cmdline[4] == '0'){
@@ -209,11 +202,11 @@ void cons_command_start(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D
 		}
 		cmdline[i] = 0x00;
 //		if(cons_app_hrb_start(cmdline) == 0xFFFFFFFF){
-			cons_put_str(win, prompt, cursor, "Bad Command...\n");
+			cons_put_str(cons, "Bad Command...\n");
 //		}
 	}
 	cons_reset_cmdline(cmdline, cmdlines, cmdline_overflow);
-	cons_new_line(win, prompt, cursor);
+	cons_new_line(cons);
 end:
 	return;
 }
@@ -256,7 +249,7 @@ uint cons_app_hrb_start(uchar *cmdline)
 }
 */
 
-void cons_put_str(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor, uchar *str)
+void cons_put_str(UI_Console *cons, uchar *str)
 {
 	int i;
 	uchar s[3];
@@ -267,101 +260,102 @@ void cons_put_str(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *curs
 		} else if(str[i] == '\r'){
 
 		} else if(str[i] == '\n'){
-			cons_new_line_no_prompt(win, prompt, cursor);
+			cons_new_line_no_prompt(cons);
 		} else if(str[i] == '\t'){
 			for(;;){
-				putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_CHAR, CONSOLE_COLOR_BACKGROUND, " ");
-				cursor->x += 8;
-				cons_check_newline(win, cursor, prompt);
-				if((cursor->x & 0x1f) == 0 && cursor->x != 0) break;
+				putfonts_win(cons->win, cons->cursor.x, cons->cursor.y, CONSOLE_COLOR_CHAR, CONSOLE_COLOR_BACKGROUND, " ");
+				cons->cursor.x += 8;
+				cons_check_newline(cons);
+				if((cons->cursor.x & 0x1f) == 0 && cons->cursor.x != 0) break;
 			}
 		} else{
 			s[0] = str[i];
 			s[1] = 0x00;
-			putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_CHAR, CONSOLE_COLOR_BACKGROUND, s);
-			cursor->x += 8;
-			cons_check_newline(win, cursor, prompt);
+			putfonts_win(cons->win, cons->cursor.x, cons->cursor.y, CONSOLE_COLOR_CHAR, CONSOLE_COLOR_BACKGROUND, s);
+			cons->cursor.x += 8;
+			cons_check_newline(cons);
 		}
 	}
 	return;
 }
 
-void cons_put_char(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor, uchar c)
+void cons_put_char(UI_Console *cons, uchar c)
 {
 	uchar s[2];
+
 	s[0] = c;
 	s[1] = 0x00;
-	cons_put_str(win, prompt, cursor, s);
+	cons_put_str(cons, s);
 	return;
 }
 
-void cons_put_prompt(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor)
+void cons_put_prompt(UI_Console *cons)
 {
-	putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
-	putfonts_win(win, prompt->x, prompt->y, CONSOLE_COLOR_CHAR, CONSOLE_COLOR_BACKGROUND, ">");
-	cursor->x = prompt->x + 8;
-	cursor->y = prompt->y;
+	putfonts_win(cons->win, cons->cursor.x, cons->cursor.y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
+	putfonts_win(cons->win, cons->prompt.x, cons->prompt.y, CONSOLE_COLOR_CHAR, CONSOLE_COLOR_BACKGROUND, ">");
+	cons->cursor.x = cons->prompt.x + 8;
+	cons->cursor.y = cons->prompt.y;
 	return;
 }
 
-void cons_new_line(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor)
+void cons_new_line(UI_Console *cons)
 {
-	if(cursor->y <= system.ui.console.org_ysize - 17){
-		prompt->y = cursor->y + 16;
-		cons_put_prompt(win, prompt, cursor);
+	if(cons->cursor.y <= system.ui.console.org_ysize - 17){
+		cons->prompt.y = cons->cursor.y + 16;
+		cons_put_prompt(cons);
 	} else{
-		putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
-		cons_slide_line(win);
-		prompt->y = (system.ui.console.org_ychars - 1) * 16;
-		cons_put_prompt(win, prompt, cursor);
+		putfonts_win(cons->win, cons->cursor.x, cons->cursor.y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
+		cons_slide_line(cons);
+		cons->prompt.y = (system.ui.console.org_ychars - 1) * 16;
+		cons_put_prompt(cons);
 	}
 	return;
 }
 
-void cons_new_line_no_prompt(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor)
+void cons_new_line_no_prompt(UI_Console *cons)
 {
-	if(cursor->y <= system.ui.console.org_ysize - 17){
-		putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
-		cursor->x = 0;
-		cursor->y = cursor->y + 16;
+	if(cons->cursor.y <= system.ui.console.org_ysize - 17){
+		putfonts_win(cons->win, cons->cursor.x, cons->cursor.y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
+		cons->cursor.x = 0;
+		cons->cursor.y = cons->cursor.y + 16;
 	} else{
-		putfonts_win(win, cursor->x, cursor->y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
-		cons_slide_line(win);
-		cursor->x = 0;
+		putfonts_win(cons->win, cons->cursor.x, cons->cursor.y, CONSOLE_COLOR_BACKGROUND, CONSOLE_COLOR_BACKGROUND, " ");
+		cons_slide_line(cons);
+		cons->cursor.x = 0;
 	}
 	return;
 }
 
-void cons_slide_line(UI_Window *win)
+void cons_slide_line(UI_Console *cons)
 {
-	scrool_win(win);
-	refresh_window(win);
+	scrool_win(cons->win);
+	refresh_window(cons->win);
 	return;
 }
 
-void cons_check_newline(UI_Window *win, DATA_Position2D *p, DATA_Position2D *prompt)
+void cons_check_newline(UI_Console *cons)
 {
-	if(p->x <= prompt->x){
-		if(p->y != prompt->y){
-			if(p->x < prompt->x){
-				p->y -= 16;
-				p->x = system.ui.console.org_xsize - 8;
+	if(cons->cursor.x <= cons->prompt.x){
+		if(cons->cursor.y != cons->prompt.y){
+			if(cons->cursor.x < cons->prompt.x){
+				cons->cursor.y -= 16;
+				cons->cursor.x = system.ui.console.org_xsize - 8;
 			}
 		} else{
-			p->y = prompt->y;
-			p->x = 8;
+			cons->cursor.y = cons->prompt.y;
+			cons->cursor.x = 8;
 		}
-	} else if(p->x >= system.ui.console.org_xsize){
-		if(p->y <= system.ui.console.org_ysize - 17){
-			p->x = 0;
-			p->y += 16;
+	} else if(cons->cursor.x >= system.ui.console.org_xsize){
+		if(cons->cursor.y <= system.ui.console.org_ysize - 17){
+			cons->cursor.x = 0;
+			cons->cursor.y += 16;
 		} else{
-			cons_slide_line(win);
-			p->x = 0;
-			if(prompt->y > 0) prompt->y -= 16;
+			cons_slide_line(cons);
+			cons->cursor.x = 0;
+			if(cons->prompt.y > 0) cons->prompt.y -= 16;
 			else{
-				prompt->y = 0;
-				prompt->x = 0;
+				cons->prompt.y = 0;
+				cons->prompt.x = 0;
 			}
 		}
 	} 

@@ -158,6 +158,7 @@
 #define CONSOLE_COLOR_BACKGROUND	0x000000
 #define CONSOLE_COLOR_CHAR	0xFFFFFF
 #define CONSOLE_CMDLINE_BUF_SIZE	128
+#define MAX_CONSOLES	16
 
 #define DATA_BYTE	0xFF
 #define DATA_WORD	0xFFFF
@@ -342,6 +343,13 @@ struct FILEINFO {
 	uint size;
 };
 
+struct SYS_UI_CONSOLES {
+	struct TASK *task;
+	struct WINDOWINFO *win;
+	struct POSITION_2D prompt;
+	struct POSITION_2D cursor;
+};
+
 /*typedef structures*/
 typedef struct BOOTINFO			DATA_BootInfo;
 typedef struct VESAINFO			DATA_VESAInfo;
@@ -362,6 +370,7 @@ typedef struct POSITION_2D		DATA_Position2D;
 typedef struct WINDOWINFO		UI_Window;
 typedef struct WINCTL			UI_WindowControl;
 typedef struct FILEINFO			IO_FileInfo;
+typedef struct SYS_UI_CONSOLES		UI_Console;
 
 /*virtual classes*/
 struct SYSTEM {
@@ -418,10 +427,7 @@ struct SYSTEM {
 			int org_ysize;
 			int org_xchars;
 			int org_ychars;
-			struct SYS_UI_CONSOLES {
-				UI_Task *task;
-				UI_Window *win;
-			} consoles;
+			UI_Console consoles[MAX_CONSOLES];
 		} console;
 	} ui;
 	struct SYS_DATA {
@@ -453,17 +459,17 @@ void KeyBoardControlTask(void);
 void MouseControlTask(void);
 
 /*console.c*/
-void console_main(UI_Window *win);
+void console_main(UI_Console *cons);
 void cons_reset_cmdline(uchar *cmdline, uint *cmdlines, bool *cmdline_overflow);
-void cons_command_start(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor, uchar *cmdline, uint *cmdlines, bool *cmdline_overflow);
+void cons_command_start(UI_Console *cons, uchar *cmdline, uint *cmdlines, bool *cmdline_overflow);
 //uint cons_app_hrb_start(uchar *cmdline);
-void cons_put_str(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor, uchar *str);
-void cons_put_char(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor, uchar c);
-void cons_put_prompt(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor);
-void cons_new_line(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor);
-void cons_new_line_no_prompt(UI_Window *win, DATA_Position2D *prompt, DATA_Position2D *cursor);
-void cons_slide_line(UI_Window *win);
-void cons_check_newline(UI_Window *win, DATA_Position2D *p, DATA_Position2D *prompt);
+void cons_put_str(UI_Console *cons, uchar *str);
+void cons_put_char(UI_Console *cons, uchar c);
+void cons_put_prompt(UI_Console *cons);
+void cons_new_line(UI_Console *cons);
+void cons_new_line_no_prompt(UI_Console *cons);
+void cons_slide_line(UI_Console *cons);
+void cons_check_newline(UI_Console *cons);
 
 /*window.c*/
 void init_windows(void);

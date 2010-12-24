@@ -22,18 +22,18 @@ void CHNMain(void)
 	timer_init(t_1sec, &system.data.fifo.main, 1);
 	timer_settime_millisec(t_1sec, 1000);
 
-	system.ui.console.consoles.win = make_window("console", system.ui.console.org_xsize, system.ui.console.org_ysize, 10, 10, sheet_get_topheight(), false);
-	system.ui.console.consoles.task = task_alloc();
-	system.ui.console.consoles.task->tss.esp = (int)sys_memman_alloc(64 * 1024) + 64 * 1024;
-	system.ui.console.consoles.task->tss.eip = (int)&console_main;
-	system.ui.console.consoles.task->tss.es = 1 * 8;
-	system.ui.console.consoles.task->tss.cs = 2 * 8;
-	system.ui.console.consoles.task->tss.ss = 1 * 8;
-	system.ui.console.consoles.task->tss.ds = 1 * 8;
-	system.ui.console.consoles.task->tss.fs = 1 * 8;
-	system.ui.console.consoles.task->tss.gs = 1 * 8;
-	task_arguments(system.ui.console.consoles.task, 2, system.ui.console.consoles.win);
-	task_run(system.ui.console.consoles.task, 2, 2);
+	system.ui.console.consoles[0].win = make_window("console", system.ui.console.org_xsize, system.ui.console.org_ysize, 10, 10, sheet_get_topheight(), false);
+	system.ui.console.consoles[0].task = task_alloc();
+	system.ui.console.consoles[0].task->tss.esp = (int)sys_memman_alloc(64 * 1024) + 64 * 1024;
+	system.ui.console.consoles[0].task->tss.eip = (int)&console_main;
+	system.ui.console.consoles[0].task->tss.es = 1 * 8;
+	system.ui.console.consoles[0].task->tss.cs = 2 * 8;
+	system.ui.console.consoles[0].task->tss.ss = 1 * 8;
+	system.ui.console.consoles[0].task->tss.ds = 1 * 8;
+	system.ui.console.consoles[0].task->tss.fs = 1 * 8;
+	system.ui.console.consoles[0].task->tss.gs = 1 * 8;
+	task_arguments(system.ui.console.consoles[0].task, 2, &system.ui.console.consoles[0]);
+	task_run(system.ui.console.consoles[0].task, 2, 2);
 
 	for(;;){
 		io_cli();
@@ -85,13 +85,13 @@ void KeyBoardControlTask(void)
 					if(key_to != 0) fifo32_put(key_to, 0x0e + CONSOLE_FIFO_START_KEYB);
 				} else if(dec_key.make && dec_key.keycode == 0x0f){/*Tab*/
 					if(key_to == 0){
-						key_to = &system.ui.console.consoles.task->fifo;
-						change_window_active(system.ui.console.consoles.win, true);
+						key_to = &system.ui.console.consoles[0].task->fifo;
+						change_window_active(system.ui.console.consoles[0].win, true);
 						fifo32_put(key_to, CONSOLE_FIFO_CURSOR_START);
 					} else{
 						fifo32_put(key_to, CONSOLE_FIFO_CURSOR_STOP);
 						key_to = (DATA_FIFO *)0;
-						change_window_active(system.ui.console.consoles.win, false);
+						change_window_active(system.ui.console.consoles[0].win, false);
 					}
 				} else if(dec_key.make && dec_key.keycode == 0x1c){/*Enter*/
 					if(key_to != 0) fifo32_put(key_to, 0x0a + CONSOLE_FIFO_START_KEYB);
