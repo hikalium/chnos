@@ -95,6 +95,7 @@ void cons_command_start(UI_Console *cons, uchar *cmdline, uint *cmdlines, bool *
 {
 	uchar s[128], t[7];
 	uint i, j;
+	uint tsc[2];
 	uchar *p;
 
 	i = 0;
@@ -132,6 +133,10 @@ void cons_command_start(UI_Console *cons, uchar *cmdline, uint *cmdlines, bool *
 		}
 	} else if(strcmp(cmdline, "reset") == 0){
 		reset_cpu();
+	} else if(strcmp(cmdline, "readtsc") == 0){
+		read_tsc(tsc);
+		sprintf(s, "%08u%08u", tsc[0], tsc[1]);
+		cons_put_str(cons, s);
 	} else if(strcmp(cmdline, "date") == 0){
 		readrtc(t);
 		sprintf(s, "%02X%02X.%02X.%02X %02X:%02X:%02X\n", t[6], t[5], t[4], t[3], t[2], t[1], t[0]);

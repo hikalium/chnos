@@ -8,6 +8,9 @@ void CHNMain(void)
 	uchar s[128];
 	int i;
 	UI_Timer *t_1sec;
+	uint new_tsc[2];
+	uint old_tsc[2];
+	uint sec_clock[2];
 
 	init_system();
 
@@ -47,6 +50,19 @@ void CHNMain(void)
 				putfonts_asc_sht_i(system.ui.draw.sht.taskbar, (system.data.info.boot.scrnx - (8 * 10)) - 4, 4, 0x000000, 0xffffff, s);
 				sprintf(s, "%02X:%02X:%02X", readcmos(0x04), readcmos(0x02), readcmos(0x00));
 				putfonts_asc_sht_i(system.ui.draw.sht.taskbar, (system.data.info.boot.scrnx - (8 * 9)) - 4, 4 + 16, 0x000000, 0xffffff, s);
+				old_tsc[0] = new_tsc[0];
+				old_tsc[1] = new_tsc[1];
+				read_tsc(new_tsc);
+				if(new_tsc[1] > old_tsc[1]){
+					sec_clock[0] = new_tsc[0] - old_tsc[0];
+					sec_clock[1] = new_tsc[1] - old_tsc[1];
+				} else if(new_tsc[1] < old_tsc[1]){
+					sec_clock[0] = new_tsc[0] - old_tsc[0] - 1;
+					sec_clock[1] = (0xffffffff - old_tsc[1]) + new_tsc[1];
+				}
+				sprintf(s, "%08u%08u", sec_clock[0], sec_clock[1]);
+				putfonts_asc_sht_i(system.ui.draw.sht.taskbar, (system.data.info.boot.scrnx - (8 * (10 + 1 + 3 + 21 + 1))) - 4, 20, 0x000000, 0xffffff, s);
+
 				timer_settime_millisec(t_1sec, 1000);
 			}
 		}

@@ -684,6 +684,7 @@ void sheet_refreshmap8(int vx0, int vy0, int vx1, int vy1, int h0);
 int sheet_get_topheight(void);
 
 /* naskfunc.nas */
+void read_tsc(uint *addr);
 void pipelineflush(void);
 void pit_beep_on(void);
 void pit_beep_off(void);

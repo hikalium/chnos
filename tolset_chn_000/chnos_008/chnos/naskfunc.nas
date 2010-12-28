@@ -21,6 +21,7 @@
 	GLOBAL  _clts, _fnsave, _frstor
 	GLOBAL	_pit_beep_on, _pit_beep_off
 	GLOBAL	_pipelineflush
+	GLOBAL	_read_tsc
 
 	GLOBAL	_asm_inthandler00, _asm_inthandler01, _asm_inthandler02, _asm_inthandler03, _asm_inthandler04, _asm_inthandler05, _asm_inthandler06, _asm_inthandler07, _asm_inthandler08, _asm_inthandler09, _asm_inthandler0a, _asm_inthandler0b, _asm_inthandler0c, _asm_inthandler0d, _asm_inthandler0e, _asm_inthandler0f, _asm_inthandler10, _asm_inthandler11, _asm_inthandler12, _asm_inthandler13, _asm_inthandler14, _asm_inthandler15, _asm_inthandler16, _asm_inthandler17, _asm_inthandler18, _asm_inthandler19, _asm_inthandler1a, _asm_inthandler1b, _asm_inthandler1c, _asm_inthandler1d, _asm_inthandler1e, _asm_inthandler1f
 	EXTERN	_inthandler00, _inthandler01, _inthandler02, _inthandler03, _inthandler04, _inthandler05, _inthandler06, _inthandler07, _inthandler08, _inthandler09, _inthandler0a, _inthandler0b, _inthandler0c, _inthandler0d, _inthandler0e, _inthandler0f, _inthandler10, _inthandler11, _inthandler12, _inthandler13, _inthandler14, _inthandler15, _inthandler16, _inthandler17, _inthandler18, _inthandler19, _inthandler1a, _inthandler1b, _inthandler1c, _inthandler1d, _inthandler1e, _inthandler1f
@@ -38,6 +39,15 @@
 	EXTERN	_inthandler2c
 
 [SECTION .text]
+
+_read_tsc:
+	pushad
+	mov	ebx,[esp+36]
+	db	0x0f,0x31
+	mov	[ebx],edx
+	mov	[ebx+4],eax
+	popad
+	ret
 
 _asm_inthandler2c:
 	push	es
