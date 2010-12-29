@@ -95,7 +95,7 @@ void cons_command_start(UI_Console *cons, uchar *cmdline, uint *cmdlines, bool *
 {
 	uchar s[128], t[7];
 	uint i, j;
-	uint tsc[2];
+	UUID uuid;
 	uchar *p;
 
 	i = 0;
@@ -133,9 +133,9 @@ void cons_command_start(UI_Console *cons, uchar *cmdline, uint *cmdlines, bool *
 		}
 	} else if(strcmp(cmdline, "reset") == 0){
 		reset_cpu();
-	} else if(strcmp(cmdline, "readtsc") == 0){
-		read_tsc(tsc);
-		sprintf(s, "%08u%08u", tsc[0], tsc[1]);
+	} else if(strcmp(cmdline, "uuid") == 0){
+		gen_UUID(&uuid);
+		sprintf(s, "{%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X}\r\n", uuid.data[0], uuid.data[1], uuid.data[2], uuid.data[3], uuid.data[4], uuid.data[5], uuid.data[6], uuid.data[7], uuid.data[8], uuid.data[9], uuid.data[10], uuid.data[11], uuid.data[12], uuid.data[13], uuid.data[14], uuid.data[15]);
 		cons_put_str(cons, s);
 	} else if(strcmp(cmdline, "date") == 0){
 		readrtc(t);

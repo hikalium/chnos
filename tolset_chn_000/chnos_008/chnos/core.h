@@ -5,6 +5,10 @@
 #include <math.h>
 #include <string.h>
 
+int rand(void);
+#define srand(seed)			(void) (rand_seed = (seed))
+extern unsigned int rand_seed;
+
 /*definemacros*/
 #define RGB16(r,g,b) ((r)<<11|(g)<<5|(b))
 
@@ -350,6 +354,11 @@ struct SYS_UI_CONSOLES {
 	struct POSITION_2D cursor;
 };
 
+struct _UUID {
+	uchar data[16];
+};
+
+
 /*typedef structures*/
 typedef struct BOOTINFO			DATA_BootInfo;
 typedef struct VESAINFO			DATA_VESAInfo;
@@ -371,6 +380,7 @@ typedef struct WINDOWINFO		UI_Window;
 typedef struct WINCTL			UI_WindowControl;
 typedef struct FILEINFO			IO_FileInfo;
 typedef struct SYS_UI_CONSOLES		UI_Console;
+typedef struct _UUID			UUID;
 
 /*virtual classes*/
 struct SYSTEM {
@@ -458,6 +468,9 @@ extern char cursor[24][24];
 /*bootpack.c*/
 void KeyBoardControlTask(void);
 void MouseControlTask(void);
+
+/*uuid.c*/
+void gen_UUID(UUID *uuid);
 
 /*file.c*/
 void decode_fat(ushort *fat, bool backup);
