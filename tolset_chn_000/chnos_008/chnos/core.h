@@ -481,6 +481,12 @@ uint search_file(char *name);
 void console_main(UI_Console *cons);
 void cons_reset_cmdline(uchar *cmdline, uint *cmdlines, bool *cmdline_overflow);
 void cons_command_start(UI_Console *cons, uchar *cmdline, uint *cmdlines, bool *cmdline_overflow);
+void cons_command_mem(UI_Console *cons);
+void cons_command_dir(UI_Console *cons);
+void cons_command_fdc(UI_Console *cons, uchar *cmdline);
+
+
+
 //uint cons_app_hrb_start(uchar *cmdline);
 void cons_put_str(UI_Console *cons, uchar *str);
 void cons_put_char(UI_Console *cons, uchar c);
@@ -697,6 +703,7 @@ void sheet_refreshmap8(int vx0, int vy0, int vx1, int vy1, int h0);
 int sheet_get_topheight(void);
 
 /* naskfunc.nas */
+void cpuid(void *addr, uint idaddr);
 void read_tsc(uint *addr);
 void pipelineflush(void);
 void pit_beep_on(void);

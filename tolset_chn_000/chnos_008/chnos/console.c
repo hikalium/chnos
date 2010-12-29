@@ -104,10 +104,7 @@ void cons_command_start(UI_Console *cons, uchar *cmdline, uint *cmdlines, bool *
 		cons_new_line_no_prompt(cons);
 	}
 	if(strcmp(cmdline, "mem") == 0){
-		sprintf(s, "ÒÓØ°:%dMB\n", system.io.mem.total >> 20);
-		cons_put_str(cons, s);
-		sprintf(s, "±·:%dKB\n", sys_memman_free_total() >> 10);
-		cons_put_str(cons, s);
+		cons_command_mem(cons);
 	} else if(strcmp(cmdline, "cls") == 0){
 		cons->prompt.x = 0;
 		cons->prompt.y = 0;
@@ -116,21 +113,7 @@ void cons_command_start(UI_Console *cons, uchar *cmdline, uint *cmdlines, bool *
 		cons_put_prompt(cons);
 		goto end;
 	} else if(strcmp(cmdline, "dir") == 0){
-		for(i = 0; i < 0xe0; i++){
-			if(system.io.file.list[i].name[0] == 0x00) break;
-			if(system.io.file.list[i].name[0] != 0xe5){
-				if((system.io.file.list[i].type & 0x18) == 0){
-					sprintf(s, "FILENAME.EXT %7d %04d/%02d/%02d-%02d:%02d:%02d\n", system.io.file.list[i].size, (system.io.file.list[i].date >> 9) + 1980, (system.io.file.list[i].date & 0x01e0) >> 5, system.io.file.list[i].date & 0x001f, system.io.file.list[i].time >> 11, (system.io.file.list[i].time & 0x07e0) >> 5, system.io.file.list[i].time & 0x1f);
-					for(j = 0; j < 8; j++){
-						s[j] = system.io.file.list[i].name[j];
-					}
-					s[ 9] = system.io.file.list[i].ext[0];
-					s[10] = system.io.file.list[i].ext[1];
-					s[11] = system.io.file.list[i].ext[2];
-					cons_put_str(cons, s);
-				}
-			}
-		}
+		cons_command_dir(cons);
 	} else if(strcmp(cmdline, "reset") == 0){
 		reset_cpu();
 	} else if(strcmp(cmdline, "uuid") == 0){
@@ -142,45 +125,7 @@ void cons_command_start(UI_Console *cons, uchar *cmdline, uint *cmdlines, bool *
 		sprintf(s, "%02X%02X.%02X.%02X %02X:%02X:%02X\n", t[6], t[5], t[4], t[3], t[2], t[1], t[0]);
 		cons_put_str(cons, s);
 	} else if(strncmp(cmdline, "fdc", 3) == 0){
-		cons_put_str(cons, "FDCconfig...\n");
-		if(cmdline[3] == 0x00){
-			i = io_in8(0x03f2);
-			if((i & 0x10) != 0) cons_put_str(cons, "FD0 Motor-ON\n");
-			else cons_put_str(cons, "FD0 Motor-OFF\n");
-			if((i & 0x20) != 0) cons_put_str(cons, "FD1 Motor-ON\n");
-			else cons_put_str(cons, "FD1 Motor-OFF\n");
-			if((i & 0x40) != 0) cons_put_str(cons, "FD2 Motor-ON\n");
-			else cons_put_str(cons, "FD2 Motor-OFF\n");
-			if((i & 0x80) != 0) cons_put_str(cons, "FD3 Motor-ON\n");
-			else cons_put_str(cons, "FD3 Motor-OFF\n");
-		}
-		if(cmdline[3] == ' '){
-			if(cmdline[4] == '0'){
-				if(cmdline[5] == ' ' && cmdline[6] == 'o' && cmdline[7] == 'n' && cmdline[8] == 0x00){
-					fdc_motor_on(0);
-				} else if(cmdline[5] == ' ' && cmdline[6] == 'o' && cmdline[7] == 'f' && cmdline[8] == 'f' && cmdline[9] == 0x00){
-					fdc_motor_off(0);
-				}
-			} else if(cmdline[4] == '1'){
-				if(cmdline[5] == ' ' && cmdline[6] == 'o' && cmdline[7] == 'n' && cmdline[8] == 0x00){
-					fdc_motor_on(1);
-				} else if(cmdline[5] == ' ' && cmdline[6] == 'o' && cmdline[7] == 'f' && cmdline[8] == 'f' && cmdline[9] == 0x00){
-					fdc_motor_off(1);
-				}
-			} else if(cmdline[4] == '2'){
-				if(cmdline[5] == ' ' && cmdline[6] == 'o' && cmdline[7] == 'n' && cmdline[8] == 0x00){
-					fdc_motor_on(2);
-				} else if(cmdline[5] == ' ' && cmdline[6] == 'o' && cmdline[7] == 'f' && cmdline[8] == 'f' && cmdline[9] == 0x00){
-					fdc_motor_off(2);
-				}
-			} else if(cmdline[4] == '3'){
-				if(cmdline[5] == ' ' && cmdline[6] == 'o' && cmdline[7] == 'n' && cmdline[8] == 0x00){
-					fdc_motor_on(3);
-				} else if(cmdline[5] == ' ' && cmdline[6] == 'o' && cmdline[7] == 'f' && cmdline[8] == 'f' && cmdline[9] == 0x00){
-					fdc_motor_off(3);
-				}
-			}
-		}
+		cons_command_fdc(cons, cmdline);
 	} else if(strncmp(cmdline, "type ", 5) == 0){
 		j = 0;
 		for(i = 5; cmdline[i] != 0x00; i++){
@@ -213,6 +158,86 @@ void cons_command_start(UI_Console *cons, uchar *cmdline, uint *cmdlines, bool *
 	cons_reset_cmdline(cmdline, cmdlines, cmdline_overflow);
 	cons_new_line(cons);
 end:
+	return;
+}
+
+void cons_command_mem(UI_Console *cons)
+{
+	uchar s[32];
+
+	sprintf(s, "ÒÓØ°:%dMB\n", system.io.mem.total >> 20);
+	cons_put_str(cons, s);
+	sprintf(s, "±·:%dKB\n", sys_memman_free_total() >> 10);
+	cons_put_str(cons, s);
+	return;
+}
+
+void cons_command_dir(UI_Console *cons)
+{
+	uchar s[64];
+	int i, j;
+
+	for(i = 0; i < 0xe0; i++){
+		if(system.io.file.list[i].name[0] == 0x00) break;
+		if(system.io.file.list[i].name[0] != 0xe5){
+			if((system.io.file.list[i].type & 0x18) == 0){
+				sprintf(s, "FILENAME.EXT %7d %04d/%02d/%02d-%02d:%02d:%02d\n", system.io.file.list[i].size, (system.io.file.list[i].date >> 9) + 1980, (system.io.file.list[i].date & 0x01e0) >> 5, system.io.file.list[i].date & 0x001f, system.io.file.list[i].time >> 11, (system.io.file.list[i].time & 0x07e0) >> 5, system.io.file.list[i].time & 0x1f);
+				for(j = 0; j < 8; j++){
+					s[j] = system.io.file.list[i].name[j];
+				}
+				s[ 9] = system.io.file.list[i].ext[0];
+				s[10] = system.io.file.list[i].ext[1];
+				s[11] = system.io.file.list[i].ext[2];
+				cons_put_str(cons, s);
+			}
+		}
+	}
+	return;
+}
+
+void cons_command_fdc(UI_Console *cons, uchar *cmdline)
+{
+	int i;
+
+	cons_put_str(cons, "FDCconfig...\n");
+	if(cmdline[3] == 0x00){
+		i = io_in8(0x03f2);
+		if((i & 0x10) != 0) cons_put_str(cons, "FD0 Motor-ON\n");
+		else cons_put_str(cons, "FD0 Motor-OFF\n");
+		if((i & 0x20) != 0) cons_put_str(cons, "FD1 Motor-ON\n");
+		else cons_put_str(cons, "FD1 Motor-OFF\n");
+		if((i & 0x40) != 0) cons_put_str(cons, "FD2 Motor-ON\n");
+		else cons_put_str(cons, "FD2 Motor-OFF\n");
+		if((i & 0x80) != 0) cons_put_str(cons, "FD3 Motor-ON\n");
+		else cons_put_str(cons, "FD3 Motor-OFF\n");
+	}
+	if(cmdline[3] == ' '){
+		if(cmdline[4] == '0'){
+			if(cmdline[5] == ' ' && cmdline[6] == 'o' && cmdline[7] == 'n' && cmdline[8] == 0x00){
+				fdc_motor_on(0);
+			} else if(cmdline[5] == ' ' && cmdline[6] == 'o' && cmdline[7] == 'f' && cmdline[8] == 'f' && cmdline[9] == 0x00){
+				fdc_motor_off(0);
+			}
+		} else if(cmdline[4] == '1'){
+			if(cmdline[5] == ' ' && cmdline[6] == 'o' && cmdline[7] == 'n' && cmdline[8] == 0x00){
+				fdc_motor_on(1);
+			} else if(cmdline[5] == ' ' && cmdline[6] == 'o' && cmdline[7] == 'f' && cmdline[8] == 'f' && cmdline[9] == 0x00){
+				fdc_motor_off(1);
+			}
+		} else if(cmdline[4] == '2'){
+			if(cmdline[5] == ' ' && cmdline[6] == 'o' && cmdline[7] == 'n' && cmdline[8] == 0x00){
+				fdc_motor_on(2);
+			} else if(cmdline[5] == ' ' && cmdline[6] == 'o' && cmdline[7] == 'f' && cmdline[8] == 'f' && cmdline[9] == 0x00){
+				fdc_motor_off(2);
+			}
+		} else if(cmdline[4] == '3'){
+			if(cmdline[5] == ' ' && cmdline[6] == 'o' && cmdline[7] == 'n' && cmdline[8] == 0x00){
+				fdc_motor_on(3);
+			} else if(cmdline[5] == ' ' && cmdline[6] == 'o' && cmdline[7] == 'f' && cmdline[8] == 'f' && cmdline[9] == 0x00){
+				fdc_motor_off(3);
+			}
+		}
+	}
 	return;
 }
 
