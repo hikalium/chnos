@@ -48,8 +48,8 @@ _cpuid:
 	db	0x0f,0xa2
 	mov	[esi   ],eax
 	mov	[esi+ 4],ebx
-	mov	[esi+ 8],ecx
-	mov	[esi+12],edx
+	mov	[esi+ 8],edx
+	mov	[esi+12],ecx
 	popad
 	ret
 

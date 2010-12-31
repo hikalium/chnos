@@ -358,6 +358,17 @@ struct _UUID {
 	uchar data[16];
 };
 
+struct FORMAT_HRB {
+	uint DataSegmentSize;
+	uchar sign[4];
+	uint DataSegmentExtSize;
+	uint DefaultESP;
+	uint TransferToDataSegBytes;
+	uint OriginDataSection;
+	uint JMPCode;
+	uint EntryPoint;
+	uint StartMallocAddr;
+};
 
 /*typedef structures*/
 typedef struct BOOTINFO			DATA_BootInfo;
@@ -381,6 +392,7 @@ typedef struct WINCTL			UI_WindowControl;
 typedef struct FILEINFO			IO_FileInfo;
 typedef struct SYS_UI_CONSOLES		UI_Console;
 typedef struct _UUID			UUID;
+typedef struct FORMAT_HRB		FORMAT_Haribote;
 
 /*virtual classes*/
 struct SYSTEM {
@@ -484,10 +496,10 @@ void cons_command_start(UI_Console *cons, uchar *cmdline, uint *cmdlines, bool *
 void cons_command_mem(UI_Console *cons);
 void cons_command_dir(UI_Console *cons);
 void cons_command_fdc(UI_Console *cons, uchar *cmdline);
-
-
-
-//uint cons_app_hrb_start(uchar *cmdline);
+void cons_command_type(UI_Console *cons, uchar *cmdline);
+void cons_command_cpuid(UI_Console *cons, uchar *cmdline);
+void cons_command_systeminfo(UI_Console *cons, uchar *cmdline);
+uint cons_app_hrb_start(UI_Console *cons, uchar *cmdline);
 void cons_put_str(UI_Console *cons, uchar *str);
 void cons_put_char(UI_Console *cons, uchar c);
 void cons_put_prompt(UI_Console *cons);
@@ -738,6 +750,7 @@ void load_tr(uint tr);
 uint memtest_sub(uint start, uint end);
 void farjmp(uint eip, uint cs);
 void farcall(uint eip, uint cs);
+void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);
 void asm_inthandler00(void);
 void asm_inthandler01(void);
 void asm_inthandler02(void);

@@ -94,9 +94,8 @@ void cons_reset_cmdline(uchar *cmdline, uint *cmdlines, bool *cmdline_overflow)
 void cons_command_start(UI_Console *cons, uchar *cmdline, uint *cmdlines, bool *cmdline_overflow)
 {
 	uchar s[128], t[7];
-	uint i, j;
+	uint i;
 	UUID uuid;
-	uchar *p;
 
 	i = 0;
 
@@ -126,34 +125,20 @@ void cons_command_start(UI_Console *cons, uchar *cmdline, uint *cmdlines, bool *
 		cons_put_str(cons, s);
 	} else if(strncmp(cmdline, "fdc", 3) == 0){
 		cons_command_fdc(cons, cmdline);
+	} else if(strncmp(cmdline, "cpuid ", 5) == 0){
+		cons_command_cpuid(cons, cmdline);
+	} else if(strncmp(cmdline, "systeminfo", 10) == 0){
+		cons_command_systeminfo(cons, cmdline);
 	} else if(strncmp(cmdline, "type ", 5) == 0){
-		j = 0;
-		for(i = 5; cmdline[i] != 0x00; i++){
-			s[i - 5] = cmdline[i];
-			s[i - 4] = 0x00;
-		}
-		i = search_file(s);
-		if(i != 0xFFFFFFFF){
-			j = system.io.file.list[i].size;
-			p = sys_memman_alloc(j); 
-			load_file(i, p);
-			for(i = 0; i < j; i++){
-				s[0] = p[i];
-				s[1] = 0x00;
-				cons_put_str(cons, s);
-			}
-			sys_memman_free(p, j);
-		} else{
-			cons_put_str(cons, "File not found...\n");
-		}
+		cons_command_type(cons, cmdline);
 	} else if(cmdline[0] != 0x00){
 		for(i = 0; i < 11 && cmdline[i] != 0x00; i++){
 			if(cmdline[i] <= ' ' || cmdline[i] == '.') break;
 		}
 		cmdline[i] = 0x00;
-//		if(cons_app_hrb_start(cmdline) == 0xFFFFFFFF){
+		if(cons_app_hrb_start(cons, cmdline) == 0xFFFFFFFF){
 			cons_put_str(cons, "Bad Command...\n");
-//		}
+		}
 	}
 	cons_reset_cmdline(cmdline, cmdlines, cmdline_overflow);
 	cons_new_line(cons);
@@ -241,11 +226,82 @@ void cons_command_fdc(UI_Console *cons, uchar *cmdline)
 	return;
 }
 
-/*
-uint cons_app_hrb_start(uchar *cmdline)
+void cons_command_type(UI_Console *cons, uchar *cmdline)
+{
+	int i, j;
+	uchar s[32];
+	uchar *p;
+
+	j = 0;
+	for(i = 5; cmdline[i] != 0x00; i++){
+		s[i - 5] = cmdline[i];
+		s[i - 4] = 0x00;
+	}
+	i = search_file(s);
+	if(i != 0xFFFFFFFF){
+		j = system.io.file.list[i].size;
+		p = sys_memman_alloc(j); 
+		load_file(i, p);
+		for(i = 0; i < j; i++){
+			s[0] = p[i];
+			s[1] = 0x00;
+			cons_put_str(cons, s);
+		}
+		sys_memman_free(p, j);
+	} else{
+		cons_put_str(cons, "File not found...\n");
+	}
+	return;
+}
+
+void cons_command_cpuid(UI_Console *cons, uchar *cmdline)
 {
 	uint i, j;
-	char *p, *q;
+	bool cpuide;
+	uchar s[32];
+	uchar idbuf[32];
+
+	i = io_load_eflags();
+	io_store_eflags((i | 0x00200000));
+	j = io_load_eflags();	
+	if(i != j){
+		cpuide = true;
+		cons_put_str(cons, "CPUID is Enable.\n");
+	} else{
+		cpuide = false;
+		cons_put_str(cons, "CPUID is Disable.\n");
+	}
+	io_store_eflags((j & ~0x00200000));
+
+	idbuf[16] = '\n';
+	idbuf[17] = 0x00;
+
+	if(cpuide){
+		if(strcmp((uchar *)(cmdline + 6), "0x00000000") == 0){
+			s[16] = 0x00;
+			cpuid(idbuf, 0x00000000);
+			sprintf(s, "MAX=0x%02X%02X%02X%02X\n", idbuf[0], idbuf[1], idbuf[2], idbuf[3]);
+			cons_put_str(cons, s);
+			cons_put_str(cons, (uchar *)(idbuf + 4));
+		}
+	}
+
+	return;
+}
+
+void cons_command_systeminfo(UI_Console *cons, uchar *cmdline)
+{
+	uchar s[64];
+
+	sprintf(s, "CHNOSProject ver.Beta008\n Compiled at %s %s\n", __DATE__, __TIME__);
+	cons_put_str(cons, s);
+	return;
+}
+
+uint cons_app_hrb_start(UI_Console *cons, uchar *cmdline)
+{
+	uint i, j;
+	uchar *p, *q;
 	UI_Task *task = task_now();
 	FORMAT_Haribote *head;
 
@@ -255,29 +311,28 @@ uint cons_app_hrb_start(uchar *cmdline)
 		i = search_file(cmdline);
 	}
 	if(i != 0xFFFFFFFF){
-		j = system.file.list[i].size;
-		p = system.io.mem.alloc(j);
+		j = system.io.file.list[i].size;
+		p = sys_memman_alloc(j);
 		head = (FORMAT_Haribote *) p;
 		load_file(i, p);
 		if(j >= 36 && strncmp(p + 4, "Hari", 4) == 0 && *p == 0x00){
-			q = system.io.mem.alloc(head->DataSegmentSize);
+			q = sys_memman_alloc(head->DataSegmentSize);
 			*((int *) 0x0fe0) = (int) q;
-			set_segmdesc(system.sys.gdt + 1003, j - 1, (int)p, AR_CODE32_ER + AR_APP);
-			set_segmdesc(system.sys.gdt + 1004, head->DataSegmentSize - 1, (int)q, AR_DATA32_RW + AR_APP);
+			set_segmdesc(system.io.mem.segment.gdt + 1003, j - 1, (int)p, AR_CODE32_ER + AR_APP);
+			set_segmdesc(system.io.mem.segment.gdt + 1004, head->DataSegmentSize - 1, (int)q, AR_DATA32_RW + AR_APP);
 			for(i = 0; i < head->DataSegmentSize; i++){
 				q[head->DefaultESP + i] = p[head->OriginDataSection + i];
 			}
 			start_app(0x1b, 1003 * 8, head->DefaultESP, 1004 * 8, &(task->tss.esp0));
-			system.io.mem.free(q, head->DataSegmentSize);
+			sys_memman_free(q, head->DataSegmentSize);
 		} else{
-			cons_put_str((UI_Window *) *((int *) 0x0fec), (DATA_Position2D *) *((int *) 0x0fe8), (DATA_Position2D *) *((int *) 0x0fe4), ".hrbÌ§²ÙÌ«°Ï¯Ä´×°\n");
+			cons_put_str(cons, ".hrbÌ§²ÙÌ«°Ï¯Ä´×°\n");
 		}
-		system.io.mem.free(p, j);
+		sys_memman_free(p, j);
 		return i;
 	}
 	return 0xFFFFFFFF;
 }
-*/
 
 void cons_put_str(UI_Console *cons, uchar *str)
 {
