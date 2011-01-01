@@ -52,6 +52,8 @@ void init_gdtidt(void)
 	set_gatedesc(idt+0x1e, (int) asm_inthandler1e, 2 * 8, AR_INTGATE32);
 	set_gatedesc(idt+0x1f, (int) asm_inthandler1f, 2 * 8, AR_INTGATE32);
 
+	set_gatedesc(idt+0x40, (int) asm_hrb_api, 2 * 8, AR_INTGATE32 + AR_APP);
+
 	return;
 }
 

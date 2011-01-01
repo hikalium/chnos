@@ -16,14 +16,18 @@ void init_paging(void)
 	}
 
 	for(i = 0; i < j; i++){
-		paging_set_dir(&system.io.mem.paging.dir[i], &system.io.mem.paging.table[i][0], PG_PRESENT | PG_WRITABLE | PG_SUPERVISOR | PG_WRITEBACK | PG_CACHE_ENABLE | PG_NOTACCESSED | PG_NOTWRITTEN | PG_4KBPAGE | PG_NOTGLOBAL, 0x00000000);
+//		paging_set_dir(&system.io.mem.paging.dir[i], &system.io.mem.paging.table[i][0], PG_PRESENT | PG_WRITABLE | PG_SUPERVISOR | PG_WRITEBACK | PG_CACHE_ENABLE | PG_NOTACCESSED | PG_NOTWRITTEN | PG_4KBPAGE | PG_NOTGLOBAL, 0x00000000);
+		paging_set_dir(&system.io.mem.paging.dir[i], &system.io.mem.paging.table[i][0], PG_PRESENT | PG_WRITABLE | PG_USER | PG_WRITEBACK | PG_CACHE_ENABLE | PG_NOTACCESSED | PG_NOTWRITTEN | PG_4KBPAGE | PG_NOTGLOBAL, 0x00000000);
+
 		if(i == j - 1){
 			for(k = 0; k < l; k++){
-				paging_set_table(&system.io.mem.paging.table[i][k], (uint *)((i << 22) + (k * 1024 * 4)), PG_PRESENT | PG_WRITABLE | PG_SUPERVISOR | PG_WRITEBACK | PG_CACHE_ENABLE | PG_NOTACCESSED | PG_NOTWRITTEN | PG_4KBPAGE | PG_NOTGLOBAL, 0x00000000);
+//				paging_set_table(&system.io.mem.paging.table[i][k], (uint *)((i << 22) + (k * 1024 * 4)), PG_PRESENT | PG_WRITABLE | PG_SUPERVISOR | PG_WRITEBACK | PG_CACHE_ENABLE | PG_NOTACCESSED | PG_NOTWRITTEN | PG_4KBPAGE | PG_NOTGLOBAL, 0x00000000);
+				paging_set_table(&system.io.mem.paging.table[i][k], (uint *)((i << 22) + (k * 1024 * 4)), PG_PRESENT | PG_WRITABLE | PG_USER | PG_WRITEBACK | PG_CACHE_ENABLE | PG_NOTACCESSED | PG_NOTWRITTEN | PG_4KBPAGE | PG_NOTGLOBAL, 0x00000000);
 			}
 		} else{
 			for(k = 0; k < 1024; k++){
-				paging_set_table(&system.io.mem.paging.table[i][k], (uint *)((i << 22) + (k * 1024 * 4)), PG_PRESENT | PG_WRITABLE | PG_SUPERVISOR | PG_WRITEBACK | PG_CACHE_ENABLE | PG_NOTACCESSED | PG_NOTWRITTEN | PG_4KBPAGE | PG_NOTGLOBAL, 0x00000000);
+//				paging_set_table(&system.io.mem.paging.table[i][k], (uint *)((i << 22) + (k * 1024 * 4)), PG_PRESENT | PG_WRITABLE | PG_SUPERVISOR | PG_WRITEBACK | PG_CACHE_ENABLE | PG_NOTACCESSED | PG_NOTWRITTEN | PG_4KBPAGE | PG_NOTGLOBAL, 0x00000000);
+				paging_set_table(&system.io.mem.paging.table[i][k], (uint *)((i << 22) + (k * 1024 * 4)), PG_PRESENT | PG_WRITABLE | PG_USER | PG_WRITEBACK | PG_CACHE_ENABLE | PG_NOTACCESSED | PG_NOTWRITTEN | PG_4KBPAGE | PG_NOTGLOBAL, 0x00000000);
 			}
 		}
 	}

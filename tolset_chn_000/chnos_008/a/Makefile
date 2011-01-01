@@ -1,0 +1,95 @@
+#C言語アプリ用Makefile
+#アプリ設定
+APP      = a
+STACK    = 1k
+MALLOC   = 0k
+
+#環境に合わせる
+
+TOOLPATH = ../../z_tools/
+INCPATH  = ../../z_tools/CHNOSProject/
+
+MAKE     = $(TOOLPATH)make.exe -r
+NASK     = $(TOOLPATH)nask.exe
+CC1      = $(TOOLPATH)cc1.exe -I$(INCPATH) -Os -Wall -quiet
+BIN2OBJ  = $(TOOLPATH)bin2obj.exe
+GAS2NASK = $(TOOLPATH)gas2nask.exe -a
+OBJ2BIM  = $(TOOLPATH)obj2bim.exe
+BIM2HRB  = $(TOOLPATH)bim2hrb.exe
+RULEFILE = $(INCPATH)CHNOSP.rul
+EDIMG    = $(TOOLPATH)edimg.exe bias:9
+IMGTOL   = $(TOOLPATH)imgtol.com
+MAKEFONT = $(TOOLPATH)makefont.exe
+COPY     = copy
+DEL      = del
+SJISCONV = $(TOOLPATH)sjisconv.exe -s
+
+#デフォルト動作
+
+default :
+	$(MAKE) app
+
+#ファイル生成規則
+
+$(APP).ca : $(APP).c Makefile
+	$(SJISCONV) $(APP).c $(APP).ca
+
+$(APP).gas : $(APP).ca Makefile
+	$(CC1) -o $(APP).gas $(APP).ca
+
+$(APP).nas : $(APP).gas Makefile
+	$(GAS2NASK) $(APP).gas $(APP).nas
+
+$(APP).obj : $(APP).nas Makefile
+	$(NASK) $(APP).nas $(APP).obj $(APP).lst
+
+$(APP).bim : $(APP).obj a_nask.obj Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:$(APP).bim map:$(APP).map $(APP).obj a_nask.obj
+
+$(APP).hrb : $(APP).bim Makefile
+	$(BIM2HRB) a.bim a.hrb 0
+
+chnos.img : ../chnos/chnipl.bin ../chnos/chnos.sys $(APP).hrb Makefile
+	$(EDIMG)   imgin:../../z_tools/fdimg0at.tek \
+		wbinimg src:../chnos/chnipl.bin len:512 from:0 to:0 \
+		copy from:../chnos/chnos.sys to:@: \
+		copy from:$(APP).hrb to:@: \
+		imgout:chnos.img
+
+#一般規則
+
+%.ca : %.c Makefile
+	$(SJISCONV) $*.c $*.ca
+
+%.gas : %.ca Makefile
+	$(CC1) -o $*.gas $*.ca
+
+%.nas : %.gas Makefile
+	$(GAS2NASK) $*.gas $*.nas
+
+%.obj : %.nas Makefile
+	$(NASK) $*.nas $*.obj $*.lst
+
+#コマンド
+
+app :
+	$(MAKE) $(APP).hrb
+
+run :
+	$(MAKE) chnos.img
+	$(COPY) chnos.img ..\..\z_tools\qemu\fdimage0.bin
+	$(MAKE) -C ../../z_tools/qemu
+
+clean :
+	-$(DEL) *.lst
+	-$(DEL) *.obj
+	-$(DEL) *.map
+	-$(DEL) *.bim
+	-$(DEL) *.ca
+	-$(DEL) $(APP).nas
+	-$(DEL) *.gas
+	-$(DEL) chnos.img
+
+src_only :
+	$(MAKE) clean
+	-$(DEL) $(APP).hrb

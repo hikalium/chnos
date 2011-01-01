@@ -147,6 +147,9 @@ void MouseControlTask(void)
 					sprintf(s, "[lcr](%4d,%4d,%04d)", mx, my, scrool);
 					if((system.io.mouse.decode.btn & 0x01) != 0){
 						s[1] = 'L';
+						if(fifo32_status(&system.data.fifo.mousectrl) == 0){
+							sheet_slide(system.ui.console.consoles[0].win->win, mx, my);
+						}
 					}
 					if((system.io.mouse.decode.btn & 0x02) != 0){
 						s[3] = 'R';
@@ -161,4 +164,3 @@ void MouseControlTask(void)
 		}
 	}
 }
-

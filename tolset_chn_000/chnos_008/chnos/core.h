@@ -481,6 +481,9 @@ extern char cursor[24][24];
 void KeyBoardControlTask(void);
 void MouseControlTask(void);
 
+/*api.c*/
+uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ecx, uint eax);
+
 /*uuid.c*/
 void gen_UUID(UUID *uuid);
 
@@ -751,6 +754,7 @@ uint memtest_sub(uint start, uint end);
 void farjmp(uint eip, uint cs);
 void farcall(uint eip, uint cs);
 void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);
+void asm_hrb_api(void);
 void asm_inthandler00(void);
 void asm_inthandler01(void);
 void asm_inthandler02(void);
