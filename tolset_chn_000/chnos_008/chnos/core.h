@@ -352,6 +352,8 @@ struct SYS_UI_CONSOLES {
 	struct WINDOWINFO *win;
 	struct POSITION_2D prompt;
 	struct POSITION_2D cursor;
+	uchar *app_cs_base;
+	uchar *app_ds_base;
 };
 
 struct _UUID {

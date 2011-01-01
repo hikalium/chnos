@@ -18,7 +18,7 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 	if(edx == 1){
 		cons_put_char(cons, (uchar)(eax & 0xff));
 	} else if(edx == 2){
-//		cons_put_str(conswin, prompt, cursor, (uchar *)(ebx + app_ds_base));
+		cons_put_str(cons, (uchar *)(ebx + cons->app_ds_base));
 	} else if(edx == 4){
 		return (uint)&(task->tss.esp0);
 	} else if(edx == 5){

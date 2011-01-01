@@ -317,7 +317,8 @@ uint cons_app_hrb_start(UI_Console *cons, uchar *cmdline)
 		load_file(i, p);
 		if(j >= 36 && strncmp(p + 4, "Hari", 4) == 0 && *p == 0x00){
 			q = sys_memman_alloc(head->DataSegmentSize);
-			*((int *) 0x0fe0) = (int) q;
+			cons->app_ds_base = q;
+			cons->app_cs_base = p;
 			set_segmdesc(system.io.mem.segment.gdt + 1003, j - 1, (int)p, AR_CODE32_ER + AR_APP);
 			set_segmdesc(system.io.mem.segment.gdt + 1004, head->DataSegmentSize - 1, (int)q, AR_DATA32_RW + AR_APP);
 			for(i = 0; i < head->DataSegmentSize; i++){
