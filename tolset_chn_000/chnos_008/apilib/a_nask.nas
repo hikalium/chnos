@@ -37,7 +37,7 @@ _api_end:	;void api_end(void);
 	int	0x40
 
 _api_openwin:	;unsigned int api_openwin(unsigned int *buf, int xsize, int ysize, int col_inv, char *title);
-;col_invは無視されます。また、bufはintのサイズで用意して下さい。
+;col_invは無視されます。
 	push	edi
 	push	esi
 	push	ebx
@@ -47,6 +47,7 @@ _api_openwin:	;unsigned int api_openwin(unsigned int *buf, int xsize, int ysize,
 	mov	edi,[esp+24]
 	mov	eax,[esp+28]
 	mov	ecx,[esp+32]
+	mov	ebp,8
 	int	0x40
 	pop	ebx
 	pop	esi

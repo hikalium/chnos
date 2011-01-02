@@ -5,6 +5,7 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 {
 	UI_Task *task = task_now();
 	UI_Console *cons;
+	UI_Window *win;
 	uchar s[64];
 	int i;
 
@@ -22,10 +23,12 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 	} else if(edx == 4){
 		return (uint)&(task->tss.esp0);
 	} else if(edx == 5){
-//		win = make_window_app_compatible_hrb((uchar *)(ecx + app_ds_base), esi, edi, 200, 100, 4, true, (uint *)(ebx + app_ds_base));
-//		reg[7] = GetWindowNumber(win);
-//		sprintf(s, "winID = %u\n", reg[7]);
-//		cons_put_str(conswin, prompt, cursor, s);
+		win = make_window_app_compatible_hrb((uchar *)(ecx + cons->app_ds_base), esi, edi, 200, 100, sheet_get_topheight(), true, sys_memman_alloc(esi * edi * (system.data.info.vesa.BitsPerPixel >> 3)));
+		win->app_buf = (uchar *)(ebx + cons->app_ds_base);
+		win->app_buf_bits = (uchar)ebp;
+		reg[7] = GetWindowNumber(win);
+		sprintf(s, "winID = %u\n", reg[7]);
+		cons_put_str(cons, s);
 	} else if(edx == 6){
 //		putfonts_win_no_bc_compatible_hrb(GetWindowInfo(ebx), esi, edi, eax, (uchar *)(ebp + app_ds_base));
 	} else if(edx == 7){
@@ -51,14 +54,14 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 	}
 	return 0;
 }
-/*
+
 uint GetWindowNumber(UI_Window *win)
 {
-	return (uint)(win - system.sys.winctl->winfos);
+	return (uint)(win - system.ui.window.ctrl.winfos);
 }
 
 UI_Window *GetWindowInfo(uint n)
 {
-	return &system.sys.winctl->winfos[n];
+	return &system.ui.window.ctrl.winfos[n];
 }
-*/
+

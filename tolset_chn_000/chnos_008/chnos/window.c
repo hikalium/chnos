@@ -1,7 +1,5 @@
 #include "core.h"
 
-UI_WindowControl *wctl;
-
 void scrool_win_8(UI_Window *winfo, uchar *vram);
 void scrool_win_16(UI_Window *winfo, ushort *vram);
 void scrool_win_32(UI_Window *winfo, uint *vram);
@@ -29,12 +27,9 @@ void init_windows(void)
 {
 	int i;
 
-	wctl = (UI_WindowControl *)sys_memman_alloc(sizeof(UI_WindowControl));
-	if(wctl == 0) goto err;
 	for(i = 0;i < MAX_WINDOWS;i++){
-		wctl->winfos[i].flags = initialized;
+		system.ui.window.ctrl.winfos[i].flags = initialized;
 	}
-err:
 	return;
 }
 
@@ -44,9 +39,12 @@ UI_Window *window_alloc(void)
 	int i;
 
 	for(i = 0;i < MAX_WINDOWS;i++){
-		if(wctl->winfos[i].flags == initialized){
-			win = &wctl->winfos[i];
+		if(system.ui.window.ctrl.winfos[i].flags == initialized){
+			win = &system.ui.window.ctrl.winfos[i];
 			win->flags = allocated;
+			win->buf = (void *)0x00000000;
+			win->app_buf = (void *)0x00000000;
+			win->app_buf_bits = 0;
 			return win;
 		}
 	}

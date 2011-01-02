@@ -325,6 +325,8 @@ struct WINDOWINFO {
 	struct POSITION_2D origin;
 	state_alloc flags;
 	bool active;
+	void *app_buf;
+	uchar app_buf_bits;
 };
 
 struct WINCTL {
@@ -454,6 +456,9 @@ struct SYSTEM {
 			int org_ychars;
 			UI_Console consoles[MAX_CONSOLES];
 		} console;
+		struct SYS_UI_WINDOW {
+			UI_WindowControl ctrl;
+		} window;
 	} ui;
 	struct SYS_DATA {
 		struct SYS_DATA_INFO {
@@ -485,6 +490,8 @@ void MouseControlTask(void);
 
 /*api.c*/
 uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ecx, uint eax);
+uint GetWindowNumber(UI_Window *win);
+UI_Window *GetWindowInfo(uint n);
 
 /*uuid.c*/
 void gen_UUID(UUID *uuid);
