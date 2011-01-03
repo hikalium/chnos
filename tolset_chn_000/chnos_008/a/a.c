@@ -1,5 +1,4 @@
-void api_putchar(unsigned char c);
-void api_end(void);
+#include <apilib.h>
 
 void CHNMain(void)
 {

@@ -7,7 +7,7 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 	UI_Console *cons;
 	UI_Window *win;
 	uchar s[64];
-	int i;
+	uint i;
 
 	uint *reg = &eax + 1;
 
@@ -25,12 +25,13 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 	} else if(edx == 5){
 		win = make_window_app_compatible_hrb((uchar *)(ecx + cons->app_ds_base), esi, edi, 200, 100, sheet_get_topheight(), true, sys_memman_alloc(esi * edi * (system.data.info.vesa.BitsPerPixel >> 3)));
 		win->app_buf = (uchar *)(ebx + cons->app_ds_base);
-		win->app_buf_bits = (uchar)ebp;
+		win->app_buf_bits = 8;
 		reg[7] = GetWindowNumber(win);
 		sprintf(s, "winID = %u\n", reg[7]);
 		cons_put_str(cons, s);
 	} else if(edx == 6){
-//		putfonts_win_no_bc_compatible_hrb(GetWindowInfo(ebx), esi, edi, eax, (uchar *)(ebp + app_ds_base));
+//		if(GetWindowInfo(ebx)->app_buf_bits == 8) i = rgb_int2char_list[eax];
+//		putfonts_win_no_bc_compatible_hrb(GetWindowInfo(ebx), esi, edi, i, (uchar *)(ebp + app_ds_base));
 	} else if(edx == 7){
 //		boxfill_win_compatible_hrb(GetWindowInfo(ebx), ebp, eax, ecx, esi, edi);
 	} else if(edx == 8){

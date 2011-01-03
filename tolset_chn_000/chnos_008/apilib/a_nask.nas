@@ -18,13 +18,13 @@
 
 [SECTION .text]
 
-_api_putchar:	;void api_putchar(unsigned char c);
+_api_putchar:
 	mov	edx,1
 	mov	al,[esp+4]
 	int	0x40
 	ret
 
-_api_putstr:	;void api_putstr(unsigned char *s);
+_api_putstr:
 	push	ebx
 	mov	edx,2
 	mov	ebx,[esp+8]
@@ -32,12 +32,12 @@ _api_putstr:	;void api_putstr(unsigned char *s);
 	pop	ebx
 	ret
 
-_api_end:	;void api_end(void);
+_api_end:
 	mov	edx,4
 	int	0x40
 
-_api_openwin:	;unsigned int api_openwin(unsigned int *buf, int xsize, int ysize, int col_inv, char *title);
-;col_invは無視されます。
+_api_openwin:
+;col_invは無視されます。bufはunsigned charのみ許可。
 	push	edi
 	push	esi
 	push	ebx
@@ -47,14 +47,13 @@ _api_openwin:	;unsigned int api_openwin(unsigned int *buf, int xsize, int ysize,
 	mov	edi,[esp+24]
 	mov	eax,[esp+28]
 	mov	ecx,[esp+32]
-	mov	ebp,8
 	int	0x40
 	pop	ebx
 	pop	esi
 	pop	edi
 	ret
 
-_api_putstrwin:	;void api_putstrwin(unsigned int win, int x, int y, unsigned int c, int len, unsigned char *s);
+_api_putstrwin:
 ;lenは無視されます。
 	push	edi
 	push	esi
@@ -74,7 +73,7 @@ _api_putstrwin:	;void api_putstrwin(unsigned int win, int x, int y, unsigned int
 	pop	edi
 	ret
 
-_api_boxfilwin:	;void api_boxfilwin(unsigned int win, int x0, int y0, int x1, int y1, unsigned int c);
+_api_boxfilwin:
 ;色指定はとりあえず32ビットで行ってください。
 	push	edi
 	push	esi
@@ -95,7 +94,7 @@ _api_boxfilwin:	;void api_boxfilwin(unsigned int win, int x0, int y0, int x1, in
 	ret
 
 
-_api_initmalloc:	;void api_initmalloc(void);
+_api_initmalloc:
 	push	ebx
 	mov	edx,8
 	mov	ebx,[cs:0x0020]
@@ -107,7 +106,7 @@ _api_initmalloc:	;void api_initmalloc(void);
 	pop	ebx
 	ret
 
-_api_malloc:	;void *api_malloc(unsigned int size);
+_api_malloc:
 	push	ebx
 	mov	edx,9
 	mov	ebx,[cs:0x0020]
@@ -116,7 +115,7 @@ _api_malloc:	;void *api_malloc(unsigned int size);
 	pop	ebx
 	ret
 
-_api_free:	;void api_free(void *addr, unsigned int size)
+_api_free:
 	push	ebx
 	mov	edx,10
 	mov	ebx,[cs:0x0020]
@@ -126,7 +125,7 @@ _api_free:	;void api_free(void *addr, unsigned int size)
 	pop	ebx
 	ret
 
-_api_point:	;void api_point(unsigned int win, int x, int y, int c);
+_api_point:
 ;色指定はとりあえず32ビットで行ってください。
 	push	edi
 	push	esi
@@ -142,7 +141,7 @@ _api_point:	;void api_point(unsigned int win, int x, int y, int c);
 	pop	edi
 	ret	
 
-_api_linewin:	;void api_linewin(unsigned int win, int x0, int y0, int x1, int y1, int c);
+_api_linewin:
 	push	edi
 	push	esi
 	push	ebp

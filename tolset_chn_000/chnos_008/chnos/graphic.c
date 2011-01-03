@@ -2,7 +2,7 @@
 #include "core.h"
 
 /*ColorTable*/
-static int rgb_int2char_list [16] = {
+uint rgb_int2char_list [16] = {
 	0x000000,
 	0xff0000,
 	0x00ff00,

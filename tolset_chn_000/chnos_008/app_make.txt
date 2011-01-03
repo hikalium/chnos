@@ -70,6 +70,7 @@ chnos.img : ../chnos/chnipl.bin ../chnos/chnos.sys $(APP).hrb Makefile
 #ƒRƒ}ƒ“ƒh
 
 app :
+	$(COPY) ..\apilib.h ..\..\z_tools\CHNOSProject\apilib.h
 	$(MAKE) $(APP).hrb
 
 run :

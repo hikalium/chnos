@@ -482,6 +482,7 @@ struct SYSTEM {
 extern struct SYSTEM *sys_main_str_buf;
 extern uchar hankaku[4096];
 extern char cursor[24][24];
+extern uint rgb_int2char_list[16];
 
 /*functions*/
 /*bootpack.c*/
