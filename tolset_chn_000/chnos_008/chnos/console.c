@@ -346,7 +346,7 @@ void cons_put_str(UI_Console *cons, uchar *str)
 		} else if(str[i] == '\r'){
 
 		} else if(str[i] == '\n'){
-			cons_new_line_no_prompt(cons);
+			if(cons->cursor.x != 0)cons_new_line_no_prompt(cons);
 		} else if(str[i] == '\t'){
 			for(;;){
 				putfonts_win(cons->win, cons->cursor.x, cons->cursor.y, CONSOLE_COLOR_CHAR, CONSOLE_COLOR_BACKGROUND, " ");

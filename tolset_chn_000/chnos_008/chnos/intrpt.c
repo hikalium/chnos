@@ -44,38 +44,38 @@ void inthandler27(int *esp)
 
 /*CPU Exceptions*/
 char *cpu_exceptions[0x20] = {
-	"Exception 0x00:Divided by zero.",
-	"Exception 0x01:Reserved.",
-	"Exception 0x02:Nonmaskable interrupt.",
-	"Exception 0x03:Breakpoint.",
-	"Exception 0x04:Overflow.",
-	"Exception 0x05:Outside BOUND.",
-	"Exception 0x06:Invalid opcode.",
-	"Exception 0x07:Disable Device.",
-	"Exception 0x08:Double fault.",
-	"Exception 0x09:Coprocessor Segment Overrun.",
-	"Exception 0x0a:Invalid task status segment.",
-	"Exception 0x0b:Segment absent.",
-	"Exception 0x0c:Stack Segment Fault.",
-	"Exception 0x0d:General Protection Exception.",
-	"Exception 0x0e:Page fault.",
-	"Exception 0x0f:Reserved.",
-	"Exception 0x10:Floating point error.",
-	"Exception 0x11:Alignment Check.",
-	"Exception 0x12:Machine Check.",
-	"Exception 0x13:SIMD floating-point exception.",
-	"Exception 0x14:Reserved.",
-	"Exception 0x15:Reserved.",
-	"Exception 0x16:Reserved.",
-	"Exception 0x17:Reserved.",
-	"Exception 0x18:Reserved.",
-	"Exception 0x19:Reserved.",
-	"Exception 0x1a:Reserved.",
-	"Exception 0x1b:Reserved.",
-	"Exception 0x1c:Reserved.",
-	"Exception 0x1d:Reserved.",
-	"Exception 0x1e:Reserved.",
-	"Exception 0x1f:Reserved."
+	"Exception 0x00:\n\rDivided by zero.",
+	"Exception 0x01:\n\rReserved.",
+	"Exception 0x02:\n\rNonmaskable interrupt.",
+	"Exception 0x03:\n\rBreakpoint.",
+	"Exception 0x04:\n\rOverflow.",
+	"Exception 0x05:\n\rOutside BOUND.",
+	"Exception 0x06:\n\rInvalid opcode.",
+	"Exception 0x07:\n\rDisable Device.",
+	"Exception 0x08:\n\rDouble fault.",
+	"Exception 0x09:\n\rCoprocessor Segment Overrun.",
+	"Exception 0x0a:\n\rInvalid task status segment.",
+	"Exception 0x0b:\n\rSegment absent.",
+	"Exception 0x0c:\n\rStack Segment Fault.",
+	"Exception 0x0d:\n\rGeneral Protection Exception.",
+	"Exception 0x0e:\n\rPage fault.",
+	"Exception 0x0f:\n\rReserved.",
+	"Exception 0x10:\n\rFloating point error.",
+	"Exception 0x11:\n\rAlignment Check.",
+	"Exception 0x12:\n\rMachine Check.",
+	"Exception 0x13:\n\rSIMD floating-point exception.",
+	"Exception 0x14:\n\rReserved.",
+	"Exception 0x15:\n\rReserved.",
+	"Exception 0x16:\n\rReserved.",
+	"Exception 0x17:\n\rReserved.",
+	"Exception 0x18:\n\rReserved.",
+	"Exception 0x19:\n\rReserved.",
+	"Exception 0x1a:\n\rReserved.",
+	"Exception 0x1b:\n\rReserved.",
+	"Exception 0x1c:\n\rReserved.",
+	"Exception 0x1d:\n\rReserved.",
+	"Exception 0x1e:\n\rReserved.",
+	"Exception 0x1f:\n\rReserved."
 };
 
 char *cpu_exception_infos[16] = {
@@ -155,6 +155,26 @@ void cpu_exception_abort(int exception, int *esp)
 	}
 }
 
+uint cpu_exception_fault(int exception, int *esp)
+{
+	UI_Task *task = task_now();
+	UI_Console *cons;
+	uchar s[64];
+	uint i;
+
+	for(i = 0; i < MAX_CONSOLES; i++){
+		if(system.ui.console.consoles[i].task == task)break;
+	}
+	if(system.ui.console.consoles[i].task != task)cpu_exception_abort(exception, esp);
+	cons = &system.ui.console.consoles[i];
+
+	cons_put_str(cons, (uchar *)cpu_exceptions[exception]);
+	sprintf(s, "\n%s:0x%08X", cpu_exception_infos[11], esp[11]);
+	cons_put_str(cons, s);
+
+	return (uint)&(task->tss.esp0);
+}
+
 void inthandler00(int *esp)
 {
 	cpu_exception_abort(0x00, esp);
@@ -217,12 +237,12 @@ void inthandler0b(int *esp)
 
 void inthandler0c(int *esp)
 {
-	cpu_exception_abort(0x0c, esp);
+	cpu_exception_fault(0x0c, esp);
 }
 
 void inthandler0d(int *esp)
 {
-	cpu_exception_abort(0x0d, esp);
+	cpu_exception_fault(0x0d, esp);
 }
 
 void inthandler0e(int *esp)

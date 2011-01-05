@@ -242,6 +242,23 @@ void putblock_i(void *vrami, int vxsize, int pxsize, int pysize, int px0, int py
 	return;
 }
 
+void putblock_i_convert(void *to, int xsize, int px0, int py0, int px1, int py1, void *from, int tobpp, int frombpp)
+{
+	int x, y;
+
+	if(tobpp == 32){
+		if(frombpp == 8){
+			for(y = py0; y < py1; y++){
+				for(x = px0; x < px1; x++){
+					((uint *)to)[(xsize * y) + x] = rgb_int2char_list[((uchar *)from)[(xsize * y) + x]];
+				}
+			}
+		}
+	}
+
+	return;
+}
+
 void line_i(void *vrami, int xsize, int x0, int y0, int x1, int y1, uint c)
 {
 	int i, x, y, len, dx, dy;

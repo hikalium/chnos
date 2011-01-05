@@ -7,6 +7,7 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 	UI_Console *cons;
 	UI_Window *win;
 	uchar s[64];
+	uchar *app_s;
 	uint i;
 
 	uint *reg = &eax + 1;
@@ -26,12 +27,31 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 		win = make_window_app_compatible_hrb((uchar *)(ecx + cons->app_ds_base), esi, edi, 200, 100, sheet_get_topheight(), true, sys_memman_alloc(esi * edi * (system.data.info.vesa.BitsPerPixel >> 3)));
 		win->app_buf = (uchar *)(ebx + cons->app_ds_base);
 		win->app_buf_bits = 8;
+		boxfill8(win->app_buf, esi, COL8_FFFFFF, 0, 0, esi, edi);
 		reg[7] = GetWindowNumber(win);
 		sprintf(s, "winID = %u\n", reg[7]);
 		cons_put_str(cons, s);
 	} else if(edx == 6){
-//		if(GetWindowInfo(ebx)->app_buf_bits == 8) i = rgb_int2char_list[eax];
-//		putfonts_win_no_bc_compatible_hrb(GetWindowInfo(ebx), esi, edi, i, (uchar *)(ebp + app_ds_base));
+		i = esi;
+		app_s = (uchar *)(ebp + cons->app_ds_base);
+		if(GetWindowInfo(ebx)->app_buf_bits == 8){
+			for (; *app_s != 0x00; app_s++) {
+				putfont8(GetWindowInfo(ebx)->app_buf, GetWindowInfo(ebx)->winxsize, esi, edi, eax, hankaku + (*app_s * 16));
+				esi += 8;
+			}
+		} else if(GetWindowInfo(ebx)->app_buf_bits == 16){
+			for (; *app_s != 0x00; app_s++) {
+				putfont16(GetWindowInfo(ebx)->app_buf, GetWindowInfo(ebx)->winxsize, esi, edi, eax, hankaku + (*app_s * 16));
+				esi += 8;
+			}
+		} else if(GetWindowInfo(ebx)->app_buf_bits == 32){
+			for (; *app_s != 0x00; app_s++) {
+				putfont32(GetWindowInfo(ebx)->app_buf, GetWindowInfo(ebx)->winxsize, esi, edi, eax, hankaku + (*app_s * 16));
+				esi += 8;
+			}
+		}
+		putblock_i_convert(GetWindowInfo(ebx)->buf, GetWindowInfo(ebx)->winxsize, i, edi, esi, edi + 16, GetWindowInfo(ebx)->app_buf, system.data.info.vesa.BitsPerPixel, GetWindowInfo(ebx)->app_buf_bits);
+		sheet_refresh(GetWindowInfo(ebx)->win, i, edi, esi, edi + 16);
 	} else if(edx == 7){
 //		boxfill_win_compatible_hrb(GetWindowInfo(ebx), ebp, eax, ecx, esi, edi);
 	} else if(edx == 8){
@@ -65,4 +85,3 @@ UI_Window *GetWindowInfo(uint n)
 {
 	return &system.ui.window.ctrl.winfos[n];
 }
-

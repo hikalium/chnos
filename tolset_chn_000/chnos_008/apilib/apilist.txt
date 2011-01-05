@@ -1,0 +1,5 @@
+OBJS_API =	../apilib/api_00000001_api_putchar.obj \
+		../apilib/api_00000002_api_putstr.obj \
+		../apilib/api_00000004_api_end.obj \
+		../apilib/api_00000005_api_openwin.obj \
+		../apilib/api_00000006_api_putstrwin.obj 

@@ -1,6 +1,6 @@
 #C言語アプリ用Makefile
 #アプリ設定
-APP      = hello
+APP      = bug1
 STACK    = 1k
 MALLOC   = 0k
 

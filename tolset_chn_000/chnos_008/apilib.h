@@ -2,6 +2,7 @@ typedef enum _bool { false, true} bool;
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned int uint;
+typedef enum _col_text { black, blue, green, skyblue, red, purple, brown, white} col_text;
 
 void api_putchar(uchar c);
 //	hariboteOS:ŒÝŠ·void api_putchar(int c);
@@ -11,7 +12,7 @@ void api_end(void);
 //	hariboteOS:ŒÝŠ·void api_end(void);
 uint api_openwin(uchar *buf, int xsize, int ysize, int col_inv, uchar *title);
 //	hariboteOS:ŒÝŠ·int api_openwin(char *buf, int xsiz, int ysiz, int col_inv, char *title);ŒÝŠ·
-//void api_putstrwin(uint win, int x, int y, uint col, int len, uchar *str);
+void api_putstrwin(uint win, int x, int y, col_text col, int len, uchar *str);
 //void api_boxfilwin(int win, int x0, int y0, int x1, int y1, int col);
 //void api_initmalloc(void);
 //char *api_malloc(int size);

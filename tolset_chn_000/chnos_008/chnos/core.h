@@ -483,6 +483,7 @@ extern struct SYSTEM *sys_main_str_buf;
 extern uchar hankaku[4096];
 extern char cursor[24][24];
 extern uint rgb_int2char_list[16];
+extern uint key_shift;
 
 /*functions*/
 /*bootpack.c*/
@@ -534,18 +535,14 @@ void slide_window(UI_Window *winfo, int px, int py);
 void refresh_window(UI_Window *winfo);
 void refresh_window_alpha(UI_Window *winfo);
 void boxfill_win(UI_Window *winfo, uint c, int x0, int y0, int x1, int y1);
-void boxfill_win_compatible_hrb(UI_Window *winfo, uint c, int x0, int y0, int x1, int y1);
 void point_win(UI_Window *winfo, uint c, int x, int y);
-void point_win_compatible_hrb(UI_Window *winfo, uint c, int x, int y);
 void putfonts_win(UI_Window *winfo, int x, int y, uint c, uint bc, const uchar *s);
 void putfonts_win_no_bc(UI_Window *winfo, int x, int y, uint c, const uchar *s);
-void putfonts_win_no_bc_compatible_hrb(UI_Window *winfo, int x, int y, uint c, const uchar *s);
 void scrool_win(UI_Window *winfo);
 void scrool_win_32(UI_Window *winfo, uint *vram);
 void scrool_win_16(UI_Window *winfo, ushort *vram);
 void scrool_win_8(UI_Window *winfo, uchar *vram);
 void line_win(UI_Window *winfo, int x0, int y0, int x1, int y1, uint c);
-void line_win_compatible_hrb(UI_Window *winfo, int x0, int y0, int x1, int y1, uint c);
 void draw_hexagon_win(UI_Window *winfo, int a, int x, int y, uint c);
 
 
@@ -606,13 +603,13 @@ void point_i(void *vrami, int x, int y, uint c, int xsize);
 void boxfill_i(void *vrami, int xsize, uint c, int x0, int y0, int x1, int y1);
 void putfonts_asc_i(void *vrami, int xsize, int x, int y, uint c, const uchar *s);
 void putblock_i(void *vrami, int vxsize, int pxsize, int pysize, int px0, int py0, void *buf, int bxsize);
+void putblock_i_convert(void *to, int xsize, int px0, int py0, int px1, int py1, void *from, int tobpp, int frombpp);
 void line_i(void *vrami, int xsize, int x0, int y0, int x1, int y1, uint c);
 void draw_hexagon_i(void *vrami, int xsize, int a, int x, int y, uint c);
 void draw_chnos_logo(void *vrami, int xsize, int a, int x, int y);
 uchar rgb_int2char (uint c32);
 ushort rgb_int2short (uint c32);
 void col_pat(void *vrami, int xsize, int ysize);
-
 void putfonts_asc_sht_i(UI_Sheet *sht, int x, int y, uint c, uint bc, const uchar *s);
 void putfonts_asc_sht_i_no_bc(UI_Sheet *sht, int x, int y, uint c, const uchar *s);
 
@@ -650,6 +647,7 @@ void init_system(void);
 void init_pic(void);
 void inthandler27(int *esp);
 void cpu_exception_abort(int exception, int *esp);
+uint cpu_exception_fault(int exception, int *esp);
 void inthandler00(int *esp);
 void inthandler01(int *esp);
 void inthandler02(int *esp);
@@ -764,6 +762,7 @@ uint memtest_sub(uint start, uint end);
 void farjmp(uint eip, uint cs);
 void farcall(uint eip, uint cs);
 void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);
+void asm_end_app(void);
 void asm_hrb_api(void);
 void asm_inthandler00(void);
 void asm_inthandler01(void);

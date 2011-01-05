@@ -1,10 +1,11 @@
-#C言語アプリ用app_make.txt
+#アプリ用app_make.txt
 #環境に合わせる
 
 TOOLPATH = ../../z_tools/
 INCPATH  = ../../z_tools/CHNOSProject/
 
-OBJS_API = ../apilib/a_nask.obj
+#OBJS_API = ../apilib/a_nask.obj
+include ../apilib/apilist.txt
 
 MAKE     = $(TOOLPATH)make.exe -r
 NASK     = $(TOOLPATH)nask.exe
@@ -28,14 +29,14 @@ default :
 
 #ファイル生成規則
 
-$(APP).ca : $(APP).c Makefile
-	$(SJISCONV) $(APP).c $(APP).ca
+#$(APP).ca : $(APP).c Makefile
+#	$(SJISCONV) $(APP).c $(APP).ca
 
-$(APP).gas : $(APP).ca Makefile
-	$(CC1) -o $(APP).gas $(APP).ca
+#$(APP).gas : $(APP).ca Makefile
+#	$(CC1) -o $(APP).gas $(APP).ca
 
-$(APP).nas : $(APP).gas Makefile
-	$(GAS2NASK) $(APP).gas $(APP).nas
+#$(APP).nas : $(APP).gas Makefile
+#	$(GAS2NASK) $(APP).gas $(APP).nas
 
 $(APP).obj : $(APP).nas Makefile
 	$(NASK) $(APP).nas $(APP).obj $(APP).lst
@@ -78,15 +79,19 @@ run :
 	$(COPY) chnos.img ..\..\z_tools\qemu\fdimage0.bin
 	$(MAKE) -C ../../z_tools/qemu
 
-clean :
-	-$(DEL) *.lst
-	-$(DEL) *.obj
-	-$(DEL) *.map
-	-$(DEL) *.bim
-	-$(DEL) *.ca
-	-$(DEL) $(APP).nas
-	-$(DEL) *.gas
-	-$(DEL) chnos.img
+run_b :
+	$(MAKE) chnos.img
+	$(COPY) chnos.img ..\..\z_tools\bochs\fdimage0.bin
+	$(MAKE) -C ../../z_tools/bochs
+
+
+run_cd :
+	$(MAKE) iso
+	$(MAKE) -C ../../z_tools/qemu_iso
+
+iso :
+	$(MAKE) chnos.img
+	..\..\z_tools\mkisofs.exe -v -iso-level 1 -b chnos.img -o ..\..\z_tools\qemu_iso\chnos.iso .
 
 src_only :
 	$(MAKE) clean

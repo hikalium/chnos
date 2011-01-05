@@ -74,9 +74,9 @@ void KeyBoardControlTask(void)
 	int i;
 	uchar s[128];
 	UI_KeyInfo dec_key;
-	DATA_FIFO *key_to;
+	UI_Console *key_to;
 
-	key_to = (DATA_FIFO *)0;
+	key_to = (UI_Console *)0;
 
 	for(;;){
 		if(fifo32_status(&system.data.fifo.keycmd) > 0 && system.io.keyboard.cmd_wait < 0){
@@ -96,21 +96,30 @@ void KeyBoardControlTask(void)
 					sprintf(s, "[ ]");
 					s[1] = dec_key.c;
 					putfonts_asc_sht_i(system.ui.draw.sht.taskbar, (system.data.info.boot.scrnx - (8 * (10 + 1 + 3))) - 4, 4, 0x000000, 0xffffff, s);
-					if(key_to != 0) fifo32_put(key_to, dec_key.c + CONSOLE_FIFO_START_KEYB);
+					if(key_to != 0) fifo32_put(&key_to->task->fifo, dec_key.c + CONSOLE_FIFO_START_KEYB);
+				} else if(dec_key.make && dec_key.keycode == 0x3B && key_shift != 0){/*Shift + F1*/
+					if(key_to != 0 && key_to->task->tss.ss0 != 0){
+						cons_put_str(key_to, "\nBreak(key) :\n");
+						io_cli();
+						key_to->task->tss.eax = (int)&(key_to->task->tss.esp0);
+						key_to->task->tss.eip = (int)asm_end_app;
+						change_window_active(key_to->win, true);
+						io_sti();
+					}
 				} else if(dec_key.make && dec_key.keycode == 0x0E){/*BackSpace*/
-					if(key_to != 0) fifo32_put(key_to, 0x0e + CONSOLE_FIFO_START_KEYB);
+					if(key_to != 0) fifo32_put(&key_to->task->fifo, 0x0e + CONSOLE_FIFO_START_KEYB);
 				} else if(dec_key.make && dec_key.keycode == 0x0f){/*Tab*/
 					if(key_to == 0){
-						key_to = &system.ui.console.consoles[0].task->fifo;
-						change_window_active(system.ui.console.consoles[0].win, true);
-						fifo32_put(key_to, CONSOLE_FIFO_CURSOR_START);
+						key_to = &system.ui.console.consoles[0];
+						change_window_active(key_to->win, true);
+						fifo32_put(&key_to->task->fifo, CONSOLE_FIFO_CURSOR_START);
 					} else{
-						fifo32_put(key_to, CONSOLE_FIFO_CURSOR_STOP);
-						key_to = (DATA_FIFO *)0;
-						change_window_active(system.ui.console.consoles[0].win, false);
+						fifo32_put(&key_to->task->fifo, CONSOLE_FIFO_CURSOR_STOP);
+						change_window_active(key_to->win, false);
+						key_to = (UI_Console *)0;
 					}
 				} else if(dec_key.make && dec_key.keycode == 0x1c){/*Enter*/
-					if(key_to != 0) fifo32_put(key_to, 0x0a + CONSOLE_FIFO_START_KEYB);
+					if(key_to != 0) fifo32_put(&key_to->task->fifo, 0x0a + CONSOLE_FIFO_START_KEYB);
 				}
 			}
 		}
