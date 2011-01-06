@@ -53,7 +53,15 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 		putblock_i_convert(GetWindowInfo(ebx)->buf, GetWindowInfo(ebx)->winxsize, i, edi, esi, edi + 16, GetWindowInfo(ebx)->app_buf, system.data.info.vesa.BitsPerPixel, GetWindowInfo(ebx)->app_buf_bits);
 		sheet_refresh(GetWindowInfo(ebx)->win, i, edi, esi, edi + 16);
 	} else if(edx == 7){
-//		boxfill_win_compatible_hrb(GetWindowInfo(ebx), ebp, eax, ecx, esi, edi);
+		if(GetWindowInfo(ebx)->app_buf_bits == 8){
+			boxfill8(GetWindowInfo(ebx)->app_buf, GetWindowInfo(ebx)->winxsize, ebp, eax, ecx, esi, edi);	
+		} else if(GetWindowInfo(ebx)->app_buf_bits == 16){
+			boxfill16(GetWindowInfo(ebx)->app_buf, GetWindowInfo(ebx)->winxsize, ebp, eax, ecx, esi, edi);
+		} else if(GetWindowInfo(ebx)->app_buf_bits == 32){
+			boxfill32(GetWindowInfo(ebx)->app_buf, GetWindowInfo(ebx)->winxsize, ebp, eax, ecx, esi, edi);
+		}
+		putblock_i_convert(GetWindowInfo(ebx)->buf, GetWindowInfo(ebx)->winxsize, eax, ecx, esi, edi, GetWindowInfo(ebx)->app_buf, system.data.info.vesa.BitsPerPixel, GetWindowInfo(ebx)->app_buf_bits);
+		sheet_refresh(GetWindowInfo(ebx)->win, eax, ecx, esi, edi);
 	} else if(edx == 8){
 //		memman_init((IO_MemoryControl *)(ebx + app_ds_base));
 //		ecx &= 0xfffffff0;
