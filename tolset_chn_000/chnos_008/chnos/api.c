@@ -63,15 +63,15 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 		putblock_i_convert(GetWindowInfo(ebx)->buf, GetWindowInfo(ebx)->winxsize, eax, ecx, esi, edi, GetWindowInfo(ebx)->app_buf, system.data.info.vesa.BitsPerPixel, GetWindowInfo(ebx)->app_buf_bits);
 		sheet_refresh(GetWindowInfo(ebx)->win, eax, ecx, esi, edi);
 	} else if(edx == 8){
-//		memman_init((IO_MemoryControl *)(ebx + app_ds_base));
-//		ecx &= 0xfffffff0;
-//		memman_free((IO_MemoryControl *)(ebx + app_ds_base), (uchar *)eax, ecx);
+		memman_init((IO_MemoryControl *)(ebx + cons->app_ds_base));
+		ecx &= 0xfffffff0;
+		memman_free((IO_MemoryControl *)(ebx + cons->app_ds_base), (uchar *)eax, ecx);
 	} else if(edx == 9){
-//		ecx = (ecx + 0x0f) & 0xfffffff0;
-//		reg[7] = (uint)memman_alloc((IO_MemoryControl *)(ebx + app_ds_base), ecx);
+		ecx = (ecx + 0x0f) & 0xfffffff0;
+		reg[7] = (uint)memman_alloc((IO_MemoryControl *)(ebx + cons->app_ds_base), ecx);
 	} else if(edx == 10){
-//		ecx = (ecx + 0x0f) & 0xfffffff0;
-//		memman_free((IO_MemoryControl *)(ebx + app_ds_base), (uchar *)eax, ecx);
+		ecx = (ecx + 0x0f) & 0xfffffff0;
+		memman_free((IO_MemoryControl *)(ebx + cons->app_ds_base), (uchar *)eax, ecx);
 	} else if(edx == 11){
 //		point_win_compatible_hrb(GetWindowInfo(ebx), eax, esi, edi);
 	} else if(edx == 13){

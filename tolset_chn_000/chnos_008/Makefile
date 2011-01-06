@@ -25,7 +25,8 @@ chnos.img : chnos/chnipl.bin chnos/chnos.sys chnos/chnipl.nas \
 		crack4/crack4.hrb \
 		hello/hello.hrb \
 		winhelo/winhelo.hrb \
-		winhelo2/winhelo2.hrb 
+		winhelo2/winhelo2.hrb \
+		winhelo3/winhelo3.hrb 
 	$(EDIMG)   imgin:../z_tools/fdimg0at.tek \
 		wbinimg src:chnos/chnipl.bin len:512 from:0 to:0 \
 		copy from:chnos/chnos.sys to:@: \
@@ -41,6 +42,7 @@ chnos.img : chnos/chnipl.bin chnos/chnos.sys chnos/chnipl.nas \
 		copy from:hello/hello.hrb to:@: \
 		copy from:winhelo/winhelo.hrb to:@: \
 		copy from:winhelo2/winhelo2.hrb to:@: \
+		copy from:winhelo3/winhelo3.hrb to:@: \
 		imgout:chnos.img
 
 # ƒRƒ}ƒ“ƒh
@@ -80,6 +82,7 @@ full :
 	$(MAKE) -C hello
 	$(MAKE) -C winhelo
 	$(MAKE) -C winhelo2
+	$(MAKE) -C winhelo3
 	$(MAKE) chnos.img
 
 run_full :
@@ -114,6 +117,7 @@ clean_full :
 	$(MAKE) -C hello		clean
 	$(MAKE) -C winhelo		clean
 	$(MAKE) -C winhelo2		clean
+	$(MAKE) -C winhelo3		clean
 
 src_only_full :
 	$(MAKE) -C chnos		src_only
@@ -127,6 +131,7 @@ src_only_full :
 	$(MAKE) -C hello		src_only
 	$(MAKE) -C winhelo		src_only
 	$(MAKE) -C winhelo2		src_only
+	$(MAKE) -C winhelo3		src_only
 	-$(DEL) chnos.img
 
 refresh :
