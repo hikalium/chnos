@@ -6,4 +6,5 @@ OBJS_API =	../apilib/api_00000001_api_putchar.obj \
 		../apilib/api_00000007_api_boxfilwin.obj \
 		../apilib/api_00000008_api_initmalloc.obj \
 		../apilib/api_00000009_api_malloc.obj \
-		../apilib/api_00000010_api_free.obj 
+		../apilib/api_00000010_api_free.obj \
+		../apilib/api_00000011_api_point.obj 

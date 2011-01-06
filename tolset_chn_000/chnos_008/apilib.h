@@ -7,6 +7,10 @@ typedef enum _color_8 { black, red, green, yellow,
 			gray, brown, dark_green, gold, 
 			navy_blue, purple, dark_cyan, dark_gray} color_8;
 
+int rand(void);
+#define srand(seed) (void) (rand_seed = (seed))
+extern unsigned int rand_seed;
+
 void api_putchar(uchar c);
 //	hariboteOS:ŒÝŠ·void api_putchar(int c);
 void api_putstr(uchar *s);
@@ -25,7 +29,8 @@ void *api_malloc(uint size);
 //	hariboteOS:ŒÝŠ·char *api_malloc(int size);
 void api_free(void *addr, uint size);
 //	hariboteOS:ŒÝŠ·void api_free(char *addr, int size);
-//void api_point(int win, int x, int y, int col);
+void api_point(uint win, int x, int y, color_8 col);
+//	hariboteOS:ŒÝŠ·void api_point(int win, int x, int y, int col);
 //void api_refreshwin(int win, int x0, int y0, int x1, int y1);
 //void api_linewin(int win, int x0, int y0, int x1, int y1, int col);
 //void api_closewin(int win);

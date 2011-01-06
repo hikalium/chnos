@@ -8,6 +8,9 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 	UI_Window *win;
 	uchar s[64];
 	uchar *app_s;
+	uchar *buf8;
+	ushort *buf16;
+	uint *buf32;
 	uint i;
 
 	uint *reg = &eax + 1;
@@ -73,7 +76,18 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 		ecx = (ecx + 0x0f) & 0xfffffff0;
 		memman_free((IO_MemoryControl *)(ebx + cons->app_ds_base), (uchar *)eax, ecx);
 	} else if(edx == 11){
-//		point_win_compatible_hrb(GetWindowInfo(ebx), eax, esi, edi);
+		if(GetWindowInfo(ebx)->app_buf_bits == 8){
+			buf8 = GetWindowInfo(ebx)->app_buf;
+			buf8[edi * GetWindowInfo(ebx)->winxsize + esi] = (uchar)eax;
+		} else if(GetWindowInfo(ebx)->app_buf_bits == 16){
+			buf16 = GetWindowInfo(ebx)->app_buf;
+			buf16[edi * GetWindowInfo(ebx)->winxsize + esi] = (ushort)eax;
+		} else if(GetWindowInfo(ebx)->app_buf_bits == 32){
+			buf32 = GetWindowInfo(ebx)->app_buf;
+			buf32[edi * GetWindowInfo(ebx)->winxsize + esi] = (uint)eax;
+		}
+		putblock_i_convert(GetWindowInfo(ebx)->buf, GetWindowInfo(ebx)->winxsize, esi, edi, esi + 1, edi + 1, GetWindowInfo(ebx)->app_buf, system.data.info.vesa.BitsPerPixel, GetWindowInfo(ebx)->app_buf_bits);
+		sheet_refresh(GetWindowInfo(ebx)->win, esi, edi, esi + 1, edi + 1);
 	} else if(edx == 13){
 //		line_win_compatible_hrb(GetWindowInfo(ebx), eax, ecx, esi, edi, ebp);
 //		refresh_window(GetWindowInfo(ebx));
