@@ -173,30 +173,61 @@ uint mix_color(uint c0, uint c1)
 
 void point_i(void *vrami, int x, int y, uint c, int xsize)
 {
+	uint cc = 0x00000000;
+
 	if(system.data.info.vesa.BitsPerPixel == 8){
-		uchar c8 = rgb_int2char(c);
-		uchar *cc = (uchar *)vrami;
-		cc[y * xsize + x] = c8;
+		cc = rgb_int2char(c);
 	} else if(system.data.info.vesa.BitsPerPixel == 16){
-		ushort c16 = rgb_int2short(c);
-		ushort *cs = (ushort *)vrami;
-		cs[y * xsize + x] = c16;
+		cc = rgb_int2short(c);
 	} else if(system.data.info.vesa.BitsPerPixel == 32){
-		uint *ci = (uint *)vrami;
-		ci[y * xsize + x] = c;
+		cc = c;
 	}
+	point_bpp(vrami, x, y, cc, xsize, system.data.info.vesa.BitsPerPixel);
+	return;
+}
+
+void point_bpp(void *vrami, int x, int y, uint c, int xsize, uint bpp)
+{
+	uchar *buf8;
+	ushort *buf16;
+	uint *buf32;
+
+	if(bpp == 8){
+		buf8 = vrami;
+		buf8[y * xsize + x] = (uchar)c;
+	} else if(bpp == 16){
+		buf16 = vrami;
+		buf16[y * xsize + x] = (ushort)c;
+	} else if(bpp == 32){
+		buf32 = vrami;
+		buf32[y * xsize + x] = (uint)c;
+	}
+
 	return;
 }
 
 void boxfill_i(void *vrami, int xsize, uint c, int x0, int y0, int x1, int y1)
 {
+	uint cc = 0x00000000;
+
 	if(system.data.info.vesa.BitsPerPixel == 8){
-		uchar c8 = rgb_int2char(c);
-		boxfill8(vrami, xsize, c8, x0, y0, x1, y1);	
+		cc = rgb_int2char(c);
 	} else if(system.data.info.vesa.BitsPerPixel == 16){
-		ushort c16 = rgb_int2short(c);
-		boxfill16(vrami, xsize, c16, x0, y0, x1, y1);
+		cc = rgb_int2short(c);
 	} else if(system.data.info.vesa.BitsPerPixel == 32){
+		cc = c;
+	}
+	boxfill_bpp(vrami, xsize, cc, x0, y0, x1, y1, system.data.info.vesa.BitsPerPixel);
+	return;
+}
+
+void boxfill_bpp(void *vrami, int xsize, uint c, int x0, int y0, int x1, int y1, uint bpp)
+{
+	if(bpp == 8){
+		boxfill8(vrami, xsize, c, x0, y0, x1, y1);	
+	} else if(bpp == 16){
+		boxfill16(vrami, xsize, c, x0, y0, x1, y1);
+	} else if(bpp == 32){
 		boxfill32(vrami, xsize, c, x0, y0, x1, y1);
 	}
 
@@ -284,6 +315,38 @@ void line_i(void *vrami, int xsize, int x0, int y0, int x1, int y1, uint c)
 	}
 	for(i = 0; i < len; i++){
 		point_i(vrami, x >> 10, y >> 10, c, xsize);
+		x += dx;
+		y += dy;
+	}
+
+	return;
+}
+
+void line_bpp(void *vrami, int xsize, int x0, int y0, int x1, int y1, uint c, uint bpp)
+{
+	int i, x, y, len, dx, dy;
+
+	dx = x1 - x0;
+	dy = y1 - y0;
+	x = x0 << 10;
+	y = y0 << 10;
+	if(dx < 0) dx = -dx;
+	if(dy < 0) dy = -dy;
+	if(dx >= dy){
+		len = dx + 1;
+		if(x0 > x1) dx = -1024;
+		else dx = 1024;
+		if(y0 <= y1) dy = ((y1 - y0 + 1) << 10) / len;
+		else dy = ((y1 - y0 - 1) << 10) / len;
+	} else{
+		len = dy + 1;
+		if(y0 > y1) dy = -1024;
+		else dy = 1024;
+		if(x0 <= x1) dx = ((x1 - x0 + 1) << 10) / len;
+		else dx = ((x1 - x0 - 1) << 10) / len;
+	}
+	for(i = 0; i < len; i++){
+		point_bpp(vrami, x >> 10, y >> 10, c, xsize, bpp);
 		x += dx;
 		y += dy;
 	}
