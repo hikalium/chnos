@@ -24,7 +24,7 @@ void init_sheets(void *vram, int xsize, int ysize, uchar bits)
 			break;
 	}
 
-	ctl = (UI_SheetControl *)sys_memman_alloc(sizeof(UI_SheetControl));
+	ctl = &system.ui.draw.sht.ctrl;
 	if(ctl == 0) goto err;
 	ctl->map = (uint *)sys_memman_alloc(xsize * ysize * 4);
 	if(ctl->map == 0){
@@ -66,7 +66,7 @@ void sheet_setbuf(UI_Sheet *sht, void *buf,int xsize, int ysize, uint col_inv)
 	sht->col_inv = col_inv;
 	return;
 }
-
+/*
 void sheet_updown(UI_Sheet *sht, int height)
 {
 	int h, old = sht->height;
@@ -75,7 +75,7 @@ void sheet_updown(UI_Sheet *sht, int height)
 	if (height < -1) height = -1;
 	sht->height = height;
 
-	if (old > height){	/*以前よりも低くなる場合*/
+	if (old > height){
 		if (height >= 0){
 			for (h = old; h > height; h--){
 				ctl->sheets[h] = ctl->sheets[h - 1];
@@ -84,7 +84,7 @@ void sheet_updown(UI_Sheet *sht, int height)
 			ctl->sheets[height] = sht;
 			sheet_refreshmap(sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, height + 1);
 			sheet_refreshsub(sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, height + 1, old);
-		} else {	/*非表示になる場合*/
+		} else {
 			if(ctl->top > old){
 				for(h = old; h < ctl->top; h++){
 					ctl->sheets[h] = ctl->sheets[h + 1];
@@ -95,7 +95,7 @@ void sheet_updown(UI_Sheet *sht, int height)
 			sheet_refreshmap(sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, 0);
 			sheet_refreshsub(sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, 0, old - 1);
 		}
-	} else if(old < height) {	/*以前よりも高くなる場合*/
+	} else if(old < height) {
 		if(old >= 0){
 			for(h = old; h < height; h++){
 				ctl->sheets[h] = ctl->sheets[h + 1];
@@ -114,6 +114,54 @@ void sheet_updown(UI_Sheet *sht, int height)
 		sheet_refreshsub(sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, height, height);
 	}
 
+	return;
+}
+*/
+void sheet_updown(UI_Sheet *sht, int height)
+{
+	int i, old = sht->height;							//変化させるシートの元の高さを保存。
+
+	if(height > ctl->top + 1) height = ctl->top + 1;				//設定しようとしている高さを、もっとも高いものの一つ上に制限。
+	if (height < -1) height = -1;							//非表示はマイナス1に統一。
+
+	if(old == -1 && height >= 0){							//非表示から表示。上にずらす。
+		for(i = ctl->top; i >= height; i--){
+			ctl->sheets[i + 1] = ctl->sheets[i];
+			ctl->sheets[i + 1]->height = i + 1;
+		}
+		ctl->sheets[height] = sht;
+		ctl->sheets[height]->height = height;
+		ctl->top++;
+		sheet_refreshmap(sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, height);
+		sheet_refreshsub(sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, height, height);
+	} else if(old >= 0 && height == -1){						//表示から非表示。下にずらす。
+		for(i = old; i <= (ctl->top - 1); i++){
+			ctl->sheets[i] = ctl->sheets[i + 1];
+			ctl->sheets[i]->height = i;
+		}
+		sht->height = -1;
+		ctl->top--;
+		sheet_refreshmap(sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, 0);
+		sheet_refreshsub(sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, 0, old - 1);
+	} else if(old < height){							//表示中のを上にずらす。間は下にずらす。
+		for(i = old; i < height; i++){
+			ctl->sheets[i] = ctl->sheets[i + 1];
+			ctl->sheets[i]->height = i;
+		}
+		ctl->sheets[height] = sht;
+		ctl->sheets[height]->height = height;
+		sheet_refreshmap(sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, height);
+		sheet_refreshsub(sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, height, height);
+	} else if(old > height){							//表示中のを下にずらす。間は上にずらす。
+		for(i = old; i > height; i--){
+			ctl->sheets[i] = ctl->sheets[i - 1];
+			ctl->sheets[i]->height = i;
+		}
+		ctl->sheets[height] = sht;
+		ctl->sheets[height]->height = height;
+		sheet_refreshmap(sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, old);
+		sheet_refreshsub(sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, height, old);
+	}
 	return;
 }
 

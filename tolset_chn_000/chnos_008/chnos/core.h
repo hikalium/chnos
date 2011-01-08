@@ -327,6 +327,7 @@ struct WINDOWINFO {
 	bool active;
 	void *app_buf;
 	uchar app_buf_bits;
+	struct TASK *task;
 };
 
 struct WINCTL {
@@ -356,6 +357,10 @@ struct SYS_UI_CONSOLES {
 	struct POSITION_2D cursor;
 	uchar *app_cs_base;
 	uchar *app_ds_base;
+	struct TIMER *timer;
+	bool cursor_state;
+	bool cursor_on;
+	uint cursor_c;
 };
 
 struct _UUID {
@@ -429,6 +434,7 @@ struct SYSTEM {
 	struct SYS_UI {
 		struct SYS_UI_DRAW {
 			struct SYS_UI_DRAW_SHT {
+				UI_SheetControl ctrl;
 				UI_Sheet *core;
 				UI_Sheet *desktop;
 				UI_Sheet *taskbar;
@@ -525,9 +531,11 @@ void cons_check_newline(UI_Console *cons);
 /*window.c*/
 void init_windows(void);
 UI_Window *window_alloc(void);
+void window_free(UI_Window *winfo);
 UI_Window *make_window(uchar *title, int xsize, int ysize, int px, int py, int height, bool active);
-UI_Window *make_window_app(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf);
-UI_Window *make_window_app_compatible_hrb(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf);
+UI_Window *make_window_app(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf, UI_Task *task);
+UI_Window *make_window_app_compatible_hrb(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf, UI_Task *task);
+void free_window_app(UI_Window *winfo);
 void change_window(UI_Window *winfo, uchar *title, bool active);
 void change_window_title(UI_Window *winfo, uchar *title);
 void change_window_active(UI_Window *winfo, bool active);

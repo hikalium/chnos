@@ -15,8 +15,8 @@ void CHNMain(void)
 	init_system();
 
 	init_screen_i(system.ui.draw.sht.desktop_buf, system.ui.draw.sht.taskbar_buf, system.ui.draw.sht.mouse_buf);
-
 	sheet_updown(system.ui.draw.sht.core, -1);
+
 	sheet_updown(system.ui.draw.sht.desktop, 0);
 	sheet_updown(system.ui.draw.sht.taskbar, 1);
 	sheet_updown(system.ui.draw.sht.mouse, 2);
@@ -118,6 +118,8 @@ void KeyBoardControlTask(void)
 						change_window_active(key_to->win, false);
 						key_to = (UI_Console *)0;
 					}
+				} else if(dec_key.make && dec_key.keycode == 0x57){/*F11*/
+					if(system.ui.draw.sht.ctrl.top > 3) sheet_updown(system.ui.draw.sht.ctrl.sheets[2], sheet_get_topheight() - 1);
 				} else if(dec_key.make && dec_key.keycode == 0x1c){/*Enter*/
 					if(key_to != 0) fifo32_put(&key_to->task->fifo, 0x0a + CONSOLE_FIFO_START_KEYB);
 				}

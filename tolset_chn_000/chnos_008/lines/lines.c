@@ -14,6 +14,10 @@ void CHNMain(void)
 		api_linewin(winID + 1, 88, 26, i * 9 + 88, 89, i);
 	}
 	api_refreshwin(winID, 6, 26, 154, 90);
+	for(;;){
+		if(api_getkey(true) == 0x0a) break;
+	}
+	api_closewin(winID);
 	api_end();
 }
 

@@ -29,6 +29,10 @@ void init_windows(void)
 
 	for(i = 0;i < MAX_WINDOWS;i++){
 		system.ui.window.ctrl.winfos[i].flags = initialized;
+		system.ui.window.ctrl.winfos[i].buf = (void *)0x00000000;
+		system.ui.window.ctrl.winfos[i].app_buf = (void *)0x00000000;
+		system.ui.window.ctrl.winfos[i].app_buf_bits = 0;
+		system.ui.window.ctrl.winfos[i].task = (UI_Task *)0;
 	}
 	return;
 }
@@ -45,10 +49,18 @@ UI_Window *window_alloc(void)
 			win->buf = (void *)0x00000000;
 			win->app_buf = (void *)0x00000000;
 			win->app_buf_bits = 0;
+			win->task = (UI_Task *)0;
 			return win;
 		}
 	}
 	return 0;
+}
+
+void window_free(UI_Window *winfo)
+{
+	winfo->flags = initialized;
+	winfo->task = (UI_Task *)0;
+	return;
 }
 
 UI_Window *make_window(uchar *title, int xsize, int ysize, int px, int py, int height, bool active)
@@ -78,7 +90,7 @@ err:
 	return winfo;
 }
 
-UI_Window *make_window_app(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf)
+UI_Window *make_window_app(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf, UI_Task *task)
 {
 	UI_Window *winfo = window_alloc();
 
@@ -93,6 +105,7 @@ UI_Window *make_window_app(uchar *title, int xsize, int ysize, int px, int py, i
 	winfo->origin.y = 24;
 	winfo->win = sheet_alloc();
 	winfo->buf = buf;
+	winfo->task = task;
 
 	sheet_setbuf(winfo->win, winfo->buf, winfo->winxsize, winfo->winysize,INV_COL32);	
 
@@ -105,11 +118,18 @@ err:
 	return winfo;
 }
 
-UI_Window *make_window_app_compatible_hrb(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf)
+UI_Window *make_window_app_compatible_hrb(uchar *title, int xsize, int ysize, int px, int py, int height, bool active, uint *buf, UI_Task *task)
 {
 	xsize = xsize - 8;
 	ysize = ysize - 28;
-	return make_window_app(title, xsize, ysize, px, py, height, active, buf);
+	return make_window_app(title, xsize, ysize, px, py, height, active, buf, task);
+}
+
+void free_window_app(UI_Window *winfo)
+{
+	sheet_free(winfo->win);
+	window_free(winfo);
+	return;
 }
 
 void change_window(UI_Window *winfo, uchar *title, bool active)

@@ -24,7 +24,7 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 	} else if(edx == 4){
 		return (uint)&(task->tss.esp0);
 	} else if(edx == 5){
-		win = make_window_app_compatible_hrb((uchar *)(ecx + cons->app_ds_base), esi, edi, 200, 100, sheet_get_topheight(), true, sys_memman_alloc(esi * edi * (system.data.info.vesa.BitsPerPixel >> 3)));
+		win = make_window_app_compatible_hrb((uchar *)(ecx + cons->app_ds_base), esi, edi, 200, 100, sheet_get_topheight(), true, sys_memman_alloc(esi * edi * (system.data.info.vesa.BitsPerPixel >> 3)), task);
 		win->app_buf = (uchar *)(ebx + cons->app_ds_base);
 		win->app_buf_bits = 8;
 		boxfill8(win->app_buf, esi, COL8_FFFFFF, 0, 0, esi, edi);
@@ -84,6 +84,47 @@ uint hrb_api(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ec
 		if((ebx & 1) == 0){
 			putblock_i_convert(GetWindowInfo(ebx)->buf, GetWindowInfo(ebx)->winxsize, eax, ecx, esi, edi, GetWindowInfo(ebx)->app_buf, system.data.info.vesa.BitsPerPixel, GetWindowInfo(ebx)->app_buf_bits);
 			sheet_refresh(GetWindowInfo(ebx)->win, eax, ecx, esi, edi);
+		}
+	} else if(edx == 14){
+		sys_memman_free(GetWindowInfo(ebx)->buf, GetWindowInfo(ebx)->winxsize * GetWindowInfo(ebx)->winysize * (system.data.info.vesa.BitsPerPixel >> 3));
+		free_window_app(GetWindowInfo(ebx));
+	} else if(edx == 15){
+		for(;;){
+			io_cli();
+			if(fifo32_status(&cons->task->fifo) == 0){
+				if(eax == 0){
+					io_sti();
+					reg[7] = 0xFFFFFFFF;
+					return 0;
+				} else{
+					task_sleep(cons->task);
+				}
+			} else {
+				i = fifo32_get(&cons->task->fifo);
+				io_sti();
+				if(i == 1){
+					if(cons->cursor_on){
+						if(cons->cursor_state){
+							cons->cursor_c = CONSOLE_COLOR_CHAR;
+							cons->cursor_state = false;
+						} else{
+							cons->cursor_c = CONSOLE_COLOR_BACKGROUND;
+							cons->cursor_state = true;
+						}
+						boxfill_win(cons->win, cons->cursor_c, cons->cursor.x, cons->cursor.y, cons->cursor.x + 8, cons->cursor.y +16);
+					}
+					timer_settime(cons->timer, 50);
+				} else if(i == CONSOLE_FIFO_CURSOR_START){
+					cons->cursor_on = true;
+				} else if(i == CONSOLE_FIFO_CURSOR_STOP){
+					cons->cursor_on = false;
+					boxfill_win(cons->win, CONSOLE_COLOR_BACKGROUND, cons->cursor.x, cons->cursor.y, cons->cursor.x + 8, cons->cursor.y +16);
+				} else if(CONSOLE_FIFO_START_KEYB <= i && i <= CONSOLE_FIFO_START_KEYB + DATA_BYTE){
+					i -= CONSOLE_FIFO_START_KEYB;
+						reg[7] = i;
+						return 0;
+				}
+			}
 		}
 	} else {
 		cons_put_str(cons, "Unknown api number.");

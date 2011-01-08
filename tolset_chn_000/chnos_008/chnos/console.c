@@ -3,25 +3,24 @@
 #include <string.h>
 
 void console_main(UI_Console *cons)
-{
-	UI_Timer *timer;
-	bool cursor_state = true;
-	bool cursor_on = false;
+{	
 	int i;
 	uint fifobuf[CONSOLE_FIFO_BUF_SIZE];
-	uint cursor_c;
 	uchar s[128];
 	uchar cmdline[CONSOLE_CMDLINE_BUF_SIZE];
 	uint cmdlines;
 	bool cmdline_overflow;
 
+	cons->cursor_state = true;
+	cons->cursor_on = false;
+
 	cons->prompt.x = 0;
 	cons->prompt.y = 0;
 
 	fifo32_init(&cons->task->fifo, CONSOLE_FIFO_BUF_SIZE, fifobuf, cons->task);
-	timer = timer_alloc();
-	timer_init(timer, &cons->task->fifo, 1);
-	timer_settime(timer, 50);
+	cons->timer = timer_alloc();
+	timer_init(cons->timer, &cons->task->fifo, 1);
+	timer_settime(cons->timer, 50);
 
 	boxfill_win(cons->win, CONSOLE_COLOR_BACKGROUND, 0, 0, cons->win->xsize, cons->win->ysize);
 	cons_put_prompt(cons);
@@ -37,21 +36,21 @@ void console_main(UI_Console *cons)
 			i = fifo32_get(&cons->task->fifo);
 			io_sti();
 			if(i == 1){
-				if(cursor_on){
-					if(cursor_state){
-						cursor_c = CONSOLE_COLOR_CHAR;
-						cursor_state = false;
+				if(cons->cursor_on){
+					if(cons->cursor_state){
+						cons->cursor_c = CONSOLE_COLOR_CHAR;
+						cons->cursor_state = false;
 					} else{
-						cursor_c = CONSOLE_COLOR_BACKGROUND;
-						cursor_state = true;
+						cons->cursor_c = CONSOLE_COLOR_BACKGROUND;
+						cons->cursor_state = true;
 					}
-					boxfill_win(cons->win, cursor_c, cons->cursor.x, cons->cursor.y, cons->cursor.x + 8, cons->cursor.y +16);
+					boxfill_win(cons->win, cons->cursor_c, cons->cursor.x, cons->cursor.y, cons->cursor.x + 8, cons->cursor.y +16);
 				}
-				timer_settime(timer, 50);
+				timer_settime(cons->timer, 50);
 			} else if(i == CONSOLE_FIFO_CURSOR_START){
-				cursor_on = true;
+				cons->cursor_on = true;
 			} else if(i == CONSOLE_FIFO_CURSOR_STOP){
-				cursor_on = false;
+				cons->cursor_on = false;
 				boxfill_win(cons->win, CONSOLE_COLOR_BACKGROUND, cons->cursor.x, cons->cursor.y, cons->cursor.x + 8, cons->cursor.y +16);
 			} else if(CONSOLE_FIFO_START_KEYB <= i && i <= CONSOLE_FIFO_START_KEYB + DATA_BYTE){
 				i -= CONSOLE_FIFO_START_KEYB;
@@ -122,6 +121,9 @@ void cons_command_start(UI_Console *cons, uchar *cmdline, uint *cmdlines, bool *
 	} else if(strcmp(cmdline, "date") == 0){
 		readrtc(t);
 		sprintf(s, "%02X%02X.%02X.%02X %02X:%02X:%02X\n", t[6], t[5], t[4], t[3], t[2], t[1], t[0]);
+		cons_put_str(cons, s);
+	} else if(strcmp(cmdline, "sht") == 0){
+		sprintf(s, " console = %d\n top = %d\n top_get = %d\n", cons->win->win->height, system.ui.draw.sht.ctrl.top, sheet_get_topheight());
 		cons_put_str(cons, s);
 	} else if(strncmp(cmdline, "fdc", 3) == 0){
 		cons_command_fdc(cons, cmdline);
@@ -300,7 +302,7 @@ void cons_command_systeminfo(UI_Console *cons, uchar *cmdline)
 
 uint cons_app_hrb_start(UI_Console *cons, uchar *cmdline)
 {
-	uint i, j;
+	uint i, j, k;
 	uchar *p, *q;
 	UI_Task *task = task_now();
 	FORMAT_Haribote *head;
@@ -325,6 +327,14 @@ uint cons_app_hrb_start(UI_Console *cons, uchar *cmdline)
 				q[head->DefaultESP + i] = p[head->OriginDataSection + i];
 			}
 			start_app(0x1b, 1003 * 8, head->DefaultESP, 1004 * 8, &(task->tss.esp0));
+
+			for(k = 0;k < MAX_WINDOWS;k++){
+				if(system.ui.window.ctrl.winfos[k].task == task){
+					sys_memman_free(system.ui.window.ctrl.winfos[k].buf, system.ui.window.ctrl.winfos[k].winxsize * system.ui.window.ctrl.winfos[k].winysize * (system.data.info.vesa.BitsPerPixel >> 3));
+					free_window_app(&system.ui.window.ctrl.winfos[k]);	
+				}
+			}
+
 			sys_memman_free(q, head->DataSegmentSize);
 		} else{
 			cons_put_str(cons, ".hrbÌ§²ÙÌ«°Ï¯Ä´×°\n");

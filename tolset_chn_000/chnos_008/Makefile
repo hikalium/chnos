@@ -24,8 +24,10 @@ chnos.img : chnos/chnipl.bin chnos/chnos.sys chnos/chnipl.nas \
 		crack3/crack3.hrb \
 		crack4/crack4.hrb \
 		hello/hello.hrb \
+		lines/lines.hrb \
 		star1/star1.hrb \
 		stars/stars.hrb \
+		walk/walk.hrb \
 		winhelo/winhelo.hrb \
 		winhelo2/winhelo2.hrb \
 		winhelo3/winhelo3.hrb 
@@ -42,8 +44,10 @@ chnos.img : chnos/chnipl.bin chnos/chnos.sys chnos/chnipl.nas \
 		copy from:crack3/crack3.hrb to:@: \
 		copy from:crack4/crack4.hrb to:@: \
 		copy from:hello/hello.hrb to:@: \
+		copy from:lines/lines.hrb to:@: \
 		copy from:star1/star1.hrb to:@: \
 		copy from:stars/stars.hrb to:@: \
+		copy from:walk/walk.hrb to:@: \
 		copy from:winhelo/winhelo.hrb to:@: \
 		copy from:winhelo2/winhelo2.hrb to:@: \
 		copy from:winhelo3/winhelo3.hrb to:@: \
@@ -84,8 +88,10 @@ full :
 	$(MAKE) -C crack3
 	$(MAKE) -C crack4
 	$(MAKE) -C hello
+	$(MAKE) -C lines
 	$(MAKE) -C star1
 	$(MAKE) -C stars
+	$(MAKE) -C walk
 	$(MAKE) -C winhelo
 	$(MAKE) -C winhelo2
 	$(MAKE) -C winhelo3
@@ -121,8 +127,10 @@ clean_full :
 	$(MAKE) -C crack3		clean
 	$(MAKE) -C crack4		clean
 	$(MAKE) -C hello		clean
+	$(MAKE) -C lines		clean
 	$(MAKE) -C star1		clean
 	$(MAKE) -C stars		clean
+	$(MAKE) -C walk			clean
 	$(MAKE) -C winhelo		clean
 	$(MAKE) -C winhelo2		clean
 	$(MAKE) -C winhelo3		clean
@@ -137,8 +145,10 @@ src_only_full :
 	$(MAKE) -C crack3		src_only
 	$(MAKE) -C crack4		src_only
 	$(MAKE) -C hello		src_only
+	$(MAKE) -C lines		src_only
 	$(MAKE) -C star1		src_only
 	$(MAKE) -C stars		src_only
+	$(MAKE) -C walk			src_only
 	$(MAKE) -C winhelo		src_only
 	$(MAKE) -C winhelo2		src_only
 	$(MAKE) -C winhelo3		src_only
