@@ -119,7 +119,7 @@ void KeyBoardControlTask(void)
 						key_to = (UI_Console *)0;
 					}
 				} else if(dec_key.make && dec_key.keycode == 0x57){/*F11*/
-					if(system.ui.draw.sht.ctrl.top > 3) sheet_updown(system.ui.draw.sht.ctrl.sheets[2], sheet_get_topheight() - 1);
+					if(system.ui.draw.sht.ctrl.top > 3) sheet_updown(system.ui.draw.sht.ctrl.sheets[2], sheet_get_topheight());
 				} else if(dec_key.make && dec_key.keycode == 0x1c){/*Enter*/
 					if(key_to != 0) fifo32_put(&key_to->task->fifo, 0x0a + CONSOLE_FIFO_START_KEYB);
 				}
@@ -131,6 +131,11 @@ void KeyBoardControlTask(void)
 void MouseControlTask(void)
 {
 	int i, mx, my, scrool = 0;
+	int j, x, y;
+	int k;
+	UI_Sheet *sht = 0;
+	int mmx = -1, mmy = -1;
+	bool win_move = false;
 	uchar s[128];
 
 	mx = system.data.info.boot.scrnx >> 1;
@@ -158,9 +163,42 @@ void MouseControlTask(void)
 					sprintf(s, "[lcr](%4d,%4d,%04d)", mx, my, scrool);
 					if((system.io.mouse.decode.btn & 0x01) != 0){
 						s[1] = 'L';
-						if(fifo32_status(&system.data.fifo.mousectrl) == 0){
-							sheet_slide(system.ui.console.consoles[0].win->win, mx, my);
+						if(win_move == false){
+							for(j = system.ui.draw.sht.ctrl.top - 1; j >= 1; j--){
+								sht = system.ui.draw.sht.ctrl.sheets[j];
+								x = mx - sht->vx0;
+								y = my - sht->vy0;
+								if(0 <= x && x < sht->bxsize && 0 <= y && y < sht->bysize){
+									sheet_updown(sht, sheet_get_topheight());
+									if(0 <= y && y <= 24){
+										for(k = 0;k < MAX_WINDOWS;k++){
+											if(system.ui.window.ctrl.winfos[k].win == sht) break;
+										}
+										if(k < MAX_WINDOWS && y <= 16 && (sht->bxsize - 44) <= x && x <= (sht->bxsize - 4) && system.ui.window.ctrl.winfos[k].task != 0){
+											io_cli();
+											system.ui.window.ctrl.winfos[k].task->tss.eax = (int)&(system.ui.window.ctrl.winfos[k].task->tss.esp0);
+											system.ui.window.ctrl.winfos[k].task->tss.eip = (int)asm_end_app;
+											change_window_active(&system.ui.window.ctrl.winfos[k], true);
+											io_sti();
+										}
+										if(k < MAX_WINDOWS){
+											win_move = true;
+											mmx = mx;
+											mmy = my;
+										}
+									}
+									break;
+								}
+							}
+						} else{
+							x = mx - mmx;
+							y = my - mmy;
+							sheet_slide(sht, sht->vx0 + x, sht->vy0 + y);
+							mmx = mx;
+							mmy = my;
 						}
+					} else{
+						win_move = false;
 					}
 					if((system.io.mouse.decode.btn & 0x02) != 0){
 						s[3] = 'R';

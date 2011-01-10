@@ -425,5 +425,5 @@ void sheet_refreshmap8(int vx0, int vy0, int vx1, int vy1, int h0)
 
 int sheet_get_topheight(void)
 {
-	return ctl->top;
+	return ctl->top - 1;
 }
