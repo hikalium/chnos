@@ -16,6 +16,9 @@ void CHNMain(void)
 		api_point(winID + 1, x, y, yellow);
 	}
 	api_refreshwin(winID, 6, 26, 144, 94);
+	for(;;){
+		if(api_getkey(true) == 0x0a) break;
+	}
 	api_end();
 }
 
