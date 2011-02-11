@@ -1,7 +1,8 @@
-OBJS_BOOTPACK = naskfunc.obj hankaku.obj graphic.obj grap_08.obj grap_16.obj grap_32.obj gdtidt.obj int.obj io.obj fifo.obj keyboard.obj timer.obj mouse.obj memory.obj sheet.obj window.obj system.obj bootpack.obj
 
-TOOLPATH = ../z_tools/
-INCPATH  = ../z_tools/CHNOSProject/
+#OBJS_BOOTPACK = naskfunc.obj hankaku.obj gdtidt.obj graphic.obj grap_08.obj grap_16.obj grap_32.obj init.obj intrpt.obj io.obj memory.obj paging.obj sheet.obj fifo.obj mtask.obj timer.obj keyboard.obj mouse.obj window.obj console.obj file.obj uuid.obj api.obj bootpack.obj
+OBJS_BOOTPACK = nasfunc0.obj bootpack.obj
+TOOLPATH = ../../z_tools/
+INCPATH  = ../../z_tools/CHNOSProject/
 
 MAKE     = $(TOOLPATH)make.exe -r
 NASK     = $(TOOLPATH)nask.exe
@@ -10,8 +11,8 @@ BIN2OBJ  = $(TOOLPATH)bin2obj.exe
 GAS2NASK = $(TOOLPATH)gas2nask.exe -a
 OBJ2BIM  = $(TOOLPATH)obj2bim.exe
 BIM2HRB  = $(TOOLPATH)bim2hrb.exe
-RULEFILE = $(TOOLPATH)CHNOSProject/CHNOSP.rul
-EDIMG    = $(TOOLPATH)edimg.exe
+RULEFILE = $(INCPATH)CHNOSP.rul
+EDIMG    = $(TOOLPATH)edimg.exe bias:9
 IMGTOL   = $(TOOLPATH)imgtol.com
 MAKEFONT = $(TOOLPATH)makefont.exe
 COPY     = copy
@@ -46,8 +47,8 @@ bootpack.nas : bootpack.gas Makefile
 bootpack.obj : bootpack.nas Makefile
 	$(NASK) bootpack.nas bootpack.obj bootpack.lst
 
-naskfunc.obj : naskfunc.nas Makefile
-	$(NASK) naskfunc.nas naskfunc.obj naskfunc.lst
+nasfunc0.obj : nasfunc0.nas Makefile
+	$(NASK) nasfunc0.nas nasfunc0.obj nasfunc0.lst
 
 bootpack.bim : $(OBJS_BOOTPACK) Makefile
 	$(OBJ2BIM) @$(RULEFILE) out:bootpack.bim stack:3136k map:bootpack.map \
@@ -61,7 +62,7 @@ chnos.sys : asmhead.bin bootpack.hrb Makefile
 	copy /B asmhead.bin+bootpack.hrb chnos.sys
 
 chnos.img : chnipl.bin chnos.sys Makefile
-	$(EDIMG)   imgin:../z_tools/fdimg0at.tek \
+	$(EDIMG)   imgin:../../z_tools/fdimg0at.tek \
 		wbinimg src:chnipl.bin len:512 from:0 to:0 \
 		copy from:chnos.sys to:@: \
 		imgout:chnos.img
@@ -89,17 +90,17 @@ img :
 
 run :
 	$(MAKE) img
-	$(COPY) chnos.img ..\z_tools\qemu\fdimage0.bin
-	$(MAKE) -C ../z_tools/qemu
+	$(COPY) chnos.img ..\..\z_tools\qemu\fdimage0.bin
+	$(MAKE) -C ../../z_tools/qemu
 run_b :
 	$(MAKE) img
-	$(COPY) chnos.img ..\z_tools\bochs\fdimage0.bin
-	$(MAKE) -C ../z_tools/bochs
+	$(COPY) chnos.img ..\..\z_tools\bochs\fdimage0.bin
+	$(MAKE) -C ../../z_tools/bochs
 
 
 run_cd :
 	$(MAKE) iso
-	$(MAKE) -C ../z_tools/qemu_iso
+	$(MAKE) -C ../../z_tools/qemu_iso
 
 install :
 	$(MAKE) img
@@ -122,5 +123,5 @@ src_only :
 
 iso :
 	$(MAKE)
-	..\z_tools\mkisofs.exe -v -iso-level 1 -b chnos.img -o ..\z_tools\qemu_iso\chnos.iso .
+	..\..\z_tools\mkisofs.exe -v -iso-level 1 -b chnos.img -o ..\..\z_tools\qemu_iso\chnos.iso .
 
