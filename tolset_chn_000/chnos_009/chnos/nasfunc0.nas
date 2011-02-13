@@ -2,171 +2,212 @@
 [INSTRSET "i486p"]
 [BITS 32]
 [FILE "nasfunc0.nas"]
-	GLOBAL _io_hlt
-	GLOBAL _io_cli, _io_sti, _io_stihlt
-	GLOBAL _io_in8, _io_out8
-	GLOBAL _io_in16, _io_out16
-	GLOBAL _io_in32, _io_out32
-	GLOBAL _io_load_eflags, _io_store_eflags
-	GLOBAL _load_cr0, _store_cr0
-	GLOBAL _load_cr1, _store_cr1	;エミュレーターでは使用不可
-	GLOBAL _load_cr2, _store_cr2
-	GLOBAL _load_cr3, _store_cr3
-	GLOBAL _load_cr4, _store_cr4
-	GLOBAL _load_gdtr
-	GLOBAL _load_idtr
-	GLOBAL _load_tr
-	GLOBAL _farjmp
-	GLOBAL _farcall
-	GLOBAL _clts
-	GLOBAL _fnsave, _frstor
+	GLOBAL	_IO_HLT
+	GLOBAL	_IO_CLI, _IO_STI, _IO_STIHLT
+	GLOBAL	_IO_In8, _IO_Out8
+	GLOBAL	_IO_In16, _IO_Out16
+	GLOBAL	_IO_In32, _IO_Out32
+	GLOBAL	_IO_Load_EFlags, _IO_Store_EFlags
+	GLOBAL	_Load_CR0, _Store_CR0
+	GLOBAL	_Load_CR2, _Store_CR2
+	GLOBAL	_Load_CR3, _Store_CR3
+	GLOBAL	_Load_CR4, _Store_CR4
+	GLOBAL	_Load_GDTR
+	GLOBAL	_Load_IDTR
+	GLOBAL	_Load_TR
+	GLOBAL	_FarJMP
+	GLOBAL	_FarCall
+	GLOBAL	_CLTS
+	GLOBAL	_FNSave, _FRStore
+	GLOBAL	_PIT_Beep_On, _PIT_Beep_Off, _PIT_Beep_Set
+	GLOBAL	_CPUID
+	GLOBAL	_Read_TSC
 
 [SECTION .text]
 
-_io_hlt:
+_IO_HLT:
 	hlt
 	ret
 
-_io_cli:
+_IO_CLI:
 	cli
 	ret
 
-_io_sti:
+_IO_STI:
 	sti
 	ret
 
-_io_stihlt:
+_IO_STIHLT:
 	sti
 	hlt
 	ret
 
-_io_in8:
+_IO_In8:
 	mov	edx,[esp+4]
 	mov	eax,0
 	in	al,dx
 	ret
 
-_io_out8:
+_IO_Out8:
 	mov	edx,[esp+4]
 	mov	al,[esp+8]
 	out	dx,al
 	ret
 
-_io_in16:
+_IO_In16:
 	mov	edx,[esp+4]
 	mov	eax,0
 	in	ax,dx
 	ret
 
-_io_out16:
+_IO_Out16:
 	mov	edx,[esp+4]
 	mov	ax,[esp+8]
 	out	dx,ax
 	ret
 
-_io_in32:
+_IO_In32:
 	mov	edx,[esp+4]
 	in	eax,dx
 	ret
 
-_io_out32:
+_IO_Out32:
 	mov	edx,[esp+4]
 	mov	eax,[esp+8]
 	out	dx,eax
 	ret
 
-_io_load_eflags:
+_IO_Load_EFlags:
 	pushfd
 	pop	eax
 	ret
 
-_io_store_eflags:
+_IO_Store_EFlags:
 	mov	eax,[esp+4]
 	push	eax
 	popfd
 	ret
 
-_load_cr0:
+_Load_CR0:
 	mov	eax,cr0
 	ret
 
-_store_cr0:
+_Store_CR0:
 	mov	eax,[esp+4]
 	mov	cr0,eax
 	ret
 
-_load_cr1:
-	mov	eax,cr1
-	ret
-
-_store_cr1:
-	mov	eax,[esp+4]
-	mov	cr1,eax
-	ret
-
-_load_cr2:
+_Load_CR2:
 	mov	eax,cr2
 	ret
 
-_store_cr2:
+_Store_CR2:
 	mov	eax,[esp+4]
 	mov	cr2,eax
 	ret
 
-_load_cr3:
+_Load_CR3:
 	mov	eax,cr3
 	ret
 
-_store_cr3:
+_Store_CR3:
 	mov	eax,[esp+4]
 	mov	cr3,eax
 	ret
 
-_load_cr4:
+_Load_CR4:
 	mov	eax,cr3
 	ret
 
-_store_cr4:
+_Store_CR4:
 	mov	eax,[esp+4]
 	mov	cr4,eax
 	ret
 
-_load_gdtr:
+_Load_GDTR:
 	mov	ax,[esp+4]
 	mov	[esp+6],ax
 	lgdt	[esp+6]
 	ret
 
-_load_idtr:
+_Load_IDTR:
 	mov	ax,[esp+4]
 	mov	[esp+6],ax
 	lidt	[esp+6]
 	ret
 
-_load_tr:
+_Load_TR:
 	ltr	[esp+4]
 	ret
 
-_farjmp:
+_FarJMP:
 	jmp	far	[esp+4]
 	ret
 
-_farcall:
+_FarCall:
 	call	far	[esp+4]
 	ret
 
-_clts:
+_CLTS:
         clts
         ret
 
-_fnsave:
+_FNSave:
         mov     eax,[esp+4]     ; addr
         fnsave  [eax]
         ret
 
-_frstor:
+_FRStore:
         mov     eax,[esp+4]     ; addr
         frstor  [eax]
         ret
+
+_PIT_Beep_On:
+	in	al,0x61
+	or	al,0x03
+	and	al,0x0f
+	out	0x61,al
+	ret
+
+_PIT_Beep_Off:
+	in	al,0x61
+	and	al,0xd
+	out	0x61,al
+	ret
+
+_PIT_Beep_Set:
+	mov	eax,1193180
+	mov	edx,0x00000000
+	mov	ecx,[esp+4]
+	div	ecx
+	mov	edx,eax
+	mov	al,0xb6
+	out	0x43,al
+	mov	eax,edx
+	out	0x42,al
+	shr	eax,8
+	out	0x42,al
+	ret
+
+_CPUID:
+	pushad
+	mov	esi,[esp+36]
+	mov	eax,[esp+40]
+	db	0x0f,0xa2
+	mov	[esi   ],eax
+	mov	[esi+ 4],ebx
+	mov	[esi+ 8],edx
+	mov	[esi+12],ecx
+	popad
+	ret
+
+_Read_TSC:
+	pushad
+	mov	ebx,[esp+36]
+	db	0x0f,0x31
+	mov	[ebx],edx
+	mov	[ebx+4],eax
+	popad
+	ret
 
 

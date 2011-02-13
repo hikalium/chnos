@@ -1,6 +1,6 @@
 
 #OBJS_BOOTPACK = naskfunc.obj hankaku.obj gdtidt.obj graphic.obj grap_08.obj grap_16.obj grap_32.obj init.obj intrpt.obj io.obj memory.obj paging.obj sheet.obj fifo.obj mtask.obj timer.obj keyboard.obj mouse.obj window.obj console.obj file.obj uuid.obj api.obj bootpack.obj
-OBJS_BOOTPACK = nasfunc0.obj bootpack.obj
+OBJS_BOOTPACK = nasfunc0.obj nasfunc1.obj bootpack.obj
 TOOLPATH = ../../z_tools/
 INCPATH  = ../../z_tools/CHNOSProject/
 
@@ -72,7 +72,7 @@ chnos.img : chnipl.bin chnos.sys Makefile
 %.ca : %.c Makefile
 	$(SJISCONV) $*.c $*.ca
 
-%.gas : %.ca core.h Makefile
+%.gas : %.ca core.h core_set.h Makefile
 	$(CC1) -o $*.gas $*.ca
 
 %.nas : %.gas Makefile
