@@ -123,6 +123,9 @@ extern void (*Draw_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint
 void Initialise_ProgrammableInterruptController(void);
 void InterruptHandler27(int *esp);
 
+/*memory.c メモリ関連*/
+uint Memory_Test(uint start, uint end);
+
 /*serial.c シリアル通信関連*/
 void Initialise_SerialPort(void);
 void Send_SerialPort(uchar *s);
@@ -202,7 +205,8 @@ void PIT_Beep_Set(uint fq);		//ビープ音の周波数を、fqHzに変更する。
 					//C:262 C#:277 D:294 D#:311 E:330 F:349 F#:370 G:392 G#:415 A:440 A#:466 B:494 C:523
 void CPUID(void *addr, uint id);	//addr番地のuint[4]に、CPUの識別情報id番をEAX・EBX・EDX・ECXの順番で格納する。
 					//この命令は、EFLAGS内のIDフラグ(ビット21)が変更可能な場合のみ実行できる。
-void read_tsc(uint *addr);		//addr番地のuint[2]に、マシン固有レジスタ(MSR)内にある、タイム・スタンプ・カウンタの上位・下位それぞれ32ビットを読み込む。
+void Read_TSC(uint *addr);		//addr番地のuint[2]に、マシン固有レジスタ(MSR)内にある、タイム・スタンプ・カウンタの上位・下位それぞれ32ビットを読み込む。
+uint Memory_Test_Sub(uint start, uint end);
 
 /*nasfunc1.nas C言語の関数に依存する関数群。おもに割り込み関係。*/
 void asm_CPU_ExceptionHandler00(void);

@@ -22,6 +22,7 @@
 	GLOBAL	_PIT_Beep_On, _PIT_Beep_Off, _PIT_Beep_Set
 	GLOBAL	_CPUID
 	GLOBAL	_Read_TSC
+	GLOBAL	_Memory_Test_Sub
 
 [SECTION .text]
 
@@ -208,6 +209,39 @@ _Read_TSC:
 	mov	[ebx],edx
 	mov	[ebx+4],eax
 	popad
+	ret
+
+_Memory_Test_Sub:
+	push	edi
+	push	esi
+	push	ebx
+	mov	esi,0xaa55aa55
+	mov	edi,0x55aa55aa
+	mov	eax,[esp+12+4]
+mts_loop:
+	mov	ebx,eax
+	add	ebx,0xffc
+	mov	edx,[ebx]
+	mov	[ebx],esi
+	xor	dword [ebx],0xffffffff
+	cmp	edi,[ebx]
+	jne	mts_fin
+	xor	dword [ebx],0xffffffff
+	cmp	esi,[ebx]
+	jne	mts_fin
+	mov	[ebx],edx
+	add	eax,0x1000
+	cmp	eax,[esp+12+8]
+	jbe	mts_loop
+	pop	ebx
+	pop	esi
+	pop	edi
+	ret
+mts_fin:
+	mov	[ebx],edx
+	pop	ebx
+	pop	esi
+	pop	edi
 	ret
 
 
