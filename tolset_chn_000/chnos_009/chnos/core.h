@@ -37,23 +37,97 @@ struct GATE_DESCRIPTOR {
 	short offset_high;
 };
 
+struct BOOTINFO { 
+	uchar cyls; 
+	uchar leds; 
+	uchar vmode; 
+	uchar reserve;
+	ushort scrnx, scrny;
+	uchar *vram;
+};
+
+struct VESAINFO {/*0xe00--->512byte*/
+	ushort	ModeAttributes;
+	uchar	WinAAttributes;
+	uchar	WinBAttributes;
+	ushort	WinGranularity;
+	ushort	WinSize;
+	ushort	WinASegment;
+	ushort	WinBSegment;
+	uint	WinFuncPtr;
+	ushort	BytesPerScanLine;
+	ushort	XResolution;
+	ushort	YResolution;
+	uchar	XCharSize;
+	uchar	YCharSize;
+	uchar	NumberOfPlanes;
+	uchar	BitsPerPixel;
+	uchar	NumberOfBanks;
+	uchar	MemoryModel;
+	uchar	BankSize;
+	uchar	NumberOfImagePages;
+	uchar	Reserved;
+	uchar	RedMaskSize;
+	uchar	RedFieldPosition;
+	uchar	GreenMaskSize;
+	uchar	GreenFieldPosition;
+	uchar	BlueMaskSize;
+	uchar	BlueFieldPosition;
+	uchar	RsvdMaskSize;
+	uchar	RsvdFieldPodition;
+	uchar	DirectColorModeInfo;
+	uint*	PhysBasePtr;
+};
+
 /*typedef structures*/
 typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
 typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
+typedef struct BOOTINFO			DATA_BootInfo;
+typedef struct VESAINFO			DATA_VESAInfo;
 
 /*virtual classes*/
 
 /*externs*/
 extern uchar hankaku[4096];
+extern uint RGB_32_To_08_Table[16];
 
 /*functions*/
 /*bootpack.c 基幹部分*/
+
+/*dsctbl.c ディスクリプター・テーブル関連*/
 void Initialise_GlobalDescriptorTable(void);
 void Initialise_InterruptDescriptorTable(void);
 void Set_SegmentDescriptor(IO_SegmentDescriptor *sd, uint limit, int base, int ar);
 void Set_GateDescriptor(IO_GateDescriptor *gd, int offset, int selector, int ar);
+
+/*grap_08.c*/
+void Draw_Put_Font_08(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
+void Draw_Put_String_08(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
+/*grap_16.c*/
+void Draw_Put_Font_16(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
+void Draw_Put_String_16(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
+/*grap_32.c*/
+void Draw_Put_Font_32(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
+void Draw_Put_String_32(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
+/*graphic.c*/
+void Initialise_Graphic(uint bpp);
+uchar RGB_32_To_08(uint c32);
+ushort RGB_32_To_16(uint c32);
+extern void (*Draw_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
+
+/*intrpt.c 割り込み設定とどこにも属さない割り込みハンドラー*/
 void Initialise_ProgrammableInterruptController(void);
 void InterruptHandler27(int *esp);
+
+/*serial.c シリアル通信関連*/
+void Initialise_SerialPort(void);
+void Send_SerialPort(uchar *s);
+
+/*timer.c タイマー関連*/
+void Initialise_ProgrammableIntervalTimer(void);
+void InterruptHandler20(int *esp);
+
+/*xception.c CPU例外関係*/
 void CPU_Exception_Abort(int exception, int *esp);
 void CPU_ExceptionHandler00(int *esp);
 void CPU_ExceptionHandler01(int *esp);
@@ -87,10 +161,6 @@ void CPU_ExceptionHandler1c(int *esp);
 void CPU_ExceptionHandler1d(int *esp);
 void CPU_ExceptionHandler1e(int *esp);
 void CPU_ExceptionHandler1f(int *esp);
-void Initialise_ProgrammableIntervalTimer(void);
-void InterruptHandler20(int *esp);
-void Initialise_SerialPort(void);
-void Send_SerialPort(uchar *s);
 
 /*nasfunc0.nas 他の関数に全く依存しないアセンブラ関数群*/
 void IO_HLT(void);			//CPUを停止させる。割り込みがあると再開する。特権命令。
