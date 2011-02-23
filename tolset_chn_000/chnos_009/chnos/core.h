@@ -103,17 +103,21 @@ void Set_GateDescriptor(IO_GateDescriptor *gd, int offset, int selector, int ar)
 /*grap_08.c*/
 void Draw_Put_Font_08(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
 void Draw_Put_String_08(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
+void Draw_Fill_Rectangle_08(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 /*grap_16.c*/
 void Draw_Put_Font_16(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
 void Draw_Put_String_16(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
+void Draw_Fill_Rectangle_16(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 /*grap_32.c*/
 void Draw_Put_Font_32(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
 void Draw_Put_String_32(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
+void Draw_Fill_Rectangle_32(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 /*graphic.c*/
 void Initialise_Graphic(uint bpp);
 uchar RGB_32_To_08(uint c32);
 ushort RGB_32_To_16(uint c32);
 extern void (*Draw_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
+extern void (*Draw_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 
 /*intrpt.c äÑÇËçûÇ›ê›íËÇ∆Ç«Ç±Ç…Ç‡ëÆÇ≥Ç»Ç¢äÑÇËçûÇ›ÉnÉìÉhÉâÅ[*/
 void Initialise_ProgrammableInterruptController(void);

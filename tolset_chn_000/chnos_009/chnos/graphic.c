@@ -21,15 +21,19 @@ uint RGB_32_To_08_Table[16] = {
 };
 
 void (*Draw_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
+void (*Draw_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 
 void Initialise_Graphic(uint bpp)
 {
 	if(bpp == 8){
 		Draw_Put_String = Draw_Put_String_08;
+		Draw_Fill_Rectangle = Draw_Fill_Rectangle_08;
 	} else if(bpp == 16){
 		Draw_Put_String = Draw_Put_String_16;
+		Draw_Fill_Rectangle = Draw_Fill_Rectangle_16;
 	} else if(bpp == 32){
 		Draw_Put_String = Draw_Put_String_32;
+		Draw_Fill_Rectangle = Draw_Fill_Rectangle_32;
 	}
 	return;
 }

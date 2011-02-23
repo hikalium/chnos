@@ -29,3 +29,15 @@ void Draw_Put_String_32(void *vram, uint xsize, uint x, uint y, uint c, const uc
 	}
 	return;
 }
+
+void Draw_Fill_Rectangle_32(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1)
+{
+	uint x, y;
+	for(y = y0; y <= y1; y++){
+		for(x = x0; x <= x1; x++){
+			((uint *)vram)[y * xsize + x] = c;
+		}
+	}
+	return;
+}
+
