@@ -79,11 +79,25 @@ struct VESAINFO {/*0xe00--->512byte*/
 	uint*	PhysBasePtr;
 };
 
+struct FIFO32 {
+	uint *buf;
+	uint p, q, size, free, flags;
+};
+
+struct MEMMAN {
+	int frees, maxfrees, lostsize, losts;
+	struct MEM_FREEINFO {
+		uint addr, size;
+	} free[MEMMAN_FREES];
+};
+
 /*typedef structures*/
 typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
 typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
 typedef struct BOOTINFO			DATA_BootInfo;
 typedef struct VESAINFO			DATA_VESAInfo;
+typedef struct FIFO32			DATA_FIFO;
+typedef struct MEMMAN			IO_MemoryControl;
 
 /*virtual classes*/
 
@@ -99,6 +113,12 @@ void Initialise_GlobalDescriptorTable(void);
 void Initialise_InterruptDescriptorTable(void);
 void Set_SegmentDescriptor(IO_SegmentDescriptor *sd, uint limit, int base, int ar);
 void Set_GateDescriptor(IO_GateDescriptor *gd, int offset, int selector, int ar);
+
+/*fifo.c FIFOバッファ関連*/
+void FIFO32_Initialise(DATA_FIFO *fifo, uint size, uint *buf);
+int FIFO32_Put(DATA_FIFO *fifo, uint data);
+uint FIFO32_Get(DATA_FIFO *fifo);
+uint FIFO32_Status(DATA_FIFO *fifo);
 
 /*grap_08.c*/
 void Draw_Put_Font_08(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
@@ -125,6 +145,12 @@ void InterruptHandler27(int *esp);
 
 /*memory.c メモリ関連*/
 uint Memory_Test(uint start, uint end);
+void MemoryControl_Initialise(IO_MemoryControl *man);
+uint MemoryControl_FreeSize(IO_MemoryControl *man);
+void *MemoryControl_Allocate(IO_MemoryControl *man, uint size);
+int MemoryControl_Free(IO_MemoryControl *man, void *addr0, uint size);
+void *MemoryControl_Allocate_Page(IO_MemoryControl *man);
+
 
 /*serial.c シリアル通信関連*/
 void Initialise_SerialPort(void);

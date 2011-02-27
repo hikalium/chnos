@@ -7,6 +7,10 @@ void CHNMain(void)
 	DATA_BootInfo *boot = (DATA_BootInfo *) ADR_BOOTINFO;
 	uint i;
 	uchar s[128];
+	uint fifobuf[128];
+	DATA_FIFO fifo;
+
+	FIFO32_Initialise(&fifo, 128, fifobuf);
 
 	IO_CLI();
 	Initialise_SerialPort();
