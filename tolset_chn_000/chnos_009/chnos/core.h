@@ -91,6 +91,22 @@ struct MEMMAN {
 	} free[MEMMAN_FREES];
 };
 
+struct POSITION_2D {
+	int x, y;
+};
+
+struct UI_INPUTBOX {
+	void *vram;
+	uint forecol, backcol;
+	uint *input_buf;
+	uint input_buf_size;
+	struct FIFO32 input;
+	struct POSITION_2D cursor;
+	struct POSITION_2D prompt;
+	struct POSITION_2D size;
+	struct POSITION_2D position;
+};
+
 /*typedef structures*/
 typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
 typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
@@ -98,6 +114,8 @@ typedef struct BOOTINFO			DATA_BootInfo;
 typedef struct VESAINFO			DATA_VESAInfo;
 typedef struct FIFO32			DATA_FIFO;
 typedef struct MEMMAN			IO_MemoryControl;
+typedef struct POSITION_2D		DATA_Position2D;
+typedef struct UI_INPUTBOX		UI_InputBox;
 
 /*virtual classes*/
 
@@ -139,6 +157,9 @@ ushort RGB_32_To_16(uint c32);
 extern void (*Draw_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
 extern void (*Draw_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 
+/*inputbox.c*/
+void InputBox_Initialise(UI_InputBox *box, void *vram, uint x, uint y, uint xsize, uint ysize, uint txtbufsize, uint forecol, uint backcol);
+
 /*intrpt.c 割り込み設定とどこにも属さない割り込みハンドラー*/
 void Initialise_ProgrammableInterruptController(void);
 void InterruptHandler27(int *esp);
@@ -150,7 +171,14 @@ uint MemoryControl_FreeSize(IO_MemoryControl *man);
 void *MemoryControl_Allocate(IO_MemoryControl *man, uint size);
 int MemoryControl_Free(IO_MemoryControl *man, void *addr0, uint size);
 void *MemoryControl_Allocate_Page(IO_MemoryControl *man);
+void System_MemoryControl_Initialise(IO_MemoryControl *man);
+uint System_MemoryControl_FreeSize(void);
+void *System_MemoryControl_Allocate(uint size);
+int System_MemoryControl_Free(void *addr0, uint size);
+void *System_MemoryControl_Allocate_Page(void);
 
+/*メモリマップ*/
+//メモリ終端からIO_MemoryControl分	：システム用IO_MemoryControl
 
 /*serial.c シリアル通信関連*/
 void Initialise_SerialPort(void);

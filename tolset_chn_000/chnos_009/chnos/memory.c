@@ -1,6 +1,8 @@
 
 #include "core.h"
 
+IO_MemoryControl *sys_mem_ctrl;
+
 uint Memory_Test(uint start, uint end)
 {
 	uchar flg486 = 0;
@@ -68,6 +70,7 @@ void *MemoryControl_Allocate(IO_MemoryControl *man, uint size)
 	}
 	return 0;
 }
+
 int MemoryControl_Free(IO_MemoryControl *man, void *addr0, uint size)
 {
 	int i, j;
@@ -130,3 +133,31 @@ void *MemoryControl_Allocate_Page(IO_MemoryControl *man)
 
 	return mem_head_4k;
 }
+
+void System_MemoryControl_Initialise(IO_MemoryControl *man)
+{
+	sys_mem_ctrl = man;
+	MemoryControl_Initialise(sys_mem_ctrl);
+	return;
+}
+
+uint System_MemoryControl_FreeSize(void)
+{
+	return MemoryControl_FreeSize(sys_mem_ctrl);
+}
+
+void *System_MemoryControl_Allocate(uint size)
+{
+	return MemoryControl_Allocate(sys_mem_ctrl, size);
+}
+
+int System_MemoryControl_Free(void *addr0, uint size)
+{
+	return MemoryControl_Free(sys_mem_ctrl, addr0, size);
+}
+
+void *System_MemoryControl_Allocate_Page(void)
+{
+	return MemoryControl_Allocate_Page(sys_mem_ctrl);
+}
+
