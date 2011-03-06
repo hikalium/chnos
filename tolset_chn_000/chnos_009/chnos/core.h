@@ -108,6 +108,13 @@ struct UI_INPUTBOX {
 	struct POSITION_2D position;
 };
 
+struct KEYINFO {
+	uchar c;
+	uint keycode;
+	bool make;
+	bool alphabet;
+};
+
 /*typedef structures*/
 typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
 typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
@@ -117,6 +124,7 @@ typedef struct FIFO32			DATA_FIFO;
 typedef struct MEMMAN			IO_MemoryControl;
 typedef struct POSITION_2D		DATA_Position2D;
 typedef struct UI_INPUTBOX		UI_InputBox;
+typedef struct KEYINFO			UI_KeyInfo;
 
 /*virtual classes*/
 
@@ -161,10 +169,21 @@ extern void (*Draw_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint
 /*inputbox.c*/
 void InputBox_Initialise(UI_InputBox *box, void *vram, uint vxsize, uint x, uint y, uint xsize, uint ysize, uint txtbufsize, uint forecol, uint backcol);
 int InputBox_Put_String(UI_InputBox *box, const uchar *s);
+int InputBox_Put_Character(UI_InputBox *box, uchar c);
+void InputBox_Put_String_Main(UI_InputBox *box, const uchar *str);
+void InputBox_Check_NewLine(UI_InputBox *box);
+void InputBox_NewLine_No_Prompt(UI_InputBox *box);
 
 /*intrpt.c 割り込み設定とどこにも属さない割り込みハンドラー*/
 void Initialise_ProgrammableInterruptController(void);
 void InterruptHandler27(int *esp);
+
+/*keyboard.c*/
+void Initialise_Keyboard(DATA_FIFO *sendto, DATA_FIFO *keycmd, uint offset, uint leds, int *keycmd_wait);
+void InterruptHandler21(int *esp);
+void Keyboard_Decode(UI_KeyInfo *info, uint data);
+void Keyboard_KeyLock(uint led);
+void Keyboard_Controller_Wait_SendReady(void);
 
 /*memory.c メモリ関連*/
 uint Memory_Test(uint start, uint end);
@@ -306,4 +325,5 @@ void asm_CPU_ExceptionHandler1d(void);
 void asm_CPU_ExceptionHandler1e(void);
 void asm_CPU_ExceptionHandler1f(void);
 void asm_InterruptHandler20(void);
+void asm_InterruptHandler21(void);
 void asm_InterruptHandler27(void);

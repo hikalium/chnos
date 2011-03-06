@@ -6,8 +6,8 @@ void InputBox_Initialise(UI_InputBox *box, void *vram, uint vxsize, uint x, uint
 	box->vram = vram;
 	box->position.x = x;
 	box->position.y = y;
-	box->size.x = xsize;
-	box->size.y = ysize;
+	box->size.x = xsize & ~7;
+	box->size.y = ysize & ~15;
 	box->input_buf_size = txtbufsize;
 	box->input_buf = (uchar *)System_MemoryControl_Allocate(box->input_buf_size);
 	box->input_count = 0;
@@ -19,7 +19,7 @@ void InputBox_Initialise(UI_InputBox *box, void *vram, uint vxsize, uint x, uint
 	box->forecol = forecol;
 	box->backcol = backcol;
 
-	Draw_Fill_Rectangle(box->vram, box->vxsize, box->backcol, box->position.x, box->position.y, box->position.x + box->size.x, box->position.y + box->size.y);
+	Draw_Fill_Rectangle(box->vram, box->vxsize, box->backcol, box->position.x, box->position.y, box->position.x + xsize, box->position.y + ysize);
 	return;
 }
 
@@ -55,13 +55,23 @@ int InputBox_Put_String(UI_InputBox *box, const uchar *s)
 	}
 	box->input_buf[box->input_count + k - (2 * j)] = 0x00;
 
+	InputBox_Put_String_Main(box, s);
+
 	box->input_count = box->input_count + k - (2 * j);
 
 	return k - (2 * j);
 
 }
 
-/*
+int InputBox_Put_Character(UI_InputBox *box, uchar c)
+{
+	uchar str[2];
+
+	str[0] = c;
+	str[1] = 0x00;
+	return InputBox_Put_String(box, str);
+}
+
 void InputBox_Put_String_Main(UI_InputBox *box, const uchar *str)
 {
 	int i;
@@ -73,22 +83,76 @@ void InputBox_Put_String_Main(UI_InputBox *box, const uchar *str)
 		} else if(str[i] == '\r'){
 
 		} else if(str[i] == '\n'){
-			if(box->cursor.x != 0)InputBox_NewLine(cons);
+			if(box->cursor.x != 0){
+				InputBox_NewLine_No_Prompt(box);
+			}
 		} else if(str[i] == '\t'){
 			for(;;){
-				Draw_Put_String(box->vram, box->cursor.x, box->cursor.y, CONSOLE_COLOR_CHAR, CONSOLE_COLOR_BACKGROUND, " ");
-				cons->cursor.x += 8;
-				cons_check_newline(cons);
-				if((cons->cursor.x & 0x1f) == 0 && cons->cursor.x != 0) break;
+				Draw_Put_String(box->vram, box->vxsize, box->cursor.x, box->cursor.y, box->forecol, " ");
+				box->cursor.x += 8;
+				InputBox_Check_NewLine(box);
+				if((box->cursor.x & 0x1f) == 0 && box->cursor.x != 0) break;
+			}
+		} else if(str[i] == '\b'){
+			Draw_Fill_Rectangle(box->vram, box->vxsize, box->backcol, box->cursor.x, box->cursor.y, box->cursor.x + 8, box->cursor.y + 16);
+			box->cursor.x -= 8;
+			InputBox_Check_NewLine(box);
+			Draw_Fill_Rectangle(box->vram, box->vxsize, box->backcol, box->cursor.x, box->cursor.y, box->cursor.x + 8, box->cursor.y + 16);
+			if(box->input_count != 0){
+				box->input_count--;
+				box->input_buf[box->input_count] = 0x00;
 			}
 		} else{
 			s[0] = str[i];
 			s[1] = 0x00;
-			putfonts_win(cons->win, box->cursor.x, box->cursor.y, CONSOLE_COLOR_CHAR, CONSOLE_COLOR_BACKGROUND, s);
-			cons->cursor.x += 8;
-			cons_check_newline(cons);
+			Draw_Put_String(box->vram, box->vxsize, box->cursor.x, box->cursor.y, box->forecol, s);
+			box->cursor.x += 8;
+			InputBox_Check_NewLine(box);
 		}
 	}
 	return;
 }
-*/
+
+void InputBox_Check_NewLine(UI_InputBox *box)
+{
+	if(box->cursor.x <= box->prompt.x){
+		if(box->cursor.y != box->prompt.y){
+			if(box->cursor.x < box->prompt.x){
+				box->cursor.y -= 16;
+				box->cursor.x = box->size.x - 8;
+			}
+		} else{
+			box->cursor.y = box->prompt.y;
+			box->cursor.x = 8;
+		}
+	} else if(box->cursor.x >= box->size.x){
+		if(box->cursor.y <= box->size.y - 17){
+			box->cursor.x = 0;
+			box->cursor.y += 16;
+		} else{
+//			InputBox_Slide_Line(box);
+			box->cursor.x = 0;
+			if(box->prompt.y > 0) box->prompt.y -= 16;
+			else{
+				box->prompt.y = 0;
+				box->prompt.x = 0;
+			}
+		}
+	} 
+	return;
+}
+
+void InputBox_NewLine_No_Prompt(UI_InputBox *box)
+{
+	if(box->cursor.y <= box->size.y - 17){
+		Draw_Put_String(box->vram, box->vxsize, box->cursor.x, box->cursor.y, box->forecol, " ");
+		box->cursor.x = 0;
+		box->cursor.y = box->cursor.y + 16;
+	} else{
+		Draw_Put_String(box->vram, box->vxsize, box->cursor.x, box->cursor.y, box->forecol, " ");
+//		InputBox_Slide_Line(box);
+		box->cursor.x = 0;
+	}
+	return;
+}
+
