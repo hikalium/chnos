@@ -98,9 +98,10 @@ struct POSITION_2D {
 struct UI_INPUTBOX {
 	void *vram;
 	uint forecol, backcol;
-	uint *input_buf;
+	uchar *input_buf;
 	uint input_buf_size;
-	struct FIFO32 input;
+	uint vxsize;
+	uint input_count;
 	struct POSITION_2D cursor;
 	struct POSITION_2D prompt;
 	struct POSITION_2D size;
@@ -158,7 +159,8 @@ extern void (*Draw_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, c
 extern void (*Draw_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 
 /*inputbox.c*/
-void InputBox_Initialise(UI_InputBox *box, void *vram, uint x, uint y, uint xsize, uint ysize, uint txtbufsize, uint forecol, uint backcol);
+void InputBox_Initialise(UI_InputBox *box, void *vram, uint vxsize, uint x, uint y, uint xsize, uint ysize, uint txtbufsize, uint forecol, uint backcol);
+int InputBox_Put_String(UI_InputBox *box, const uchar *s);
 
 /*intrpt.c 割り込み設定とどこにも属さない割り込みハンドラー*/
 void Initialise_ProgrammableInterruptController(void);
@@ -171,7 +173,8 @@ uint MemoryControl_FreeSize(IO_MemoryControl *man);
 void *MemoryControl_Allocate(IO_MemoryControl *man, uint size);
 int MemoryControl_Free(IO_MemoryControl *man, void *addr0, uint size);
 void *MemoryControl_Allocate_Page(IO_MemoryControl *man);
-void System_MemoryControl_Initialise(IO_MemoryControl *man);
+void System_MemoryControl_Initialise(void);
+uint System_MemoryControl_FullSize(void);
 uint System_MemoryControl_FreeSize(void);
 void *System_MemoryControl_Allocate(uint size);
 int System_MemoryControl_Free(void *addr0, uint size);
@@ -179,6 +182,12 @@ void *System_MemoryControl_Allocate_Page(void);
 
 /*メモリマップ*/
 //メモリ終端からIO_MemoryControl分	：システム用IO_MemoryControl
+
+/*paging.c ページング関係*/
+void Initialise_Paging(void *vram, uint xsize, uint ysize, uint bpp);
+void Paging_Set_Entry_Directory(uint *dir_entry, uint *table_base, uint attribute, uint available);
+void Paging_Set_Entry_Table(uint *table_entry, uint *page_base, uint attribute, uint available);
+uint *Paging_Get_Entry_Setting_Address(uint entry);
 
 /*serial.c シリアル通信関連*/
 void Initialise_SerialPort(void);
@@ -261,6 +270,7 @@ void CPUID(void *addr, uint id);	//addr番地のuint[4]に、CPUの識別情報id番をEAX・
 					//この命令は、EFLAGS内のIDフラグ(ビット21)が変更可能な場合のみ実行できる。
 void Read_TSC(uint *addr);		//addr番地のuint[2]に、マシン固有レジスタ(MSR)内にある、タイム・スタンプ・カウンタの上位・下位それぞれ32ビットを読み込む。
 uint Memory_Test_Sub(uint start, uint end);
+void INT_3(void);
 
 /*nasfunc1.nas C言語の関数に依存する関数群。おもに割り込み関係。*/
 void asm_CPU_ExceptionHandler00(void);

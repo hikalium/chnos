@@ -2,6 +2,7 @@
 #include "core.h"
 
 IO_MemoryControl *sys_mem_ctrl;
+uint sys_mem_size;
 
 uint Memory_Test(uint start, uint end)
 {
@@ -134,11 +135,18 @@ void *MemoryControl_Allocate_Page(IO_MemoryControl *man)
 	return mem_head_4k;
 }
 
-void System_MemoryControl_Initialise(IO_MemoryControl *man)
+void System_MemoryControl_Initialise(void)
 {
-	sys_mem_ctrl = man;
+	sys_mem_size = Memory_Test(0x00400000, 0xbfffffff) & 0xFFFFF000;
+	sys_mem_ctrl = (IO_MemoryControl *)(sys_mem_size - sizeof(IO_MemoryControl));
 	MemoryControl_Initialise(sys_mem_ctrl);
+	System_MemoryControl_Free((void *)0x00400000, sys_mem_size - (sizeof(IO_MemoryControl) + 0x00400000));
 	return;
+}
+
+uint System_MemoryControl_FullSize(void)
+{
+	return sys_mem_size;
 }
 
 uint System_MemoryControl_FreeSize(void)

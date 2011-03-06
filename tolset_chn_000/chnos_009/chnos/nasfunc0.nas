@@ -23,6 +23,7 @@
 	GLOBAL	_CPUID
 	GLOBAL	_Read_TSC
 	GLOBAL	_Memory_Test_Sub
+	GLOBAL	_INT_3
 
 [SECTION .text]
 
@@ -242,6 +243,10 @@ mts_fin:
 	pop	ebx
 	pop	esi
 	pop	edi
+	ret
+
+_INT_3:
+	int	3
 	ret
 
 
