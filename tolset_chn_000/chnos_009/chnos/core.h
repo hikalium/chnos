@@ -151,20 +151,26 @@ uint FIFO32_Status(DATA_FIFO *fifo);
 void Draw_Put_Font_08(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
 void Draw_Put_String_08(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
 void Draw_Fill_Rectangle_08(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
+void Draw_Slide_Line_08(void *vram, uint xsize, uint ysize, uint vxsize, uint px, uint py);
+void Draw_Initialise_Palette(void);
+void Draw_Set_Palette(int start, int end, uchar *rgb);
 /*grap_16.c*/
 void Draw_Put_Font_16(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
 void Draw_Put_String_16(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
 void Draw_Fill_Rectangle_16(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
+void Draw_Slide_Line_16(void *vram, uint xsize, uint ysize, uint vxsize, uint px, uint py);
 /*grap_32.c*/
 void Draw_Put_Font_32(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
 void Draw_Put_String_32(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
 void Draw_Fill_Rectangle_32(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
+void Draw_Slide_Line_32(void *vram, uint xsize, uint ysize, uint vxsize, uint px, uint py);
 /*graphic.c*/
 void Initialise_Graphic(uint bpp);
 uchar RGB_32_To_08(uint c32);
 ushort RGB_32_To_16(uint c32);
 extern void (*Draw_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
 extern void (*Draw_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
+extern void (*Draw_Slide_Line)(void *vram, uint xsize, uint ysize, uint vxsize, uint px, uint py);
 
 /*inputbox.c*/
 void InputBox_Initialise(UI_InputBox *box, void *vram, uint vxsize, uint x, uint y, uint xsize, uint ysize, uint txtbufsize, uint forecol, uint backcol);
@@ -173,6 +179,7 @@ int InputBox_Put_Character(UI_InputBox *box, uchar c);
 void InputBox_Put_String_Main(UI_InputBox *box, const uchar *str);
 void InputBox_Check_NewLine(UI_InputBox *box);
 void InputBox_NewLine_No_Prompt(UI_InputBox *box);
+void InputBox_Slide_Line(UI_InputBox *box);
 
 /*intrpt.c äÑÇËçûÇ›ê›íËÇ∆Ç«Ç±Ç…Ç‡ëÆÇ≥Ç»Ç¢äÑÇËçûÇ›ÉnÉìÉhÉâÅ[*/
 void Initialise_ProgrammableInterruptController(void);

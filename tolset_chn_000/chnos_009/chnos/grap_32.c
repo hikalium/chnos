@@ -41,3 +41,14 @@ void Draw_Fill_Rectangle_32(void *vram, uint xsize, uint c, uint x0, uint y0, ui
 	return;
 }
 
+void Draw_Slide_Line_32(void *vram, uint xsize, uint ysize, uint vxsize, uint px, uint py)
+{
+	uint x, y;
+
+	for(y = py; y < ysize + py - 16; y++){
+		for(x = px; x < xsize + px; x++){
+			((uint *)vram)[y * vxsize + x] = ((uint *)vram)[(y + 16) * vxsize + x];
+		}
+	}
+	return;
+}

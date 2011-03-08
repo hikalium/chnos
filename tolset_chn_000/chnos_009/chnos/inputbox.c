@@ -130,7 +130,7 @@ void InputBox_Check_NewLine(UI_InputBox *box)
 			box->cursor.x = 0;
 			box->cursor.y += 16;
 		} else{
-//			InputBox_Slide_Line(box);
+			InputBox_Slide_Line(box);
 			box->cursor.x = 0;
 			if(box->prompt.y > 0) box->prompt.y -= 16;
 			else{
@@ -150,9 +150,16 @@ void InputBox_NewLine_No_Prompt(UI_InputBox *box)
 		box->cursor.y = box->cursor.y + 16;
 	} else{
 		Draw_Put_String(box->vram, box->vxsize, box->cursor.x, box->cursor.y, box->forecol, " ");
-//		InputBox_Slide_Line(box);
+		InputBox_Slide_Line(box);
 		box->cursor.x = 0;
 	}
+	return;
+}
+
+void InputBox_Slide_Line(UI_InputBox *box)
+{
+	Draw_Slide_Line(box->vram, box->size.x, box->size.y, box->vxsize, box->position.x, box->position.y);
+	Draw_Fill_Rectangle(box->vram, box->vxsize, box->backcol, 0, box->position.y + box->size.y - 16, box->position.x + box->size.x, box->position.y + box->size.y);
 	return;
 }
 
