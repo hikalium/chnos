@@ -18,8 +18,8 @@ void InputBox_Initialise(UI_InputBox *box, void *vram, uint vxsize, uint x, uint
 	box->vxsize = vxsize;
 	box->forecol = forecol;
 	box->backcol = backcol;
-
 	Draw_Fill_Rectangle(box->vram, box->vxsize, box->backcol, box->position.x, box->position.y, box->position.x + xsize, box->position.y + ysize);
+	InputBox_Put_Prompt(box);
 	return;
 }
 
@@ -156,6 +156,20 @@ void InputBox_NewLine_No_Prompt(UI_InputBox *box)
 	return;
 }
 
+void InputBox_NewLine(UI_InputBox *box)
+{
+	if(box->cursor.y <= box->size.y - 17){
+		box->prompt.y = box->cursor.y + 16;
+		InputBox_Put_Prompt(box);
+	} else{
+		Draw_Fill_Rectangle(box->vram, box->vxsize, box->backcol, box->cursor.x, box->cursor.y, box->cursor.x + 16,box->cursor.y + 16);
+		InputBox_Slide_Line(box);
+		box->prompt.y = box->size.y - 16;
+		InputBox_Put_Prompt(box);
+	}
+	return;
+}
+
 void InputBox_Slide_Line(UI_InputBox *box)
 {
 	Draw_Slide_Line(box->vram, box->size.x, box->size.y, box->vxsize, box->position.x, box->position.y);
@@ -163,3 +177,11 @@ void InputBox_Slide_Line(UI_InputBox *box)
 	return;
 }
 
+void InputBox_Put_Prompt(UI_InputBox *box)
+{
+	Draw_Fill_Rectangle(box->vram, box->vxsize, box->backcol, box->cursor.x, box->cursor.y, box->cursor.x + 16,box->cursor.y + 16);
+	Draw_Put_String(box->vram, box->vxsize, box->prompt.x, box->prompt.y, box->forecol, ">");
+	box->cursor.x = box->prompt.x + 8;
+	box->cursor.y = box->prompt.y;
+	return;
+}

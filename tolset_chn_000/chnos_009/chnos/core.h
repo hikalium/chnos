@@ -179,7 +179,10 @@ int InputBox_Put_Character(UI_InputBox *box, uchar c);
 void InputBox_Put_String_Main(UI_InputBox *box, const uchar *str);
 void InputBox_Check_NewLine(UI_InputBox *box);
 void InputBox_NewLine_No_Prompt(UI_InputBox *box);
+void InputBox_NewLine(UI_InputBox *box);
 void InputBox_Slide_Line(UI_InputBox *box);
+void InputBox_Slide_Line(UI_InputBox *box);
+void InputBox_Put_Prompt(UI_InputBox *box);
 
 /*intrpt.c Š„‚è‚İİ’è‚Æ‚Ç‚±‚É‚à‘®‚³‚È‚¢Š„‚è‚İƒnƒ“ƒhƒ‰[*/
 void Initialise_ProgrammableInterruptController(void);
