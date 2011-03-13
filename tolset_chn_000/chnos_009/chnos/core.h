@@ -183,6 +183,7 @@ void InputBox_NewLine(UI_InputBox *box);
 void InputBox_Slide_Line(UI_InputBox *box);
 void InputBox_Slide_Line(UI_InputBox *box);
 void InputBox_Put_Prompt(UI_InputBox *box);
+void InputBox_Reset_Input_Buffer(UI_InputBox *box);
 
 /*intrpt.c Š„‚è‚İİ’è‚Æ‚Ç‚±‚É‚à‘®‚³‚È‚¢Š„‚è‚İƒnƒ“ƒhƒ‰[*/
 void Initialise_ProgrammableInterruptController(void);

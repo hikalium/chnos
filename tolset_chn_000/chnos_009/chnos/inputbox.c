@@ -25,42 +25,42 @@ void InputBox_Initialise(UI_InputBox *box, void *vram, uint vxsize, uint x, uint
 
 int InputBox_Put_String(UI_InputBox *box, const uchar *s)
 {
-	uint i, j;
-	int k;
+	uint i;
+	int count, old;
 
-	j = 0;
+	count = 0;
 
-	for(i = 0; (i - j) < (box->input_buf_size + 1); i++){
-		if(s[i] == 0x00){
-			break;
-		}
+	for(i = 0; s[i] != 0x00; i++){
 		if(s[i] == '\b'){
-			j++;
+			if(count != 0){
+				count--;
+			}
+		} else{
+			count++;
 		}
 	}
 
-	if((i - j) > (box->input_buf_size - box->input_count)){
+	if(count > (box->input_buf_size - box->input_count)){
 		return -1;
 	}
 
-	j = 0;
-
-	for(k = 0; k < i; k++){
-		if(s[k] == '\b'){
-			box->input_buf[box->input_count + k - (2 * j) - 1] = 0x00;
-			j++;
-		} else{
-			box->input_buf[box->input_count + k - (2 * j)] = s[k];
-		}
-	}
-	box->input_buf[box->input_count + k - (2 * j)] = 0x00;
-
 	InputBox_Put_String_Main(box, s);
 
-	box->input_count = box->input_count + k - (2 * j);
+	old = count;
+	count = 0;
 
-	return k - (2 * j);
+	for(i = 0; count < old; i++){
+		if(s[i] == '\b'){
+			if(count != 0) count--;
+		} else{
+			box->input_buf[box->input_count + count] = s[i];
+			count++;
+		}
+	}
+	box->input_buf[box->input_count + count] = 0x00;
+	box->input_count += count;
 
+	return count;	
 }
 
 int InputBox_Put_Character(UI_InputBox *box, uchar c)
@@ -185,3 +185,11 @@ void InputBox_Put_Prompt(UI_InputBox *box)
 	box->cursor.y = box->prompt.y;
 	return;
 }
+
+void InputBox_Reset_Input_Buffer(UI_InputBox *box)
+{
+	box->input_buf[0] = 0x00;
+	box->input_count = 0;
+	return;
+}
+

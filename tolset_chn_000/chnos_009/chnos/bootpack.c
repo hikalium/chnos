@@ -64,6 +64,7 @@ void CHNMain(void)
 	IO_Store_EFlags(i);
 
 	InputBox_NewLine(&inpbox);
+	InputBox_Reset_Input_Buffer(&inpbox);
 	for (;;) {
 		if(FIFO32_Status(&keycmd) > 0 && keycmd_wait < 0){
 			keycmd_wait = FIFO32_Get(&keycmd);
@@ -78,6 +79,12 @@ void CHNMain(void)
 			Keyboard_Decode(&kinfo, i - DATA_BYTE);
 			if(kinfo.make){
 				if(kinfo.c == '\n'){
+					InputBox_NewLine_No_Prompt(&inpbox);
+					sprintf(s, "Count=%d\n", inpbox.input_count);
+					InputBox_Put_String(&inpbox, inpbox.input_buf);
+					InputBox_NewLine_No_Prompt(&inpbox);
+					InputBox_Put_String(&inpbox, s);
+					InputBox_Reset_Input_Buffer(&inpbox);
 					InputBox_NewLine(&inpbox);
 				} else{
 					InputBox_Put_Character(&inpbox, kinfo.c);
