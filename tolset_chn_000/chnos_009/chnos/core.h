@@ -84,11 +84,15 @@ struct FIFO32 {
 	uint p, q, size, free, flags;
 };
 
-struct MEMMAN {
-	int frees, maxfrees, lostsize, losts;
-	struct MEM_FREEINFO {
-		uint addr, size;
-	} free[MEMMAN_FREES];
+struct MEMORY_CONTROL {
+	void *start;
+	uint size;
+	void *next;
+};
+
+struct MEMORY_CONTROL_TAG {
+	uint size;
+	void *next;
 };
 
 struct POSITION_2D {
@@ -121,7 +125,8 @@ typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
 typedef struct BOOTINFO			DATA_BootInfo;
 typedef struct VESAINFO			DATA_VESAInfo;
 typedef struct FIFO32			DATA_FIFO;
-typedef struct MEMMAN			IO_MemoryControl;
+typedef struct MEMORY_CONTROL		IO_MemoryControl;
+typedef struct MEMORY_CONTROL_TAG	IO_MemoryControlTag;
 typedef struct POSITION_2D		DATA_Position2D;
 typedef struct UI_INPUTBOX		UI_InputBox;
 typedef struct KEYINFO			UI_KeyInfo;
@@ -198,17 +203,19 @@ void Keyboard_Controller_Wait_SendReady(void);
 
 /*memory.c メモリ関連*/
 uint Memory_Test(uint start, uint end);
-void MemoryControl_Initialise(IO_MemoryControl *man);
-uint MemoryControl_FreeSize(IO_MemoryControl *man);
-void *MemoryControl_Allocate(IO_MemoryControl *man, uint size);
-int MemoryControl_Free(IO_MemoryControl *man, void *addr0, uint size);
-void *MemoryControl_Allocate_Page(IO_MemoryControl *man);
+void MemoryControl_Initialise(IO_MemoryControl *ctrl, void *start, uint size);
+uint MemoryControl_FreeSize(IO_MemoryControl *ctrl);
+void *MemoryControl_Allocate(IO_MemoryControl *ctrl, uint size);
+int MemoryControl_Free(IO_MemoryControl *ctrl, void *addr0, uint size);
+void *MemoryControl_Allocate_Page(IO_MemoryControl *ctrl);
+void MemoryControl_Output_Info(IO_MemoryControl *ctrl);
 void System_MemoryControl_Initialise(void);
 uint System_MemoryControl_FullSize(void);
 uint System_MemoryControl_FreeSize(void);
 void *System_MemoryControl_Allocate(uint size);
 int System_MemoryControl_Free(void *addr0, uint size);
 void *System_MemoryControl_Allocate_Page(void);
+void System_MemoryControl_Output_Info(void);
 
 /*メモリマップ*/
 //メモリ終端からIO_MemoryControl分	：システム用IO_MemoryControl
@@ -297,7 +304,8 @@ void PIT_Beep_Set(uint fq);		//ビープ音の周波数を、fqHzに変更する。
 					//fqの値
 					//C:262 C#:277 D:294 D#:311 E:330 F:349 F#:370 G:392 G#:415 A:440 A#:466 B:494 C:523
 void CPUID(void *addr, uint id);	//addr番地のuint[4]に、CPUの識別情報id番をEAX・EBX・EDX・ECXの順番で格納する。
-					//この命令は、EFLAGS内のIDフラグ(ビット21)が変更可能な場合のみ実行できる。
+void CPUID2(void *addr, uint id);	//addr番地のuint[4]に、CPUの識別情報id番をEAX・EBX・ECX・EDXの順番で格納する。
+					//上記二つの関数は、EFLAGS内のIDフラグ(ビット21)が変更可能な場合のみ実行できる。
 void Read_TSC(uint *addr);		//addr番地のuint[2]に、マシン固有レジスタ(MSR)内にある、タイム・スタンプ・カウンタの上位・下位それぞれ32ビットを読み込む。
 uint Memory_Test_Sub(uint start, uint end);
 void INT_3(void);

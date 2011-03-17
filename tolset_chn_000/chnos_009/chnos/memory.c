@@ -1,7 +1,7 @@
 
 #include "core.h"
 
-IO_MemoryControl *sys_mem_ctrl;
+IO_MemoryControl sys_mem_ctrl;
 uint sys_mem_size;
 
 uint Memory_Test(uint start, uint end)
@@ -34,113 +34,111 @@ uint Memory_Test(uint start, uint end)
 	return i;
 }
 
-void MemoryControl_Initialise(IO_MemoryControl *man)
+void MemoryControl_Initialise(IO_MemoryControl *ctrl, void *start, uint size)
 {
-	man->frees = 0;
-	man->maxfrees = 0;
-	man->lostsize = 0;
-	man->losts = 0;
+	ctrl->start = start;
+	ctrl->size = size;
+	ctrl->next = start;
+	((IO_MemoryControlTag *)ctrl->next)->size = ctrl->size;
+	((IO_MemoryControlTag *)ctrl->next)->next = 0;
 	return;
 }
 
-uint MemoryControl_FreeSize(IO_MemoryControl *man)
+uint MemoryControl_FreeSize(IO_MemoryControl *ctrl)
 {
-	uint i,t = 0;
-	for (i = 0; i < man->frees; i++) {
-		t += man->free[i].size;
+	void *tag;
+	uint size;
+
+	size = 0;
+	tag = ctrl->next;
+	for(;;){
+		size += ((IO_MemoryControlTag *)tag)->size;
+		if(((IO_MemoryControlTag *)tag)->next == 0){
+			break;
 		}
-	return t;
+		tag = ((IO_MemoryControlTag *)tag)->next;
+	}
+	return size;
 }
 
-void *MemoryControl_Allocate(IO_MemoryControl *man, uint size)
+void *MemoryControl_Allocate(IO_MemoryControl *ctrl, uint size)
 {
-	uint i,a;
-	for(i = 0; i < man->frees; i++) {
-		if (man->free[i].size >= size) {
-		a = man->free[i].addr;
-		man->free[i].addr += size;
-		man->free[i].size -= size;
-		if(man->free[i].size == 0) {
-			man->frees--;
-			for (; i < man->frees; i++) {
-				man->free[i] = man->free[i+1];
-				}
-			}
-			return (void *)a;
-		}
-	}
-	return 0;
-}
+	void **before;
 
-int MemoryControl_Free(IO_MemoryControl *man, void *addr0, uint size)
-{
-	int i, j;
-	uint addr;
-	addr = (uint)addr0;
-	for(i = 0; i < man->frees; i++){
-		if(man->free[i].addr > addr) break;
-	}
-	if(i > 0) {
-		if(man->free[i-1].addr + man->free[i-1].size == addr){
-			man->free[i-1].size += size;
-			if(i < man->frees){
-				if(addr + size == man->free[i].addr){
-					man->free[i-1].size += man->free[i].size;
-					man->frees--;
-					for (;i < man->frees; i++){
-						man->free[i] = man->free[i+1];
-					}
-				}
-			}
+	before = &ctrl->next;
+	for(;;){
+		if((((IO_MemoryControlTag *)*before)->size - 8) > size){
+			break;
+		}
+		if(((IO_MemoryControlTag *)*before)->next == 0){
 			return 0;
 		}
+		before = &((IO_MemoryControlTag *)*before)->next;
 	}
-	if(i < man->frees){
-		if(addr + size == man->free[i].addr){
-			man->free[i].addr = addr;
-			man->free[i].size += size;
-			return 0;
-		}
-	}
-	if(man->frees < MEMMAN_FREES){
-		for(j = man->frees;j>i;j--) {
-			man->free[j] = man->free[j-1];
-
-		}
-		man->frees++;
-		if(man->maxfrees < man->frees) man->maxfrees = man->frees;
-		man->free[i].addr = addr;
-		man->free[i].size = size;
-		return 0;
-
-	}
-	man->losts++;
-	man->lostsize += size;
-	return -1;
+	((IO_MemoryControlTag *)(*before + size))->size = ((IO_MemoryControlTag *)*before)->size - size;
+	((IO_MemoryControlTag *)(*before + size))->next = ((IO_MemoryControlTag *)*before)->next;
+	*before = *before + size;
+	return *before - size;
 }
 
-void *MemoryControl_Allocate_Page(IO_MemoryControl *man)
+int MemoryControl_Free(IO_MemoryControl *ctrl, void *addr0, uint size)
+{
+	void **before;
+
+	before = &ctrl->next;
+	for(;;){
+		if(((IO_MemoryControlTag *)*before)->next == 0){
+			return -1;
+		}
+		if((uint)((IO_MemoryControlTag *)*before)->next > (uint)(addr0 + size)){
+			((IO_MemoryControlTag *)addr0)->next = ((IO_MemoryControlTag *)*before)->next;
+			((IO_MemoryControlTag *)*before)->next = addr0;
+			((IO_MemoryControlTag *)addr0)->size = size;
+			return 0;
+		}
+		before = ((IO_MemoryControlTag *)*before)->next;
+	}
+}
+
+void *MemoryControl_Allocate_Page(IO_MemoryControl *ctrl)
 {
 	void *addr, *mem_head_4k, *offset;
 
-	addr = MemoryControl_Allocate(man, 0x2000);
+	addr = MemoryControl_Allocate(ctrl, 0x2000);
 	if(addr == 0) return 0;
 	mem_head_4k = (void *)(((uint)addr + 0xfff) & 0xfffff000);
 	(uint)offset = (uint)mem_head_4k - (uint)addr;
 	if (offset > 0) {
-		MemoryControl_Free(man, addr, (uint)offset);
+		MemoryControl_Free(ctrl, addr, (uint)offset);
 	}
-	MemoryControl_Free(man, mem_head_4k + 0x1000, 0x1000 - (uint)offset);
+	MemoryControl_Free(ctrl, mem_head_4k + 0x1000, 0x1000 - (uint)offset);
 
 	return mem_head_4k;
+}
+
+void MemoryControl_Output_Info(IO_MemoryControl *ctrl)
+{
+	void *tag;
+	uchar s[128];
+
+	Send_SerialPort("Memory Free Info.\r\n");
+
+	tag = ctrl->next;
+	for(;;){
+		sprintf(s, "Addr:0x%08X Size:0x%08X\r\n", (uint)tag, ((IO_MemoryControlTag *)tag)->size);
+		Send_SerialPort(s);
+		if(((IO_MemoryControlTag *)tag)->next == 0){
+			break;
+		}
+		tag = ((IO_MemoryControlTag *)tag)->next;
+	}
+	return;
 }
 
 void System_MemoryControl_Initialise(void)
 {
 	sys_mem_size = Memory_Test(0x00400000, 0xbfffffff) & 0xFFFFF000;
-	sys_mem_ctrl = (IO_MemoryControl *)(sys_mem_size - sizeof(IO_MemoryControl));
-	MemoryControl_Initialise(sys_mem_ctrl);
-	System_MemoryControl_Free((void *)0x00400000, sys_mem_size - (sizeof(IO_MemoryControl) + 0x00400000));
+	MemoryControl_Initialise(&sys_mem_ctrl, (void *)0x00400000, sys_mem_size - 0x00400000);
 	return;
 }
 
@@ -151,21 +149,26 @@ uint System_MemoryControl_FullSize(void)
 
 uint System_MemoryControl_FreeSize(void)
 {
-	return MemoryControl_FreeSize(sys_mem_ctrl);
+	return MemoryControl_FreeSize(&sys_mem_ctrl);
 }
 
 void *System_MemoryControl_Allocate(uint size)
 {
-	return MemoryControl_Allocate(sys_mem_ctrl, size);
+	return MemoryControl_Allocate(&sys_mem_ctrl, size);
 }
 
 int System_MemoryControl_Free(void *addr0, uint size)
 {
-	return MemoryControl_Free(sys_mem_ctrl, addr0, size);
+	return MemoryControl_Free(&sys_mem_ctrl, addr0, size);
 }
 
 void *System_MemoryControl_Allocate_Page(void)
 {
-	return MemoryControl_Allocate_Page(sys_mem_ctrl);
+	return MemoryControl_Allocate_Page(&sys_mem_ctrl);
 }
 
+void System_MemoryControl_Output_Info(void)
+{
+	MemoryControl_Output_Info(&sys_mem_ctrl);
+	return;
+}

@@ -20,7 +20,7 @@
 	GLOBAL	_CLTS
 	GLOBAL	_FNSave, _FRStore
 	GLOBAL	_PIT_Beep_On, _PIT_Beep_Off, _PIT_Beep_Set
-	GLOBAL	_CPUID
+	GLOBAL	_CPUID, _CPUID2
 	GLOBAL	_Read_TSC
 	GLOBAL	_Memory_Test_Sub
 	GLOBAL	_INT_3
@@ -200,6 +200,18 @@ _CPUID:
 	mov	[esi+ 4],ebx
 	mov	[esi+ 8],edx
 	mov	[esi+12],ecx
+	popad
+	ret
+
+_CPUID2:
+	pushad
+	mov	esi,[esp+36]
+	mov	eax,[esp+40]
+	db	0x0f,0xa2
+	mov	[esi   ],eax
+	mov	[esi+ 4],ebx
+	mov	[esi+ 8],ecx
+	mov	[esi+12],edx
 	popad
 	ret
 

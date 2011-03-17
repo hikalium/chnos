@@ -53,15 +53,25 @@ void CHNMain(void)
 		InputBox_Put_String(&inpbox, s);
 		CPUID(cpuidbuf, 0x80000000);
 		if(cpuidbuf[0] >= 0x80000000){
-			sprintf(s, "ExtendedCPUIDMax=0x%08X.\n", cpuidbuf[0]);
+			InputBox_Put_String(&inpbox, "ExtendedCPUID is Enable.\n");
+			sprintf(s, "Max=0x%08X.\n", cpuidbuf[0]);
+			InputBox_Put_String(&inpbox, s);
+			if(cpuidbuf[0] >= 0x80000004){
+				CPUID2(&s[0], 0x80000002);
+				CPUID2(&s[16], 0x80000003);
+				CPUID2(&s[32], 0x80000004);
+				InputBox_Put_String(&inpbox, s);
+				InputBox_Put_String(&inpbox, "\n");
+			}
 		} else{
-			sprintf(s, "ExtendedCPUID is Disable.\n", cpuidbuf[0]);
+			InputBox_Put_String(&inpbox, "ExtendedCPUID is Disable.\n");
 		}
-		InputBox_Put_String(&inpbox, s);
 	} else{
 		InputBox_Put_String(&inpbox, "CPUID is Disable.\n");
 	}
 	IO_Store_EFlags(i);
+
+	System_MemoryControl_Output_Info();
 
 	InputBox_NewLine(&inpbox);
 	InputBox_Reset_Input_Buffer(&inpbox);
