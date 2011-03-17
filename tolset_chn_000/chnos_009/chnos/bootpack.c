@@ -13,6 +13,7 @@ void CHNMain(void)
 	UI_KeyInfo kinfo;
 	uint i, j;
 	uint cpuidbuf[5];	//EAX-EBX-EDX-ECX-0x00000000
+	UI_Timer *c_timer;
 
 	FIFO32_Initialise(&fifo, 128, fifobuf);
 	FIFO32_Initialise(&keycmd, 128, keycmdbuf);
@@ -71,7 +72,9 @@ void CHNMain(void)
 	}
 	IO_Store_EFlags(i);
 
-	System_MemoryControl_Output_Info();
+	c_timer = Timer_Get(&fifo, 5);
+	Timer_Set(c_timer, 50, interval);
+	Timer_Run(c_timer);
 
 	InputBox_NewLine(&inpbox);
 	InputBox_Reset_Input_Buffer(&inpbox);
@@ -86,18 +89,26 @@ void CHNMain(void)
 			IO_STIHLT();
 		} else{
 			i = FIFO32_Get(&fifo);
-			Keyboard_Decode(&kinfo, i - DATA_BYTE);
-			if(kinfo.make){
-				if(kinfo.c == '\n'){
-					InputBox_NewLine_No_Prompt(&inpbox);
-					sprintf(s, "Count=%d\n", inpbox.input_count);
-					InputBox_Put_String(&inpbox, inpbox.input_buf);
-					InputBox_NewLine_No_Prompt(&inpbox);
-					InputBox_Put_String(&inpbox, s);
-					InputBox_Reset_Input_Buffer(&inpbox);
-					InputBox_NewLine(&inpbox);
-				} else{
-					InputBox_Put_Character(&inpbox, kinfo.c);
+			if(i < DATA_BYTE){
+				if(i == 5){
+					InputBox_Change_Cursor_State(&inpbox);
+				}
+			} else if(DATA_BYTE <= i && i <= (DATA_BYTE * 2)){
+				Keyboard_Decode(&kinfo, i - DATA_BYTE);
+				if(kinfo.make){
+					if(kinfo.c == '\n'){
+						InputBox_NewLine_No_Prompt(&inpbox);
+						sprintf(s, "Count=%d\n", inpbox.input_count);
+						InputBox_Put_String(&inpbox, inpbox.input_buf);
+						InputBox_NewLine_No_Prompt(&inpbox);
+						InputBox_Put_String(&inpbox, s);
+						sprintf(s, "TimerTick=%u\n", Timer_Get_Tick());
+						InputBox_Put_String(&inpbox, s);
+						InputBox_Reset_Input_Buffer(&inpbox);
+						InputBox_NewLine(&inpbox);
+					} else{
+						InputBox_Put_Character(&inpbox, kinfo.c);
+					}
 				}
 			}
 		}

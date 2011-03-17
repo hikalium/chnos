@@ -65,6 +65,8 @@ void *MemoryControl_Allocate(IO_MemoryControl *ctrl, uint size)
 {
 	void **before;
 
+	size = (size + 7) & ~7;
+
 	before = &ctrl->next;
 	for(;;){
 		if((((IO_MemoryControlTag *)*before)->size - 8) > size){
@@ -85,16 +87,23 @@ int MemoryControl_Free(IO_MemoryControl *ctrl, void *addr0, uint size)
 {
 	void **before;
 
+	size = (size + 7) & ~7;
+
 	before = &ctrl->next;
 	for(;;){
-		if(((IO_MemoryControlTag *)*before)->next == 0){
-			return -1;
-		}
-		if((uint)((IO_MemoryControlTag *)*before)->next > (uint)(addr0 + size)){
-			((IO_MemoryControlTag *)addr0)->next = ((IO_MemoryControlTag *)*before)->next;
-			((IO_MemoryControlTag *)*before)->next = addr0;
-			((IO_MemoryControlTag *)addr0)->size = size;
+		if((uint)((IO_MemoryControlTag *)*before) == (uint)(addr0 + size)){		//‰ð•ú‚µ‚½‚¢ƒƒ‚ƒŠ‚ÌŒã‘±‚É‹ó‚«‚ª‚ ‚éê‡B
+			((IO_MemoryControlTag *)addr0)->size = ((IO_MemoryControlTag *)(*before))->size + size;
+			((IO_MemoryControlTag *)addr0)->next = ((IO_MemoryControlTag *)(*before))->next;
+			*before = addr0;
 			return 0;
+		}
+		if((uint)((IO_MemoryControlTag *)*before)->next >= (uint)(addr0 + size)){
+			Send_SerialPort("Have to Free!1 or 2\r\n");
+			return 0;
+		}
+		if(((IO_MemoryControlTag *)*before)->next == 0){
+			Send_SerialPort("Have to Free!0\r\n");
+			return -1;
 		}
 		before = ((IO_MemoryControlTag *)*before)->next;
 	}

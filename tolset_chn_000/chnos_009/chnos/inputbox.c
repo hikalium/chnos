@@ -18,6 +18,7 @@ void InputBox_Initialise(UI_InputBox *box, void *vram, uint vxsize, uint x, uint
 	box->vxsize = vxsize;
 	box->forecol = forecol;
 	box->backcol = backcol;
+	box->cursor_state = false;
 	Draw_Fill_Rectangle(box->vram, box->vxsize, box->backcol, box->position.x, box->position.y, box->position.x + xsize, box->position.y + ysize);
 	InputBox_Put_Prompt(box);
 	return;
@@ -88,6 +89,7 @@ void InputBox_Put_String_Main(UI_InputBox *box, const uchar *str)
 			}
 		} else if(str[i] == '\t'){
 			for(;;){
+				Draw_Fill_Rectangle(box->vram, box->vxsize, box->backcol, box->cursor.x, box->cursor.y, box->cursor.x + 8,box->cursor.y + 16);
 				Draw_Put_String(box->vram, box->vxsize, box->cursor.x, box->cursor.y, box->forecol, " ");
 				box->cursor.x += 8;
 				InputBox_Check_NewLine(box);
@@ -105,6 +107,7 @@ void InputBox_Put_String_Main(UI_InputBox *box, const uchar *str)
 		} else{
 			s[0] = str[i];
 			s[1] = 0x00;
+			Draw_Fill_Rectangle(box->vram, box->vxsize, box->backcol, box->cursor.x, box->cursor.y, box->cursor.x + 8,box->cursor.y + 16);
 			Draw_Put_String(box->vram, box->vxsize, box->cursor.x, box->cursor.y, box->forecol, s);
 			box->cursor.x += 8;
 			InputBox_Check_NewLine(box);
@@ -145,11 +148,11 @@ void InputBox_Check_NewLine(UI_InputBox *box)
 void InputBox_NewLine_No_Prompt(UI_InputBox *box)
 {
 	if(box->cursor.y <= box->size.y - 17){
-		Draw_Put_String(box->vram, box->vxsize, box->cursor.x, box->cursor.y, box->forecol, " ");
+		Draw_Fill_Rectangle(box->vram, box->vxsize, box->backcol, box->cursor.x, box->cursor.y, box->cursor.x + 8,box->cursor.y + 16);
 		box->cursor.x = 0;
 		box->cursor.y = box->cursor.y + 16;
 	} else{
-		Draw_Put_String(box->vram, box->vxsize, box->cursor.x, box->cursor.y, box->forecol, " ");
+		Draw_Fill_Rectangle(box->vram, box->vxsize, box->backcol, box->cursor.x, box->cursor.y, box->cursor.x + 8,box->cursor.y + 16);
 		InputBox_Slide_Line(box);
 		box->cursor.x = 0;
 	}
@@ -172,6 +175,7 @@ void InputBox_NewLine(UI_InputBox *box)
 
 void InputBox_Slide_Line(UI_InputBox *box)
 {
+	Draw_Fill_Rectangle(box->vram, box->vxsize, box->backcol, box->cursor.x, box->cursor.y, box->cursor.x + 8,box->cursor.y + 16);
 	Draw_Slide_Line(box->vram, box->size.x, box->size.y, box->vxsize, box->position.x, box->position.y);
 	Draw_Fill_Rectangle(box->vram, box->vxsize, box->backcol, 0, box->position.y + box->size.y - 16, box->position.x + box->size.x, box->position.y + box->size.y);
 	return;
@@ -190,6 +194,18 @@ void InputBox_Reset_Input_Buffer(UI_InputBox *box)
 {
 	box->input_buf[0] = 0x00;
 	box->input_count = 0;
+	return;
+}
+
+void InputBox_Change_Cursor_State(UI_InputBox *box)
+{
+	if(box->cursor_state){
+		Draw_Fill_Rectangle(box->vram, box->vxsize, box->backcol, box->cursor.x, box->cursor.y, box->cursor.x + 8,box->cursor.y + 16);
+		box->cursor_state = false;
+	} else{
+		Draw_Fill_Rectangle(box->vram, box->vxsize, box->forecol, box->cursor.x, box->cursor.y, box->cursor.x + 8,box->cursor.y + 16);
+		box->cursor_state = true;
+	}
 	return;
 }
 

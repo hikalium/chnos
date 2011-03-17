@@ -20,6 +20,7 @@ extern unsigned int rand_seed;
 typedef enum _bool { false, true} bool;
 typedef enum _state_alloc { none, initialized, allocated, configured, inuse} state_alloc;
 typedef enum _col_text { black, blue, green, skyblue, red, purple, brown, white} col_text;
+typedef enum _timer_mode { once, interval} timer_mode;
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned int uint;
@@ -84,13 +85,13 @@ struct FIFO32 {
 	uint p, q, size, free, flags;
 };
 
-struct MEMORY_CONTROL {
-	void *start;
+struct MEMORY_CONTROL_TAG {
 	uint size;
 	void *next;
 };
 
-struct MEMORY_CONTROL_TAG {
+struct MEMORY_CONTROL {
+	void *start;
 	uint size;
 	void *next;
 };
@@ -110,6 +111,7 @@ struct UI_INPUTBOX {
 	struct POSITION_2D prompt;
 	struct POSITION_2D size;
 	struct POSITION_2D position;
+	bool cursor_state;
 };
 
 struct KEYINFO {
@@ -119,17 +121,34 @@ struct KEYINFO {
 	bool alphabet;
 };
 
+struct TIMER {
+	struct TIMER *next;
+	uint timeout;
+	uint count;
+	struct FIFO32 *fifo;
+	uint data;
+	state_alloc state;
+	timer_mode mode;
+};
+
+struct TIMER_CONTROL {
+	uint count;
+	struct TIMER *next;
+};
+
 /*typedef structures*/
 typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
 typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
 typedef struct BOOTINFO			DATA_BootInfo;
 typedef struct VESAINFO			DATA_VESAInfo;
 typedef struct FIFO32			DATA_FIFO;
-typedef struct MEMORY_CONTROL		IO_MemoryControl;
 typedef struct MEMORY_CONTROL_TAG	IO_MemoryControlTag;
+typedef struct MEMORY_CONTROL		IO_MemoryControl;
 typedef struct POSITION_2D		DATA_Position2D;
 typedef struct UI_INPUTBOX		UI_InputBox;
 typedef struct KEYINFO			UI_KeyInfo;
+typedef struct TIMER_CONTROL		UI_TimerControl;
+typedef struct TIMER			UI_Timer;
 
 /*virtual classes*/
 
@@ -189,6 +208,7 @@ void InputBox_Slide_Line(UI_InputBox *box);
 void InputBox_Slide_Line(UI_InputBox *box);
 void InputBox_Put_Prompt(UI_InputBox *box);
 void InputBox_Reset_Input_Buffer(UI_InputBox *box);
+void InputBox_Change_Cursor_State(UI_InputBox *box);
 
 /*intrpt.c 割り込み設定とどこにも属さない割り込みハンドラー*/
 void Initialise_ProgrammableInterruptController(void);
@@ -233,6 +253,10 @@ void Send_SerialPort(uchar *s);
 /*timer.c タイマー関連*/
 void Initialise_ProgrammableIntervalTimer(void);
 void InterruptHandler20(int *esp);
+uint Timer_Get_Tick(void);
+UI_Timer *Timer_Get(DATA_FIFO *fifo, uint data);
+void Timer_Set(UI_Timer *timer, uint count, timer_mode mode);
+void Timer_Run(UI_Timer *timer);
 
 /*xception.c CPU例外関係*/
 void CPU_Exception_Abort(int exception, int *esp);
