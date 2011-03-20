@@ -94,6 +94,7 @@ void Timer_Run(UI_Timer *timer)
 			timer->state = inuse;
 			break;
 		}
+		*before = (*before)->next;
 	}
 	IO_Store_EFlags(eflags);
 	return;

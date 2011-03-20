@@ -1,33 +1,26 @@
 
 #include "core.h"
 
+extern UI_Sheet_Control sheetctrl;
+
 void CHNMain(void)
 {
 	DATA_VESAInfo *vesa = (DATA_VESAInfo *) ADR_VESAINFO;
 	DATA_BootInfo *boot = (DATA_BootInfo *) ADR_BOOTINFO;
 	uchar s[128];
-	uint fifobuf[128], keycmdbuf[64];
 	DATA_FIFO fifo, keycmd;
 	int keycmd_wait = 0;
 	UI_InputBox inpbox;
 	UI_KeyInfo kinfo;
-	uint i, j;
+	uint i, j, x, y;
 	uint cpuidbuf[5];	//EAX-EBX-EDX-ECX-0x00000000
 	UI_Timer *c_timer;
-
-	FIFO32_Initialise(&fifo, 128, fifobuf);
-	FIFO32_Initialise(&keycmd, 128, keycmdbuf);
+	UI_Sheet *testsheet, *testsheet2, *testsheet3;
 
 	IO_CLI();
-	Initialise_SerialPort();
-	Initialise_GlobalDescriptorTable();
-	Initialise_InterruptDescriptorTable();
-	Initialise_ProgrammableInterruptController();
-	Initialise_ProgrammableIntervalTimer();
-	Initialise_Keyboard(&fifo, &keycmd, DATA_BYTE, boot->leds, &keycmd_wait);
-	Initialise_Graphic(vesa->BitsPerPixel);
-	System_MemoryControl_Initialise();
-	Initialise_Paging(vesa->PhysBasePtr, boot->scrnx, boot->scrny, vesa->BitsPerPixel);
+
+	Initialise_System(&fifo, &keycmd, &keycmd_wait);
+
 	IO_STI();
 
 	InputBox_Initialise(&inpbox, vesa->PhysBasePtr, boot->scrnx, 0, 0, boot->scrnx - 1, boot->scrny - 1, 1024, 0xFFFFFF, 0xc6c6c6);
@@ -75,6 +68,30 @@ void CHNMain(void)
 	c_timer = Timer_Get(&fifo, 5);
 	Timer_Set(c_timer, 50, interval);
 	Timer_Run(c_timer);
+
+	testsheet = Sheet_Get(100, 100, 32);
+	for(y = 0; y < 100; y++){
+		for(x = 0; x < 100; x++){
+			((uint *)testsheet->vram)[100 * y + x] = 1643 * y + 1024 * x + y;
+		}
+	}
+	Sheet_Show(testsheet, 200, 200, 0);
+
+	testsheet2 = Sheet_Get(100, 100, 32);
+	for(y = 0; y < 100; y++){
+		for(x = 0; x < 100; x++){
+			((uint *)testsheet2->vram)[100 * y + x] = (653 * y + 242 * x + y) * 1024;
+		}
+	}
+	Sheet_Show(testsheet2, 250, 250, 1);
+
+	testsheet3 = Sheet_Get(100, 100, 32);
+	for(y = 0; y < 100; y++){
+		for(x = 0; x < 100; x++){
+			((uint *)testsheet3->vram)[100 * y + x] = (1192 * y + 828 * x + y) * 65536;
+		}
+	}
+	Sheet_Show(testsheet3, 220, 180, 1);
 
 	InputBox_NewLine(&inpbox);
 	InputBox_Reset_Input_Buffer(&inpbox);

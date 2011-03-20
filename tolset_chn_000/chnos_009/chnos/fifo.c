@@ -1,15 +1,18 @@
 
 #include "core.h"
 
-void FIFO32_Initialise(DATA_FIFO *fifo, uint size, uint *buf)
+int FIFO32_Initialise(DATA_FIFO *fifo, uint size)
 {
 	fifo->size = size;
-	fifo->buf = buf;
+	fifo->buf = System_MemoryControl_Allocate(size * 4);
+	if(fifo->buf == 0){
+		return -1;
+	}
 	fifo->free = size;	/*freesize*/
 	fifo->flags = 0;
 	fifo->p = 0;	/*write*/
 	fifo->q = 0;	/*read*/
-	return;
+	return 0;
 }
 
 int FIFO32_Put(DATA_FIFO *fifo, uint data)
@@ -53,4 +56,17 @@ uint FIFO32_Get(DATA_FIFO *fifo)
 uint FIFO32_Status(DATA_FIFO *fifo)
 {
 	return fifo->size - fifo->free;
+}
+
+int FIFO32_Free(DATA_FIFO *fifo)
+{
+	if(fifo->buf == 0){
+		return -1;
+	}
+	fifo->size = 0;
+	fifo->free = 0;
+	fifo->flags = 0;
+	fifo->p = 0;
+	fifo->q = 0;
+	return System_MemoryControl_Free(fifo->buf, fifo->size * 4);
 }

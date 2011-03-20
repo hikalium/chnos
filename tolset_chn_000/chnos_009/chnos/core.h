@@ -136,6 +136,25 @@ struct TIMER_CONTROL {
 	struct TIMER *next;
 };
 
+struct SHEET_CONTROL {
+	void *mainvram;
+	uint *map;
+	struct POSITION_2D mainvramsize;
+	uint mainvrambpp;
+	struct SHEET *next;
+	uint sheets;
+};
+
+struct SHEET {
+	void *vram;
+	struct POSITION_2D position;
+	struct POSITION_2D size;
+	uint bpp;
+	struct SHEET *next;
+	struct SHEET *before;
+	void (*Refresh)(struct SHEET *sheet, uint px0, uint py0, uint px1, uint py1);
+};
+
 /*typedef structures*/
 typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
 typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
@@ -149,6 +168,8 @@ typedef struct UI_INPUTBOX		UI_InputBox;
 typedef struct KEYINFO			UI_KeyInfo;
 typedef struct TIMER_CONTROL		UI_TimerControl;
 typedef struct TIMER			UI_Timer;
+typedef struct SHEET_CONTROL		UI_Sheet_Control;
+typedef struct SHEET			UI_Sheet;
 
 /*virtual classes*/
 
@@ -166,10 +187,11 @@ void Set_SegmentDescriptor(IO_SegmentDescriptor *sd, uint limit, int base, int a
 void Set_GateDescriptor(IO_GateDescriptor *gd, int offset, int selector, int ar);
 
 /*fifo.c FIFOバッファ関連*/
-void FIFO32_Initialise(DATA_FIFO *fifo, uint size, uint *buf);
+int FIFO32_Initialise(DATA_FIFO *fifo, uint size);
 int FIFO32_Put(DATA_FIFO *fifo, uint data);
 uint FIFO32_Get(DATA_FIFO *fifo);
 uint FIFO32_Status(DATA_FIFO *fifo);
+int FIFO32_Free(DATA_FIFO *fifo);
 
 /*grap_08.c*/
 void Draw_Put_Font_08(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
@@ -195,6 +217,9 @@ ushort RGB_32_To_16(uint c32);
 extern void (*Draw_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
 extern void (*Draw_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 extern void (*Draw_Slide_Line)(void *vram, uint xsize, uint ysize, uint vxsize, uint px, uint py);
+
+/*init.c*/
+void Initialise_System(DATA_FIFO *fifo, DATA_FIFO *keycmd, uint *keycmd_wait);
 
 /*inputbox.c*/
 void InputBox_Initialise(UI_InputBox *box, void *vram, uint vxsize, uint x, uint y, uint xsize, uint ysize, uint txtbufsize, uint forecol, uint backcol);
@@ -249,6 +274,13 @@ uint *Paging_Get_Entry_Setting_Address(uint entry);
 /*serial.c シリアル通信関連*/
 void Initialise_SerialPort(void);
 void Send_SerialPort(uchar *s);
+
+/*sheet.c シート関連*/
+void Initialise_Sheet(void *vram, uint xsize, uint ysize, uint bpp);
+UI_Sheet *Sheet_Get(uint xsize, uint ysize, uint bpp);
+uint Sheet_Show(UI_Sheet *sheet, uint px, uint py, uint height);
+void Sheet_Refresh_Map(UI_Sheet *sheet, uint x0, uint y0, uint x1, uint y1);
+void Sheet_Refresh_32from32(UI_Sheet *sheet, uint px0, uint py0, uint px1, uint py1);
 
 /*timer.c タイマー関連*/
 void Initialise_ProgrammableIntervalTimer(void);
