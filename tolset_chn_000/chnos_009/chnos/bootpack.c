@@ -33,7 +33,7 @@ void CHNMain(void)
 	sprintf(s, "Free:%dByte:%dMB\n", System_MemoryControl_FreeSize(), System_MemoryControl_FreeSize() >> 20);
 	InputBox_Put_String(&inpbox, s);
 
-	sprintf(s, "VideoMode:%dbit %dx%d\n", vesa->BitsPerPixel, boot->scrnx, boot->scrny);
+	sprintf(s, "VideoMode:%dbit(%dx%d)[0x%08X]\n", vesa->BitsPerPixel, boot->scrnx, boot->scrny, vesa->PhysBasePtr);
 	InputBox_Put_String(&inpbox, s);
 
 	i = IO_Load_EFlags();

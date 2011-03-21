@@ -175,7 +175,6 @@ typedef struct SHEET			UI_Sheet;
 
 /*externs*/
 extern uchar hankaku[4096];
-extern uint RGB_32_To_08_Table[16];
 
 /*functions*/
 /*bootpack.c 基幹部分*/
@@ -281,6 +280,8 @@ UI_Sheet *Sheet_Get(uint xsize, uint ysize, uint bpp);
 uint Sheet_Show(UI_Sheet *sheet, uint px, uint py, uint height);
 void Sheet_Refresh_Map(UI_Sheet *sheet, uint x0, uint y0, uint x1, uint y1);
 void Sheet_Refresh_32from32(UI_Sheet *sheet, uint px0, uint py0, uint px1, uint py1);
+void Sheet_Refresh_16from32(UI_Sheet *sheet, uint px0, uint py0, uint px1, uint py1);
+void Sheet_Refresh_08from32(UI_Sheet *sheet, uint px0, uint py0, uint px1, uint py1);
 
 /*timer.c タイマー関連*/
 void Initialise_ProgrammableIntervalTimer(void);
