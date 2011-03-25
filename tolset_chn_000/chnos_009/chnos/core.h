@@ -152,7 +152,8 @@ struct SHEET {
 	uint bpp;
 	struct SHEET *next;
 	struct SHEET *before;
-	void (*Refresh)(struct SHEET *sheet, uint px0, uint py0, uint px1, uint py1);
+	void (*Refresh)(struct SHEET *sheet, int px0, int py0, int px1, int py1);
+	bool visible;
 };
 
 /*typedef structures*/
@@ -261,9 +262,6 @@ int System_MemoryControl_Free(void *addr0, uint size);
 void *System_MemoryControl_Allocate_Page(void);
 void System_MemoryControl_Output_Info(void);
 
-/*メモリマップ*/
-//メモリ終端からIO_MemoryControl分	：システム用IO_MemoryControl
-
 /*paging.c ページング関係*/
 void Initialise_Paging(void *vram, uint xsize, uint ysize, uint bpp);
 void Paging_Set_Entry_Directory(uint *dir_entry, uint *table_base, uint attribute, uint available);
@@ -277,11 +275,14 @@ void Send_SerialPort(uchar *s);
 /*sheet.c シート関連*/
 void Initialise_Sheet(void *vram, uint xsize, uint ysize, uint bpp);
 UI_Sheet *Sheet_Get(uint xsize, uint ysize, uint bpp);
-uint Sheet_Show(UI_Sheet *sheet, uint px, uint py, uint height);
-void Sheet_Refresh_Map(UI_Sheet *sheet, uint x0, uint y0, uint x1, uint y1);
-void Sheet_Refresh_32from32(UI_Sheet *sheet, uint px0, uint py0, uint px1, uint py1);
-void Sheet_Refresh_16from32(UI_Sheet *sheet, uint px0, uint py0, uint px1, uint py1);
-void Sheet_Refresh_08from32(UI_Sheet *sheet, uint px0, uint py0, uint px1, uint py1);
+uint Sheet_Show(UI_Sheet *sheet, int px, int py, uint height);
+void Sheet_Slide(UI_Sheet *sheet, int px, int py);
+void Sheet_Refresh_Map(UI_Sheet *sheet, int x0, int y0, int x1, int y1);
+void Sheet_Refresh_All(UI_Sheet *sheet0, UI_Sheet *sheet1);
+void Sheet_Refresh_32from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+void Sheet_Refresh_16from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+void Sheet_Refresh_08from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+void Sheet_Draw_Put_String(UI_Sheet *sheet, uint x, uint y, uint c, const uchar *s);
 
 /*timer.c タイマー関連*/
 void Initialise_ProgrammableIntervalTimer(void);

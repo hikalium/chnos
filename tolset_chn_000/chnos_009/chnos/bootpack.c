@@ -76,6 +76,7 @@ void CHNMain(void)
 		}
 	}
 	Sheet_Show(testsheet, 200, 200, 0);
+	Sheet_Draw_Put_String(testsheet, 0, 0, 0xFFFFFF, "TestSheet");
 
 	testsheet2 = Sheet_Get(100, 100, 32);
 	for(y = 0; y < 100; y++){
@@ -84,6 +85,7 @@ void CHNMain(void)
 		}
 	}
 	Sheet_Show(testsheet2, 250, 250, 1);
+	Sheet_Draw_Put_String(testsheet2, 0, 0, 0xFFFFFF, "TestSheet2");
 
 	testsheet3 = Sheet_Get(100, 100, 32);
 	for(y = 0; y < 100; y++){
@@ -92,6 +94,7 @@ void CHNMain(void)
 		}
 	}
 	Sheet_Show(testsheet3, 220, 180, 1);
+	Sheet_Draw_Put_String(testsheet3, 0, 0, 0xFFFFFF, "TestSheet3");
 
 	InputBox_NewLine(&inpbox);
 	InputBox_Reset_Input_Buffer(&inpbox);
@@ -124,6 +127,15 @@ void CHNMain(void)
 						InputBox_Reset_Input_Buffer(&inpbox);
 						InputBox_NewLine(&inpbox);
 					} else{
+						if(kinfo.c == 'a'){
+							Sheet_Slide(testsheet3, testsheet3->position.x - 5, testsheet3->position.y);
+						} else if(kinfo.c == 'w'){
+							Sheet_Slide(testsheet3, testsheet3->position.x, testsheet3->position.y - 5);
+						} else if(kinfo.c == 'd'){
+							Sheet_Slide(testsheet3, testsheet3->position.x + 5, testsheet3->position.y);
+						} else if(kinfo.c == 'x'){
+							Sheet_Slide(testsheet3, testsheet3->position.x, testsheet3->position.y + 5);
+						}
 						InputBox_Put_Character(&inpbox, kinfo.c);
 					}
 				}
