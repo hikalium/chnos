@@ -51,6 +51,7 @@ uint MemoryControl_FreeSize(IO_MemoryControl *ctrl)
 
 	size = 0;
 	tag = ctrl->next;
+
 	for(;;){
 		size += ((IO_MemoryControlTag *)tag)->size;
 		if(((IO_MemoryControlTag *)tag)->next == 0){
@@ -80,6 +81,7 @@ void *MemoryControl_Allocate(IO_MemoryControl *ctrl, uint size)
 	((IO_MemoryControlTag *)(*before + size))->size = ((IO_MemoryControlTag *)*before)->size - size;
 	((IO_MemoryControlTag *)(*before + size))->next = ((IO_MemoryControlTag *)*before)->next;
 	*before = *before + size;
+
 	return *before - size;
 }
 
@@ -163,7 +165,18 @@ uint System_MemoryControl_FreeSize(void)
 
 void *System_MemoryControl_Allocate(uint size)
 {
-	return MemoryControl_Allocate(&sys_mem_ctrl, size);
+	uchar s[128];
+	void *addr;
+	uint *retaddr;
+
+	retaddr = &size;
+
+	addr = MemoryControl_Allocate(&sys_mem_ctrl, size);
+
+	sprintf(s, "[0x%08X]Memory Allocate Request.[0x%08X](%dByte)\r\n", *(retaddr - 1), addr, size);
+	Send_SerialPort(s);
+
+	return addr;
 }
 
 int System_MemoryControl_Free(void *addr0, uint size)

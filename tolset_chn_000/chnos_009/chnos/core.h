@@ -100,20 +100,6 @@ struct POSITION_2D {
 	int x, y;
 };
 
-struct UI_INPUTBOX {
-	void *vram;
-	uint forecol, backcol;
-	uchar *input_buf;
-	uint input_buf_size;
-	uint vxsize;
-	uint input_count;
-	struct POSITION_2D cursor;
-	struct POSITION_2D prompt;
-	struct POSITION_2D size;
-	struct POSITION_2D position;
-	bool cursor_state;
-};
-
 struct KEYINFO {
 	uchar c;
 	uint keycode;
@@ -155,6 +141,22 @@ struct SHEET {
 	void (*Refresh)(struct SHEET *sheet, int px0, int py0, int px1, int py1);
 	bool visible;
 };
+
+struct UI_INPUTBOX {
+	struct SHEET *sheet;
+//	void *vram;
+	uint forecol, backcol;
+	uchar *input_buf;
+	uint input_buf_size;
+//	uint vxsize;
+	uint input_count;
+	struct POSITION_2D cursor;
+	struct POSITION_2D prompt;
+//	struct POSITION_2D size;
+//	struct POSITION_2D position;
+	bool cursor_state;
+};
+
 
 /*typedef structures*/
 typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
@@ -222,7 +224,7 @@ extern void (*Draw_Slide_Line)(void *vram, uint xsize, uint ysize, uint vxsize, 
 void Initialise_System(DATA_FIFO *fifo, DATA_FIFO *keycmd, uint *keycmd_wait);
 
 /*inputbox.c*/
-void InputBox_Initialise(UI_InputBox *box, void *vram, uint vxsize, uint x, uint y, uint xsize, uint ysize, uint txtbufsize, uint forecol, uint backcol);
+void InputBox_Initialise(UI_InputBox *box, uint x, uint y, uint xsize, uint ysize, uint txtbufsize, uint forecol, uint backcol, uint height);
 int InputBox_Put_String(UI_InputBox *box, const uchar *s);
 int InputBox_Put_Character(UI_InputBox *box, uchar c);
 void InputBox_Put_String_Main(UI_InputBox *box, const uchar *str);
@@ -282,7 +284,11 @@ void Sheet_Refresh_All(UI_Sheet *sheet0, UI_Sheet *sheet1);
 void Sheet_Refresh_32from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 void Sheet_Refresh_16from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 void Sheet_Refresh_08from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+void Sheet_Refresh_16from16(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+void Sheet_Refresh_08from08(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+void Sheet_Refresh_Invalid(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 void Sheet_Draw_Put_String(UI_Sheet *sheet, uint x, uint y, uint c, const uchar *s);
+void Sheet_Draw_Fill_Rectangle(UI_Sheet *sheet, uint c, uint x0, uint y0, uint x1, uint y1);
 
 /*timer.c タイマー関連*/
 void Initialise_ProgrammableIntervalTimer(void);
