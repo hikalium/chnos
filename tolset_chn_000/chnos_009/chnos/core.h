@@ -109,6 +109,7 @@ struct KEYINFO {
 
 struct TIMER {
 	struct TIMER *next;
+	struct TIMER *tree;
 	uint timeout;
 	uint count;
 	struct FIFO32 *fifo;

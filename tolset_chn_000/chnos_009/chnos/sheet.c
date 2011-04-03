@@ -233,8 +233,8 @@ void Sheet_Refresh_32from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 		py1 = sheetctrl.mainvramsize.y - 1;
 	}
 
-	for(y = py0; y < py1; y++){
-		for(x = px0; x < px1; x++){
+	for(y = py0; y <= py1; y++){
+		for(x = px0; x <= px1; x++){
 			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == (uint)sheet){
 				((uint *)sheetctrl.mainvram)[(y * sheetctrl.mainvramsize.x) + x] = ((uint *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)];
 			}
@@ -268,8 +268,8 @@ void Sheet_Refresh_16from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 		py1 = sheetctrl.mainvramsize.y - 1;
 	}
 
-	for(y = py0; y < py1; y++){
-		for(x = px0; x < px1; x++){
+	for(y = py0; y <= py1; y++){
+		for(x = px0; x <= px1; x++){
 			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == (uint)sheet){
 				((ushort *)sheetctrl.mainvram)[(y * sheetctrl.mainvramsize.x) + x] = RGB_32_To_16(((uint *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)]);
 			}
@@ -303,8 +303,8 @@ void Sheet_Refresh_08from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 		py1 = sheetctrl.mainvramsize.y - 1;
 	}
 
-	for(y = py0; y < py1; y++){
-		for(x = px0; x < px1; x++){
+	for(y = py0; y <= py1; y++){
+		for(x = px0; x <= px1; x++){
 			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == (uint)sheet){
 				((uchar *)sheetctrl.mainvram)[(y * sheetctrl.mainvramsize.x) + x] = RGB_32_To_08(((uint *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)]);
 			}
@@ -338,8 +338,8 @@ void Sheet_Refresh_16from16(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 		py1 = sheetctrl.mainvramsize.y - 1;
 	}
 
-	for(y = py0; y < py1; y++){
-		for(x = px0; x < px1; x++){
+	for(y = py0; y <= py1; y++){
+		for(x = px0; x <= px1; x++){
 			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == (uint)sheet){
 				((ushort *)sheetctrl.mainvram)[(y * sheetctrl.mainvramsize.x) + x] = ((ushort *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)];
 			}
@@ -373,8 +373,8 @@ void Sheet_Refresh_08from08(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 		py1 = sheetctrl.mainvramsize.y - 1;
 	}
 
-	for(y = py0; y < py1; y++){
-		for(x = px0; x < px1; x++){
+	for(y = py0; y <= py1; y++){
+		for(x = px0; x <= px1; x++){
 			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == (uint)sheet){
 				((uchar *)sheetctrl.mainvram)[(y * sheetctrl.mainvramsize.x) + x] = ((uchar *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)];
 			}

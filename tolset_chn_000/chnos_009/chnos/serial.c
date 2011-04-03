@@ -17,6 +17,9 @@ void Send_SerialPort(uchar *s)
 {
 	for (; *s != 0x00; s++) {
 		IO_Out8(COM1_TX, *s);
+		for(; (IO_In8(COM1_STA_LINE) & 0x40) == 0; ){
+
+		}
 	}
 
 	return;
