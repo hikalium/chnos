@@ -16,15 +16,30 @@ void CHNMain(void)
 	uint i, j, x, y;
 	uint cpuidbuf[5];	//EAX-EBX-EDX-ECX-0x00000000
 	UI_Timer *c_timer;
-	UI_Sheet *testsheet, *testsheet2, *testsheet3;
+	UI_Sheet *testsheet, *testsheet2, *testsheet3, *taskbar, *desktop;
+	UI_Mouse mdecode;
+	DATA_Position2D mcursor;
+
+	mcursor.x = 0;
+	mcursor.y = 0;
 
 	IO_CLI();
 
-	Initialise_System(&fifo, &keycmd, &keycmd_wait);
+	Initialise_System(&fifo, &keycmd, &keycmd_wait, &mdecode);
 
 	IO_STI();
 
-	InputBox_Initialise(&console, 0, 0, boot->scrnx - 1, boot->scrny - 1, 1024, 0xFFFFFF, 0xc6c6c6, 0);
+	desktop = Sheet_Get(boot->scrnx, boot->scrny, 0);
+	Sheet_Show(desktop, 0, 0, 0);
+	Sheet_Draw_Fill_Rectangle(desktop, 0x66FF66, 0, 0, desktop->size.x - 1, desktop->size.y - 1);
+
+	InputBox_Initialise(&console, 8, 16, boot->scrnx - 16, boot->scrny >> 1, 1024, 0xFFFFFF, 0xc6c6c6, 1);
+
+	taskbar = Sheet_Get(boot->scrnx, 32, 0);
+	Sheet_Show(taskbar, 0, boot->scrny - 32, 2);
+	Sheet_Draw_Fill_Rectangle(taskbar, 0x6666FF, 0, 0, taskbar->size.x - 1, taskbar->size.y - 1);
+	Sheet_Draw_Put_String(taskbar, 0, 0, 0xFFFFFF, "Taskbar");
+
 
 	InputBox_Put_String(&console, "Welcome to CHNOSProject.\n");
 
@@ -79,7 +94,7 @@ void CHNMain(void)
 			((uint *)testsheet->vram)[100 * y + x] = 1643 * y + 1024 * x + y;
 		}
 	}
-	Sheet_Show(testsheet, 200, 200, 1);
+	Sheet_Show(testsheet, 200, 200, 3);
 	Sheet_Draw_Put_String(testsheet, 0, 0, 0xFFFFFF, "TestSheet");
 
 	testsheet2 = Sheet_Get(100, 100, 32);
@@ -88,7 +103,7 @@ void CHNMain(void)
 			((uint *)testsheet2->vram)[100 * y + x] = (653 * y + 242 * x + y) * 1024;
 		}
 	}
-	Sheet_Show(testsheet2, 250, 250, 2);
+	Sheet_Show(testsheet2, 250, 250, 4);
 	Sheet_Draw_Put_String(testsheet2, 0, 0, 0xFFFFFF, "TestSheet2");
 
 	testsheet3 = Sheet_Get(100, 100, 32);
@@ -97,7 +112,7 @@ void CHNMain(void)
 			((uint *)testsheet3->vram)[100 * y + x] = (1192 * y + 828 * x + y) * 65536;
 		}
 	}
-	Sheet_Show(testsheet3, 220, 180, 2);
+	Sheet_Show(testsheet3, 220, 180, 4);
 	Sheet_Draw_Put_String(testsheet3, 0, 0, 0xFFFFFF, "TestSheet3");
 
 	InputBox_NewLine(&console);
@@ -117,7 +132,7 @@ void CHNMain(void)
 				if(i == 5){
 					InputBox_Change_Cursor_State(&console);
 				}
-			} else if(DATA_BYTE <= i && i <= (DATA_BYTE * 2)){
+			} else if(DATA_BYTE <= i && i < (DATA_BYTE * 2)){
 				Keyboard_Decode(&kinfo, i - DATA_BYTE);
 				if(kinfo.make){
 					if(kinfo.c == '\n'){
@@ -142,6 +157,27 @@ void CHNMain(void)
 						}
 						InputBox_Put_Character(&console, kinfo.c);
 					}
+				}
+			} else if((DATA_BYTE * 2) <= i && i < (DATA_BYTE * 3)){
+				if(Mouse_Decode(i - DATA_BYTE * 2) != 0){
+					Sheet_Draw_Fill_Rectangle(taskbar, 0x6666FF, 0, 0, taskbar->size.x - 1, 15);
+					mcursor.x += mdecode.move.x;
+					mcursor.y += mdecode.move.y;
+					if(mcursor.x < 0){
+						mcursor.x = 0;
+					}
+					if(mcursor.y < 0){
+						mcursor.y = 0;
+					}
+					if(mcursor.x >= boot->scrnx){
+						mcursor.x = boot->scrnx - 1;
+					}
+					if(mcursor.y >= boot->scrny){
+						mcursor.y = boot->scrny - 1;
+					}
+					sprintf(s, "Mouse Type:0x%02X Button:0x%02X (%04d, %04d)", mdecode.type, mdecode.btn, mcursor.x, mcursor.y);
+					Sheet_Draw_Put_String(taskbar, 0, 0, 0xFFFFFF, s);
+					Sheet_Slide(testsheet3, mcursor.x, mcursor.y);
 				}
 			}
 		}

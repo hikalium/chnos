@@ -158,6 +158,12 @@ struct UI_INPUTBOX {
 	bool cursor_state;
 };
 
+struct MOUSE_DECODE {
+	uint buf[4], scrool;
+	struct POSITION_2D move;
+	int btn, type;
+	uchar phase; 
+};
 
 /*typedef structures*/
 typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
@@ -174,6 +180,7 @@ typedef struct TIMER_CONTROL		UI_TimerControl;
 typedef struct TIMER			UI_Timer;
 typedef struct SHEET_CONTROL		UI_Sheet_Control;
 typedef struct SHEET			UI_Sheet;
+typedef struct MOUSE_DECODE		UI_Mouse;
 
 /*virtual classes*/
 
@@ -222,7 +229,7 @@ extern void (*Draw_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint
 extern void (*Draw_Slide_Line)(void *vram, uint xsize, uint ysize, uint vxsize, uint px, uint py);
 
 /*init.c*/
-void Initialise_System(DATA_FIFO *fifo, DATA_FIFO *keycmd, uint *keycmd_wait);
+void Initialise_System(DATA_FIFO *fifo, DATA_FIFO *keycmd, uint *keycmd_wait, UI_Mouse *decode);
 
 /*inputbox.c*/
 void InputBox_Initialise(UI_InputBox *box, uint x, uint y, uint xsize, uint ysize, uint txtbufsize, uint forecol, uint backcol, uint height);
@@ -265,7 +272,13 @@ int System_MemoryControl_Free(void *addr0, uint size);
 void *System_MemoryControl_Allocate_Page(void);
 void System_MemoryControl_Output_Info(void);
 
-/*paging.c ページング関係*/
+/*mouse.c マウス関連*/
+void Initialise_Mouse(DATA_FIFO *sendto, uint offset, UI_Mouse *decode);
+void InterruptHandler2c(int *esp);
+int Mouse_Decode(uint data);
+void Mouse_Send_Command(uint data);
+
+/*paging.c ページング関連*/
 void Initialise_Paging(void *vram, uint xsize, uint ysize, uint bpp);
 void Paging_Set_Entry_Directory(uint *dir_entry, uint *table_base, uint attribute, uint available);
 void Paging_Set_Entry_Table(uint *table_entry, uint *page_base, uint attribute, uint available);
@@ -281,7 +294,7 @@ UI_Sheet *Sheet_Get(uint xsize, uint ysize, uint bpp);
 uint Sheet_Show(UI_Sheet *sheet, int px, int py, uint height);
 void Sheet_Slide(UI_Sheet *sheet, int px, int py);
 void Sheet_Refresh_Map(UI_Sheet *sheet, int x0, int y0, int x1, int y1);
-void Sheet_Refresh_All(UI_Sheet *sheet0, UI_Sheet *sheet1);
+void Sheet_Refresh_All(UI_Sheet *sheet0, UI_Sheet *sheet1, int x0, int y0, int x1, int y1);
 void Sheet_Refresh_32from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 void Sheet_Refresh_16from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 void Sheet_Refresh_08from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
@@ -290,6 +303,7 @@ void Sheet_Refresh_08from08(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 void Sheet_Refresh_Invalid(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 void Sheet_Draw_Put_String(UI_Sheet *sheet, uint x, uint y, uint c, const uchar *s);
 void Sheet_Draw_Fill_Rectangle(UI_Sheet *sheet, uint c, uint x0, uint y0, uint x1, uint y1);
+void Sheet_Draw_Point(UI_Sheet *sheet, uint c, uint x, uint y);
 
 /*timer.c タイマー関連*/
 void Initialise_ProgrammableIntervalTimer(void);
@@ -299,7 +313,7 @@ UI_Timer *Timer_Get(DATA_FIFO *fifo, uint data);
 void Timer_Set(UI_Timer *timer, uint count, timer_mode mode);
 void Timer_Run(UI_Timer *timer);
 
-/*xception.c CPU例外関係*/
+/*xception.c CPU例外関連*/
 void CPU_Exception_Abort(int exception, int *esp);
 void CPU_ExceptionHandler00(int *esp);
 void CPU_ExceptionHandler01(int *esp);
@@ -411,3 +425,4 @@ void asm_CPU_ExceptionHandler1f(void);
 void asm_InterruptHandler20(void);
 void asm_InterruptHandler21(void);
 void asm_InterruptHandler27(void);
+void asm_InterruptHandler2c(void);

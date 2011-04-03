@@ -1,7 +1,7 @@
 
 #include "core.h"
 
-void Initialise_System(DATA_FIFO *fifo, DATA_FIFO *keycmd, uint *keycmd_wait)
+void Initialise_System(DATA_FIFO *fifo, DATA_FIFO *keycmd, uint *keycmd_wait, UI_Mouse *decode)
 {
 	DATA_VESAInfo *vesa = (DATA_VESAInfo *) ADR_VESAINFO;
 	DATA_BootInfo *boot = (DATA_BootInfo *) ADR_BOOTINFO;
@@ -20,6 +20,7 @@ void Initialise_System(DATA_FIFO *fifo, DATA_FIFO *keycmd, uint *keycmd_wait)
 	Initialise_ProgrammableInterruptController();
 	Initialise_ProgrammableIntervalTimer();
 	Initialise_Keyboard(fifo, keycmd, DATA_BYTE, boot->leds, keycmd_wait);
+	Initialise_Mouse(fifo, DATA_BYTE * 2, decode);
 	Initialise_Graphic(vesa->BitsPerPixel);
 	Initialise_Sheet(vesa->PhysBasePtr, boot->scrnx, boot->scrny, vesa->BitsPerPixel);
 

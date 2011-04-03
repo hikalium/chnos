@@ -148,9 +148,7 @@
 #define CONSOLE_CMDLINE_BUF_SIZE	128
 #define MAX_CONSOLES	16
 
-#define DATA_BYTE	0xFF
-#define DATA_WORD	0xFFFF
-#define DATA_DWORD	0xFFFFFFFF
+#define DATA_BYTE	0x100
 
 #define COM1_RX		0x03f8
 #define COM1_TX		0x03f8

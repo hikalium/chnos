@@ -108,13 +108,64 @@ uint Sheet_Show(UI_Sheet *sheet, int px, int py, uint height)
 
 void Sheet_Slide(UI_Sheet *sheet, int px, int py)
 {
+	int movex, movey;
+	DATA_Position2D target0, target1;
+
+	movex = px - sheet->position.x;
+	movey = py - sheet->position.y;
+
+	if(movex == 0 && movey == 0){	//動かない
+		return;
+	}
+	if(movey == 0){	//横にスライドするだけ
+		target0.y = sheet->position.y;
+		target1.y = sheet->position.y + sheet->size.y - 1;
+		if(movex > 0){	//右方向
+			target0.x = sheet->position.x;
+			target1.x = sheet->position.x + sheet->size.x - 1 + movex;
+		} else{	//左方向
+			target0.x = sheet->position.x + movex;
+			target1.x = sheet->position.x + sheet->size.x - 1;
+		}
+	} else if(movex == 0){	//縦にスライドするだけ
+		target0.x = sheet->position.x;
+		target1.x = sheet->position.x + sheet->size.x - 1;
+		if(movey > 0){	//下方向
+			target0.y = sheet->position.y;
+			target1.y = sheet->position.y + sheet->size.y - 1 + movey;
+		} else{	//上方向
+			target0.y = sheet->position.y + movey;
+			target1.y = sheet->position.y + sheet->size.y - 1;
+		}
+	} else if(movex > 0 && movey > 0){	//右下へスライド
+		target0.x = sheet->position.x;
+		target0.y = sheet->position.y;
+		target1.x = sheet->position.x + sheet->size.x - 1 + movex;
+		target1.y = sheet->position.y + sheet->size.y - 1 + movey;
+	} else if(movex > 0 && movey < 0){	//右上へスライド
+		target0.x = sheet->position.x;
+		target0.y = sheet->position.y + movey;
+		target1.x = sheet->position.x + sheet->size.x - 1 + movex;
+		target1.y = sheet->position.y + sheet->size.y - 1;
+	} else if(movex < 0 && movey > 0){	//左下へスライド
+		target0.x = sheet->position.x + movex;
+		target0.y = sheet->position.y;
+		target1.x = sheet->position.x + sheet->size.x - 1;
+		target1.y = sheet->position.y + sheet->size.y - 1 + movey;
+	} else if(movex < 0 && movey < 0){	//左上へスライド
+		target0.x = sheet->position.x + movex;
+		target0.y = sheet->position.y + movey;
+		target1.x = sheet->position.x + sheet->size.x - 1;
+		target1.y = sheet->position.y + sheet->size.y - 1;
+	}
+
 	sheet->visible = false;
 	Sheet_Refresh_Map(sheet, sheet->position.x, sheet->position.y, sheet->position.x + sheet->size.x - 1, sheet->position.y + sheet->size.y - 1);
 	sheet->position.x = px;
 	sheet->position.y = py;
 	sheet->visible = true;
 	Sheet_Refresh_Map(sheet, sheet->position.x, sheet->position.y, sheet->position.x + sheet->size.x - 1, sheet->position.y + sheet->size.y - 1);
-	Sheet_Refresh_All(sheetctrl.next, sheet->next);
+	Sheet_Refresh_All(sheetctrl.next, sheet->next, target0.x, target0.y, target1.x, target1.y);
 	return;
 }
 
@@ -142,8 +193,8 @@ void Sheet_Refresh_Map(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
 
 	before = &sheetctrl.next;
 	for(i = 0; i < sheetctrl.sheets; i++){
-		for(y = y0; y < y1; y++){
-			for(x = x0; x < x1; x++){
+		for(y = y0; y <= y1; y++){
+			for(x = x0; x <= x1; x++){
 				if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == (uint)*before){
 					sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] = 0;
 				}
@@ -179,8 +230,8 @@ void Sheet_Refresh_Map(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
 			if(target1.y > y1){
 				target1.y = y1;
 			}
-			for(y = target0.y; y < target1.y; y++){
-				for(x = target0.x; x < target1.x; x++){
+			for(y = target0.y; y <= target1.y; y++){
+				for(x = target0.x; x <= target1.x; x++){
 					if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == 0){
 						sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] = (uint)*before;
 					}
@@ -192,14 +243,34 @@ void Sheet_Refresh_Map(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
 	return;
 }
 
-void Sheet_Refresh_All(UI_Sheet *sheet0, UI_Sheet *sheet1)
+void Sheet_Refresh_All(UI_Sheet *sheet0, UI_Sheet *sheet1, int x0, int y0, int x1, int y1)
 {
 	UI_Sheet *now;
 	uint i;
+	DATA_Position2D target0, target1;
 
 	now = sheet0;
 	for(i = 0; i < sheetctrl.sheets; i++){
-		now->Refresh(now, 0, 0, now->size.x - 1, now->size.y - 1);
+		target0.x = now->position.x;
+		target0.y = now->position.y;
+		target1.x = now->position.x + now->size.x - 1;
+		target1.y = now->position.y + now->size.y - 1;
+
+		if(target0.x <= x1 && target0.y <= y1 && target1.x >= x0 && target1.y >= y0 && now->visible){
+			if(target0.x < x0){
+				target0.x = x0;
+			}
+			if(target0.y < y0){
+				target0.y = y0;
+			}
+			if(target1.x > x1){
+				target1.x = x1;
+			}
+			if(target1.y > y1){
+				target1.y = y1;
+			}
+			now->Refresh(now, target0.x - now->position.x, target0.y - now->position.y, target1.x - now->position.x, target1.y - now->position.y);
+		}
 		if(now->next == sheet1 || now->next == 0){
 			break;
 		}
@@ -424,3 +495,17 @@ void Sheet_Draw_Fill_Rectangle(UI_Sheet *sheet, uint c, uint x0, uint y0, uint x
 	return;
 }
 
+void Sheet_Draw_Point(UI_Sheet *sheet, uint c, uint x, uint y)
+{
+	if(sheet->bpp == 32){
+		((uint *)sheet->vram)[y * sheet->size.x + x] = c;
+	} else if(sheet->bpp == 16){
+		c = RGB_32_To_16(c);
+		((ushort *)sheet->vram)[y * sheet->size.x + x] = (ushort)c;
+	} else if(sheet->bpp == 8){
+		c = RGB_32_To_08(c);
+		((uchar *)sheet->vram)[y * sheet->size.x + x] = (uchar)c;
+	}
+	sheet->Refresh(sheet, x, y, x, y);
+	return;
+}
