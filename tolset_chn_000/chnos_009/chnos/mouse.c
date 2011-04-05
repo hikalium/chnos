@@ -3,9 +3,36 @@
 
 uint offset_data_m;
 DATA_FIFO *sendto_m;
-UI_Mouse *decode_m;
+UI_MouseInfo *decode_m;
 
-void Initialise_Mouse(DATA_FIFO *sendto, uint offset, UI_Mouse *decode)
+uchar mcursor_pattern0[24][24] = {
+	"***.....................",
+	"*O**....................",
+	"*OO**...................",
+	"*OOO**..................",
+	"*OOOO**.................",
+	"*OOOOO**................",
+	"*OOOOOO**...............",
+	"*OOOOOOO**..............",
+	"*OOOOOOOO**.............",
+	"*OOOOOOOOO**............",
+	"*OOOOOOOOOO**...........",
+	"*OOOOOOOOOOO**..........",
+	"*OOOOOOOOOOOO**.........",
+	"*OOOOOOOOOOOOO**........",
+	"*OOOOOOOOOOOOOO**.......",
+	"*OOOOOOOOOOOOOOO**......",
+	"*OOOOOOOOOOOOOOOO**.....",
+	"*OOOOOO*************....",
+	"*OOOOO**................",
+	"*OOOO**.................",
+	"*OOO**..................",
+	"*OO**...................",
+	"*O**....................",
+	"***.....................",
+};
+
+void Initialise_Mouse(DATA_FIFO *sendto, uint offset, UI_MouseInfo *decode)
 {
 	sendto_m = sendto;
 	offset_data_m = offset;
@@ -139,5 +166,92 @@ void Mouse_Send_Command(uint data)
 	IO_Out8(PORT_KEYCMD, KEYCMD_SENDTO_MOUSE);
 	Keyboard_Controller_Wait_SendReady();
 	IO_Out8(KEYB_DATA, data);
+	return;
+}
+
+void Mouse_Make_MouseCursor(UI_MouseCursor *cursor, int rangex0, int rangey0, int rangex1, int rangey1, uint height)
+{
+	cursor->move_range0.x = rangex0;
+	cursor->move_range0.y = rangey0;
+	cursor->move_range1.x = rangex1;
+	cursor->move_range1.y = rangey1;
+	cursor->position.x = rangex0;
+	cursor->position.y = rangey0;
+	cursor->sheet = Sheet_Get(24, 24, 0, 0x000000FF);
+	Mouse_Draw_MouseCursor(cursor, normal);
+	Sheet_Show(cursor->sheet, cursor->position.x, cursor->position.y, height);
+	return;
+}
+
+void Mouse_Draw_MouseCursor(UI_MouseCursor *cursor, mcursor_state state)
+{
+	uint x, y;
+	uchar *pattern;
+
+	pattern = &mcursor_pattern0[0][0];
+
+	if(state == normal){
+		cursor->state = normal;
+	} else if(state == wait){
+		pattern = 0;
+		cursor->state = wait;
+	}
+
+	for (y = 0; y < 24; y++) {
+		for (x = 0; x < 24; x++) {
+			if (pattern[y * 24 + x] == '*') {
+				Sheet_Draw_Point(cursor->sheet, 0x000000, x, y);
+			}
+			if (pattern[y * 24 + x] == 'O') {
+				Sheet_Draw_Point(cursor->sheet, 0xFFFFFF, x, y);
+			}
+			if (pattern[y * 24 + x] == '.') {
+				Sheet_Draw_Point(cursor->sheet, 0x0000FF, x, y);
+			}
+		}
+	}
+
+	return;
+}
+
+void Mouse_Move_Relative(UI_MouseCursor *cursor, int movex, int movey)
+{
+	cursor->position.x += movex;
+	cursor->position.y += movey;
+
+	if(cursor->position.x < cursor->move_range0.x){
+		cursor->position.x = cursor->move_range0.x;
+	} else if(cursor->position.x > cursor->move_range1.x){
+		cursor->position.x = cursor->move_range1.x;
+	}
+	if(cursor->position.y < cursor->move_range0.y){
+		cursor->position.y = cursor->move_range0.y;
+	} else if(cursor->position.y > cursor->move_range1.y){
+		cursor->position.y = cursor->move_range1.y;
+	}
+
+	Sheet_Slide(cursor->sheet, cursor->position.x, cursor->position.y);
+
+	return;
+}
+
+void Mouse_Move_Absolute(UI_MouseCursor *cursor, int px, int py)
+{
+	cursor->position.x = px;
+	cursor->position.y = py;
+
+	if(cursor->position.x < cursor->move_range0.x){
+		cursor->position.x = cursor->move_range0.x;
+	} else if(cursor->position.x > cursor->move_range1.x){
+		cursor->position.x = cursor->move_range1.x;
+	}
+	if(cursor->position.y < cursor->move_range0.y){
+		cursor->position.y = cursor->move_range0.y;
+	} else if(cursor->position.y > cursor->move_range1.y){
+		cursor->position.y = cursor->move_range1.y;
+	}
+
+	Sheet_Slide(cursor->sheet, cursor->position.x, cursor->position.y);
+
 	return;
 }

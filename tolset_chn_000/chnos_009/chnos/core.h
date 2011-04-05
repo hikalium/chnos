@@ -21,6 +21,7 @@ typedef enum _bool { false, true} bool;
 typedef enum _state_alloc { none, initialized, allocated, configured, inuse} state_alloc;
 typedef enum _col_text { black, blue, green, skyblue, red, purple, brown, white} col_text;
 typedef enum _timer_mode { once, interval} timer_mode;
+typedef enum _mcursor_state { normal, wait} mcursor_state;
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned int uint;
@@ -137,9 +138,11 @@ struct SHEET {
 	struct POSITION_2D position;
 	struct POSITION_2D size;
 	uint bpp;
+	uint invcol;
 	struct SHEET *next;
 	struct SHEET *before;
 	void (*Refresh)(struct SHEET *sheet, int px0, int py0, int px1, int py1);
+	void (*WriteMap)(struct SHEET *sheet, int x0, int y0, int x1, int y1);
 	bool visible;
 };
 
@@ -165,6 +168,14 @@ struct MOUSE_DECODE {
 	uchar phase; 
 };
 
+struct UI_MOUSE_CURSOR {
+	struct SHEET *sheet;
+	struct POSITION_2D position;
+	struct POSITION_2D move_range0;
+	struct POSITION_2D move_range1;
+	mcursor_state state;
+};
+
 /*typedef structures*/
 typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
 typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
@@ -180,7 +191,8 @@ typedef struct TIMER_CONTROL		UI_TimerControl;
 typedef struct TIMER			UI_Timer;
 typedef struct SHEET_CONTROL		UI_Sheet_Control;
 typedef struct SHEET			UI_Sheet;
-typedef struct MOUSE_DECODE		UI_Mouse;
+typedef struct MOUSE_DECODE		UI_MouseInfo;
+typedef struct UI_MOUSE_CURSOR		UI_MouseCursor;
 
 /*virtual classes*/
 
@@ -229,7 +241,7 @@ extern void (*Draw_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint
 extern void (*Draw_Slide_Line)(void *vram, uint xsize, uint ysize, uint vxsize, uint px, uint py);
 
 /*init.c*/
-void Initialise_System(DATA_FIFO *fifo, DATA_FIFO *keycmd, uint *keycmd_wait, UI_Mouse *decode);
+void Initialise_System(DATA_FIFO *fifo, DATA_FIFO *keycmd, uint *keycmd_wait, UI_MouseInfo *decode);
 
 /*inputbox.c*/
 void InputBox_Initialise(UI_InputBox *box, uint x, uint y, uint xsize, uint ysize, uint txtbufsize, uint forecol, uint backcol, uint height);
@@ -273,10 +285,15 @@ void *System_MemoryControl_Allocate_Page(void);
 void System_MemoryControl_Output_Info(void);
 
 /*mouse.c マウス関連*/
-void Initialise_Mouse(DATA_FIFO *sendto, uint offset, UI_Mouse *decode);
+extern uchar mcursor_pattern0[24][24];
+void Initialise_Mouse(DATA_FIFO *sendto, uint offset, UI_MouseInfo *decode);
 void InterruptHandler2c(int *esp);
 int Mouse_Decode(uint data);
 void Mouse_Send_Command(uint data);
+void Mouse_Make_MouseCursor(UI_MouseCursor *cursor, int rangex0, int rangey0, int rangex1, int rangey1, uint height);
+void Mouse_Draw_MouseCursor(UI_MouseCursor *cursor, mcursor_state state);
+void Mouse_Move_Relative(UI_MouseCursor *cursor, int movex, int movey);
+void Mouse_Move_Absolute(UI_MouseCursor *cursor, int px, int py);
 
 /*paging.c ページング関連*/
 void Initialise_Paging(void *vram, uint xsize, uint ysize, uint bpp);
@@ -290,10 +307,14 @@ void Send_SerialPort(uchar *s);
 
 /*sheet.c シート関連*/
 void Initialise_Sheet(void *vram, uint xsize, uint ysize, uint bpp);
-UI_Sheet *Sheet_Get(uint xsize, uint ysize, uint bpp);
+UI_Sheet *Sheet_Get(uint xsize, uint ysize, uint bpp, uint invcol);
 uint Sheet_Show(UI_Sheet *sheet, int px, int py, uint height);
 void Sheet_Slide(UI_Sheet *sheet, int px, int py);
 void Sheet_Refresh_Map(UI_Sheet *sheet, int x0, int y0, int x1, int y1);
+void Sheet_Write_Map_32(UI_Sheet *sheet, int x0, int y0, int x1, int y1);
+void Sheet_Write_Map_16(UI_Sheet *sheet, int x0, int y0, int x1, int y1);
+void Sheet_Write_Map_08(UI_Sheet *sheet, int x0, int y0, int x1, int y1);
+void Sheet_Write_Map_NoInvisible(UI_Sheet *sheet, int x0, int y0, int x1, int y1);
 void Sheet_Refresh_All(UI_Sheet *sheet0, UI_Sheet *sheet1, int x0, int y0, int x1, int y1);
 void Sheet_Refresh_32from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 void Sheet_Refresh_16from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);

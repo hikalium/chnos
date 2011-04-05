@@ -5,7 +5,7 @@ void InputBox_Initialise(UI_InputBox *box, uint x, uint y, uint xsize, uint ysiz
 {
 	xsize = xsize & ~7;
 	ysize = ysize & ~15;
-	box->sheet = Sheet_Get(xsize, ysize, 0);
+	box->sheet = Sheet_Get(xsize, ysize, 0, 0);
 	box->input_buf_size = txtbufsize;
 	box->input_buf = (uchar *)System_MemoryControl_Allocate(box->input_buf_size);
 	box->input_count = 0;

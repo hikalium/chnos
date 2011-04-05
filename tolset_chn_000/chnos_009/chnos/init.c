@@ -1,7 +1,7 @@
 
 #include "core.h"
 
-void Initialise_System(DATA_FIFO *fifo, DATA_FIFO *keycmd, uint *keycmd_wait, UI_Mouse *decode)
+void Initialise_System(DATA_FIFO *fifo, DATA_FIFO *keycmd, uint *keycmd_wait, UI_MouseInfo *decode)
 {
 	DATA_VESAInfo *vesa = (DATA_VESAInfo *) ADR_VESAINFO;
 	DATA_BootInfo *boot = (DATA_BootInfo *) ADR_BOOTINFO;

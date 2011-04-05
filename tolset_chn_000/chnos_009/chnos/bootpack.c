@@ -16,12 +16,9 @@ void CHNMain(void)
 	uint i, j, x, y;
 	uint cpuidbuf[5];	//EAX-EBX-EDX-ECX-0x00000000
 	UI_Timer *c_timer;
-	UI_Sheet *testsheet, *testsheet2, *testsheet3, *taskbar, *desktop;
-	UI_Mouse mdecode;
-	DATA_Position2D mcursor;
-
-	mcursor.x = 0;
-	mcursor.y = 0;
+	UI_Sheet *testsheet, *testsheet2, *taskbar, *desktop;
+	UI_MouseInfo mdecode;
+	UI_MouseCursor mouse_cursor;
 
 	IO_CLI();
 
@@ -29,13 +26,13 @@ void CHNMain(void)
 
 	IO_STI();
 
-	desktop = Sheet_Get(boot->scrnx, boot->scrny, 0);
+	desktop = Sheet_Get(boot->scrnx, boot->scrny, 0, 0);
 	Sheet_Show(desktop, 0, 0, 0);
 	Sheet_Draw_Fill_Rectangle(desktop, 0x66FF66, 0, 0, desktop->size.x - 1, desktop->size.y - 1);
 
 	InputBox_Initialise(&console, 8, 16, boot->scrnx - 16, boot->scrny >> 1, 1024, 0xFFFFFF, 0xc6c6c6, 1);
 
-	taskbar = Sheet_Get(boot->scrnx, 32, 0);
+	taskbar = Sheet_Get(boot->scrnx, 32, 0, 0);
 	Sheet_Show(taskbar, 0, boot->scrny - 32, 2);
 	Sheet_Draw_Fill_Rectangle(taskbar, 0x6666FF, 0, 0, taskbar->size.x - 1, taskbar->size.y - 1);
 	Sheet_Draw_Put_String(taskbar, 0, 0, 0xFFFFFF, "Taskbar");
@@ -88,7 +85,7 @@ void CHNMain(void)
 	Timer_Set(c_timer, 50, interval);
 	Timer_Run(c_timer);
 
-	testsheet = Sheet_Get(100, 100, 32);
+	testsheet = Sheet_Get(100, 100, 32, 0);
 	for(y = 0; y < 100; y++){
 		for(x = 0; x < 100; x++){
 			((uint *)testsheet->vram)[100 * y + x] = 1643 * y + 1024 * x + y;
@@ -97,7 +94,7 @@ void CHNMain(void)
 	Sheet_Show(testsheet, 200, 200, 3);
 	Sheet_Draw_Put_String(testsheet, 0, 0, 0xFFFFFF, "TestSheet");
 
-	testsheet2 = Sheet_Get(100, 100, 32);
+	testsheet2 = Sheet_Get(100, 100, 32, 0);
 	for(y = 0; y < 100; y++){
 		for(x = 0; x < 100; x++){
 			((uint *)testsheet2->vram)[100 * y + x] = (653 * y + 242 * x + y) * 1024;
@@ -106,14 +103,8 @@ void CHNMain(void)
 	Sheet_Show(testsheet2, 250, 250, 4);
 	Sheet_Draw_Put_String(testsheet2, 0, 0, 0xFFFFFF, "TestSheet2");
 
-	testsheet3 = Sheet_Get(100, 100, 32);
-	for(y = 0; y < 100; y++){
-		for(x = 0; x < 100; x++){
-			((uint *)testsheet3->vram)[100 * y + x] = (1192 * y + 828 * x + y) * 65536;
-		}
-	}
-	Sheet_Show(testsheet3, 220, 180, 4);
-	Sheet_Draw_Put_String(testsheet3, 0, 0, 0xFFFFFF, "TestSheet3");
+	Mouse_Make_MouseCursor(&mouse_cursor, 0, 0, boot->scrnx - 1, boot->scrny - 1, 6);
+	Mouse_Move_Absolute(&mouse_cursor, boot->scrnx >> 1, boot->scrny >> 1);
 
 	InputBox_NewLine(&console);
 	InputBox_Reset_Input_Buffer(&console);
@@ -146,38 +137,24 @@ void CHNMain(void)
 						InputBox_Reset_Input_Buffer(&console);
 						InputBox_NewLine(&console);
 					} else{
-						if(kinfo.c == 'a'){
-							Sheet_Slide(testsheet3, testsheet3->position.x - 5, testsheet3->position.y);
-						} else if(kinfo.c == 'w'){
-							Sheet_Slide(testsheet3, testsheet3->position.x, testsheet3->position.y - 5);
-						} else if(kinfo.c == 'd'){
-							Sheet_Slide(testsheet3, testsheet3->position.x + 5, testsheet3->position.y);
-						} else if(kinfo.c == 'x'){
-							Sheet_Slide(testsheet3, testsheet3->position.x, testsheet3->position.y + 5);
-						}
 						InputBox_Put_Character(&console, kinfo.c);
 					}
 				}
 			} else if((DATA_BYTE * 2) <= i && i < (DATA_BYTE * 3)){
 				if(Mouse_Decode(i - DATA_BYTE * 2) != 0){
 					Sheet_Draw_Fill_Rectangle(taskbar, 0x6666FF, 0, 0, taskbar->size.x - 1, 15);
-					mcursor.x += mdecode.move.x;
-					mcursor.y += mdecode.move.y;
-					if(mcursor.x < 0){
-						mcursor.x = 0;
+					Mouse_Move_Relative(&mouse_cursor, mdecode.move.x, mdecode.move.y);
+					sprintf(s, "Mouse Type:0x%02X Button:lcr (%04d, %04d)", mdecode.type, mouse_cursor.position.x, mouse_cursor.position.y);
+					if((mdecode.btn & 0x01) != 0){
+						s[23] = 'L';
 					}
-					if(mcursor.y < 0){
-						mcursor.y = 0;
+					if((mdecode.btn & 0x02) != 0){
+						s[25] = 'R';
 					}
-					if(mcursor.x >= boot->scrnx){
-						mcursor.x = boot->scrnx - 1;
+					if((mdecode.btn & 0x04) != 0){
+						s[24] = 'C';
 					}
-					if(mcursor.y >= boot->scrny){
-						mcursor.y = boot->scrny - 1;
-					}
-					sprintf(s, "Mouse Type:0x%02X Button:0x%02X (%04d, %04d)", mdecode.type, mdecode.btn, mcursor.x, mcursor.y);
 					Sheet_Draw_Put_String(taskbar, 0, 0, 0xFFFFFF, s);
-					Sheet_Slide(testsheet3, mcursor.x, mcursor.y);
 				}
 			}
 		}

@@ -25,10 +25,9 @@ void Initialise_Sheet(void *vram, uint xsize, uint ysize, uint bpp)
 	return;
 }
 
-UI_Sheet *Sheet_Get(uint xsize, uint ysize, uint bpp)
+UI_Sheet *Sheet_Get(uint xsize, uint ysize, uint bpp, uint invcol)
 {
 	UI_Sheet *sheet;
-uchar s[128];
 
 	if(bpp == 0){
 		bpp = sheetctrl.mainvrambpp;
@@ -41,11 +40,20 @@ uchar s[128];
 	sheet->size.x = xsize;
 	sheet->size.y = ysize;
 	sheet->bpp = bpp;
+	sheet->invcol = invcol;
+	if(sheet->invcol == 0){
+		sheet->WriteMap = Sheet_Write_Map_NoInvisible;
+	} else if(sheet->bpp == 32){
+		sheet->WriteMap = Sheet_Write_Map_32;
+	} else if(sheet->bpp == 16){
+		sheet->WriteMap = Sheet_Write_Map_16;
+		sheet->invcol = RGB_32_To_16(sheet->invcol);
+	} else if(sheet->bpp == 8){
+		sheet->WriteMap = Sheet_Write_Map_08;
+		sheet->invcol = RGB_32_To_08(sheet->invcol);
+	}
 	sheet->next = 0;
 	sheet->before = 0;
-
-sprintf(s, "mainbpp:%d requestbpp:%d\r\n", sheetctrl.mainvrambpp, bpp);
-Send_SerialPort(s);
 
 	sheet->Refresh = Sheet_Refresh_Invalid;
 
@@ -230,15 +238,65 @@ void Sheet_Refresh_Map(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
 			if(target1.y > y1){
 				target1.y = y1;
 			}
-			for(y = target0.y; y <= target1.y; y++){
-				for(x = target0.x; x <= target1.x; x++){
-					if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == 0){
-						sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] = (uint)*before;
-					}
-				}
-			}
+			(*before)->WriteMap(*before, target0.x, target0.y, target1.x, target1.y);
 		}
 		before = &(*before)->before;
+	}
+	return;
+}
+
+void Sheet_Write_Map_32(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
+{
+	int x, y;
+
+	for(y = y0; y <= y1; y++){
+		for(x = x0; x <= x1; x++){
+			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == 0 && ((uint *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)] != sheet->invcol){
+				sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] = (uint)sheet;
+			}
+		}
+	}
+	return;
+}
+
+void Sheet_Write_Map_16(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
+{
+	int x, y;
+
+	for(y = y0; y <= y1; y++){
+		for(x = x0; x <= x1; x++){
+			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == 0 && ((ushort *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)] != (ushort)sheet->invcol){
+				sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] = (uint)sheet;
+			}
+		}
+	}
+	return;
+}
+
+void Sheet_Write_Map_08(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
+{
+	int x, y;
+
+	for(y = y0; y <= y1; y++){
+		for(x = x0; x <= x1; x++){
+			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == 0 && ((uchar *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)] != (uchar)sheet->invcol){
+				sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] = (uint)sheet;
+			}
+		}
+	}
+	return;
+}
+
+void Sheet_Write_Map_NoInvisible(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
+{
+	int x, y;
+
+	for(y = y0; y <= y1; y++){
+		for(x = x0; x <= x1; x++){
+			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == 0){
+				sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] = (uint)sheet;
+			}
+		}
 	}
 	return;
 }
@@ -456,11 +514,6 @@ void Sheet_Refresh_08from08(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 
 void Sheet_Refresh_Invalid(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 {
-	uchar s[128];
-
-	sprintf(s, "Invalid Refresh Request. [0x%08X]\r\n", sheet);
-	Send_SerialPort(s);
-
 	return;
 }
 
