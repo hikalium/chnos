@@ -177,7 +177,7 @@ void Mouse_Make_MouseCursor(UI_MouseCursor *cursor, int rangex0, int rangey0, in
 	cursor->move_range1.y = rangey1;
 	cursor->position.x = rangex0;
 	cursor->position.y = rangey0;
-	cursor->sheet = Sheet_Get(24, 24, 0, 0x000000FF);
+	cursor->sheet = System_Sheet_Get(24, 24, 0, 0x000000FF);
 	Mouse_Draw_MouseCursor(cursor, normal);
 	Sheet_Show(cursor->sheet, cursor->position.x, cursor->position.y, height);
 	return;

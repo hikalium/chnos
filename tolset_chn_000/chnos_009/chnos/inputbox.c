@@ -1,13 +1,13 @@
 
 #include "core.h"
 
-void InputBox_Initialise(UI_InputBox *box, uint x, uint y, uint xsize, uint ysize, uint txtbufsize, uint forecol, uint backcol, uint height)
+void InputBox_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, UI_InputBox *box, uint x, uint y, uint xsize, uint ysize, uint txtbufsize, uint forecol, uint backcol, uint height)
 {
 	xsize = xsize & ~7;
 	ysize = ysize & ~15;
-	box->sheet = Sheet_Get(xsize, ysize, 0, 0);
+	box->sheet = Sheet_Get(sheetctrl, xsize, ysize, 0, 0);
 	box->input_buf_size = txtbufsize;
-	box->input_buf = (uchar *)System_MemoryControl_Allocate(box->input_buf_size);
+	box->input_buf = (uchar *)MemoryControl_Allocate(memctrl, box->input_buf_size);
 	box->input_count = 0;
 	box->cursor.x = 0;
 	box->cursor.y = 0;

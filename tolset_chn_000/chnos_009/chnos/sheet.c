@@ -1,40 +1,44 @@
 
 #include "core.h"
 
-UI_Sheet_Control sheetctrl;
+extern IO_MemoryControl sys_mem_ctrl;
 
-void Initialise_Sheet(void *vram, uint xsize, uint ysize, uint bpp)
+UI_Sheet_Control sys_sheet_ctrl;
+
+void Sheet_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, void *vram, uint xsize, uint ysize, uint bpp)
 {
 	uint x, y;
 
-	sheetctrl.mainvram = vram;
-	sheetctrl.map = System_MemoryControl_Allocate(xsize * ysize * 4);
-	if(sheetctrl.map == 0){
+	sheetctrl->memctrl = memctrl;
+
+	sheetctrl->mainvram = vram;
+	sheetctrl->map = MemoryControl_Allocate(sheetctrl->memctrl, xsize * ysize * 4);
+	if(sheetctrl->map == 0){
 		return;
 	}
 	for(y = 0; y < ysize; y++){
 		for(x = 0; x < xsize; x++){
-			sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] = 0;
+			sheetctrl->map[(y * sheetctrl->mainvramsize.x) + x] = 0;
 		}
 	}
-	sheetctrl.mainvramsize.x = xsize;
-	sheetctrl.mainvramsize.y = ysize;
-	sheetctrl.mainvrambpp = bpp;
-	sheetctrl.next = 0;
-	sheetctrl.sheets = 0;
+	sheetctrl->mainvramsize.x = xsize;
+	sheetctrl->mainvramsize.y = ysize;
+	sheetctrl->mainvrambpp = bpp;
+	sheetctrl->next = 0;
+	sheetctrl->sheets = 0;
 	return;
 }
 
-UI_Sheet *Sheet_Get(uint xsize, uint ysize, uint bpp, uint invcol)
+UI_Sheet *Sheet_Get(UI_Sheet_Control *ctrl, uint xsize, uint ysize, uint bpp, uint invcol)
 {
 	UI_Sheet *sheet;
 
 	if(bpp == 0){
-		bpp = sheetctrl.mainvrambpp;
+		bpp = ctrl->mainvrambpp;
 	}
 
-	sheet = System_MemoryControl_Allocate(sizeof(UI_Sheet));
-	sheet->vram = System_MemoryControl_Allocate(xsize * ysize * (bpp >> 3));
+	sheet = MemoryControl_Allocate(ctrl->memctrl, sizeof(UI_Sheet));
+	sheet->vram = MemoryControl_Allocate(ctrl->memctrl, xsize * ysize * (bpp >> 3));
 	sheet->position.x = 0;
 	sheet->position.y = 0;
 	sheet->size.x = xsize;
@@ -56,6 +60,7 @@ UI_Sheet *Sheet_Get(uint xsize, uint ysize, uint bpp, uint invcol)
 	sheet->before = 0;
 
 	sheet->Refresh = Sheet_Refresh_Invalid;
+	sheet->myctrl = ctrl;
 
 	return sheet;
 }
@@ -64,8 +69,11 @@ uint Sheet_Show(UI_Sheet *sheet, int px, int py, uint height)
 {
 	uint i;
 	UI_Sheet **now;
+	UI_Sheet_Control *ctrl;
 
-	now = &sheetctrl.next;
+	ctrl = sheet->myctrl;
+
+	now = &ctrl->next;
 	for(i = 0; i <= height; i++){
 		if((*now) == 0){
 			break;
@@ -77,12 +85,12 @@ uint Sheet_Show(UI_Sheet *sheet, int px, int py, uint height)
 	}
 	sheet->next = *now;
 	*now = sheet;
-	sheetctrl.sheets++;
+	ctrl->sheets++;
 	sheet->position.x = px;
 	sheet->position.y = py;
 	sheet->visible = true;
 
-	if(sheetctrl.mainvrambpp == 32){
+	if(ctrl->mainvrambpp == 32){
 		if(sheet->bpp == 32){
 			sheet->Refresh = Sheet_Refresh_32from32;
 //		} else if(sheet->bpp == 16){
@@ -90,7 +98,7 @@ uint Sheet_Show(UI_Sheet *sheet, int px, int py, uint height)
 //		} else if(sheet->bpp == 8){
 
 		}
-	} else if(sheetctrl.mainvrambpp == 16){
+	} else if(ctrl->mainvrambpp == 16){
 		if(sheet->bpp == 32){
 			sheet->Refresh = Sheet_Refresh_16from32;
 		} else if(sheet->bpp == 16){
@@ -98,7 +106,7 @@ uint Sheet_Show(UI_Sheet *sheet, int px, int py, uint height)
 //		} else if(sheet->bpp == 8){
 
 		}
-	} else if(sheetctrl.mainvrambpp == 8){
+	} else if(ctrl->mainvrambpp == 8){
 		if(sheet->bpp == 32){
 			sheet->Refresh = Sheet_Refresh_08from32;
 //		} else if(sheet->bpp == 16){
@@ -118,7 +126,9 @@ void Sheet_Slide(UI_Sheet *sheet, int px, int py)
 {
 	int movex, movey;
 	DATA_Position2D target0, target1;
+	UI_Sheet_Control *ctrl;
 
+	ctrl = sheet->myctrl;
 	movex = px - sheet->position.x;
 	movey = py - sheet->position.y;
 
@@ -173,7 +183,7 @@ void Sheet_Slide(UI_Sheet *sheet, int px, int py)
 	sheet->position.y = py;
 	sheet->visible = true;
 	Sheet_Refresh_Map(sheet, sheet->position.x, sheet->position.y, sheet->position.x + sheet->size.x - 1, sheet->position.y + sheet->size.y - 1);
-	Sheet_Refresh_All(sheetctrl.next, sheet->next, target0.x, target0.y, target1.x, target1.y);
+	Sheet_Refresh_All(ctrl->next, sheet->next, target0.x, target0.y, target1.x, target1.y);
 	return;
 }
 
@@ -182,8 +192,10 @@ void Sheet_Refresh_Map(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
 	UI_Sheet **before;
 	uint i, x, y;
 	DATA_Position2D target0, target1;
+	UI_Sheet_Control *ctrl;
 
-	if(x0 >= sheetctrl.mainvramsize.x || y0 >= sheetctrl.mainvramsize.y || x1 < 0 || y1 < 0){
+	ctrl = sheet->myctrl;
+	if(x0 >= ctrl->mainvramsize.x || y0 >= ctrl->mainvramsize.y || x1 < 0 || y1 < 0){
 		return;
 	}
 	if(x0 < 0){
@@ -192,19 +204,19 @@ void Sheet_Refresh_Map(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
 	if(y0 < 0){
 		y0 = 0;
 	}
-	if(x1 >= sheetctrl.mainvramsize.x){
-		x1 = sheetctrl.mainvramsize.x - 1;
+	if(x1 >= ctrl->mainvramsize.x){
+		x1 = ctrl->mainvramsize.x - 1;
 	}
-	if(y1 >= sheetctrl.mainvramsize.y){
-		y1 = sheetctrl.mainvramsize.y - 1;
+	if(y1 >= ctrl->mainvramsize.y){
+		y1 = ctrl->mainvramsize.y - 1;
 	}
 
-	before = &sheetctrl.next;
-	for(i = 0; i < sheetctrl.sheets; i++){
+	before = &ctrl->next;
+	for(i = 0; i < ctrl->sheets; i++){
 		for(y = y0; y <= y1; y++){
 			for(x = x0; x <= x1; x++){
-				if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == (uint)*before){
-					sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] = 0;
+				if(ctrl->map[(y * ctrl->mainvramsize.x) + x] == (uint)*before){
+					ctrl->map[(y * ctrl->mainvramsize.x) + x] = 0;
 				}
 			}
 		}
@@ -248,11 +260,13 @@ void Sheet_Refresh_Map(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
 void Sheet_Write_Map_32(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
 {
 	int x, y;
+	UI_Sheet_Control *ctrl;
 
+	ctrl = sheet->myctrl;
 	for(y = y0; y <= y1; y++){
 		for(x = x0; x <= x1; x++){
-			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == 0 && ((uint *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)] != sheet->invcol){
-				sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] = (uint)sheet;
+			if(ctrl->map[(y * ctrl->mainvramsize.x) + x] == 0 && ((uint *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)] != sheet->invcol){
+				ctrl->map[(y * ctrl->mainvramsize.x) + x] = (uint)sheet;
 			}
 		}
 	}
@@ -262,11 +276,13 @@ void Sheet_Write_Map_32(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
 void Sheet_Write_Map_16(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
 {
 	int x, y;
+	UI_Sheet_Control *ctrl;
 
+	ctrl = sheet->myctrl;
 	for(y = y0; y <= y1; y++){
 		for(x = x0; x <= x1; x++){
-			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == 0 && ((ushort *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)] != (ushort)sheet->invcol){
-				sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] = (uint)sheet;
+			if(ctrl->map[(y * ctrl->mainvramsize.x) + x] == 0 && ((ushort *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)] != (ushort)sheet->invcol){
+				ctrl->map[(y * ctrl->mainvramsize.x) + x] = (uint)sheet;
 			}
 		}
 	}
@@ -276,11 +292,13 @@ void Sheet_Write_Map_16(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
 void Sheet_Write_Map_08(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
 {
 	int x, y;
+	UI_Sheet_Control *ctrl;
 
+	ctrl = sheet->myctrl;
 	for(y = y0; y <= y1; y++){
 		for(x = x0; x <= x1; x++){
-			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == 0 && ((uchar *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)] != (uchar)sheet->invcol){
-				sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] = (uint)sheet;
+			if(ctrl->map[(y * ctrl->mainvramsize.x) + x] == 0 && ((uchar *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)] != (uchar)sheet->invcol){
+				ctrl->map[(y * ctrl->mainvramsize.x) + x] = (uint)sheet;
 			}
 		}
 	}
@@ -290,11 +308,13 @@ void Sheet_Write_Map_08(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
 void Sheet_Write_Map_NoInvisible(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
 {
 	int x, y;
+	UI_Sheet_Control *ctrl;
 
+	ctrl = sheet->myctrl;
 	for(y = y0; y <= y1; y++){
 		for(x = x0; x <= x1; x++){
-			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == 0){
-				sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] = (uint)sheet;
+			if(ctrl->map[(y * ctrl->mainvramsize.x) + x] == 0){
+				ctrl->map[(y * ctrl->mainvramsize.x) + x] = (uint)sheet;
 			}
 		}
 	}
@@ -306,9 +326,11 @@ void Sheet_Refresh_All(UI_Sheet *sheet0, UI_Sheet *sheet1, int x0, int y0, int x
 	UI_Sheet *now;
 	uint i;
 	DATA_Position2D target0, target1;
+	UI_Sheet_Control *ctrl;
 
+	ctrl = sheet0->myctrl;
 	now = sheet0;
-	for(i = 0; i < sheetctrl.sheets; i++){
+	for(i = 0; i < ctrl->sheets; i++){
 		target0.x = now->position.x;
 		target0.y = now->position.y;
 		target1.x = now->position.x + now->size.x - 1;
@@ -340,13 +362,15 @@ void Sheet_Refresh_All(UI_Sheet *sheet0, UI_Sheet *sheet1, int x0, int y0, int x
 void Sheet_Refresh_32from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 {
 	int x, y;
+	UI_Sheet_Control *ctrl;
 
+	ctrl = sheet->myctrl;
 	px0 = px0 + sheet->position.x;
 	py0 = py0 + sheet->position.y;
 	px1 = px1 + sheet->position.x;
 	py1 = py1 + sheet->position.y;
 
-	if(px0 >= sheetctrl.mainvramsize.x || py0 >= sheetctrl.mainvramsize.y || px1 < 0 || py1 < 0){
+	if(px0 >= ctrl->mainvramsize.x || py0 >= ctrl->mainvramsize.y || px1 < 0 || py1 < 0){
 		return;
 	}
 	if(px0 < 0){
@@ -355,17 +379,17 @@ void Sheet_Refresh_32from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 	if(py0 < 0){
 		py0 = 0;
 	}
-	if(px1 >= sheetctrl.mainvramsize.x){
-		px1 = sheetctrl.mainvramsize.x - 1;
+	if(px1 >= ctrl->mainvramsize.x){
+		px1 = ctrl->mainvramsize.x - 1;
 	}
-	if(py1 >= sheetctrl.mainvramsize.y){
-		py1 = sheetctrl.mainvramsize.y - 1;
+	if(py1 >= ctrl->mainvramsize.y){
+		py1 = ctrl->mainvramsize.y - 1;
 	}
 
 	for(y = py0; y <= py1; y++){
 		for(x = px0; x <= px1; x++){
-			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == (uint)sheet){
-				((uint *)sheetctrl.mainvram)[(y * sheetctrl.mainvramsize.x) + x] = ((uint *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)];
+			if(ctrl->map[(y * ctrl->mainvramsize.x) + x] == (uint)sheet){
+				((uint *)ctrl->mainvram)[(y * ctrl->mainvramsize.x) + x] = ((uint *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)];
 			}
 		}
 	}
@@ -375,13 +399,15 @@ void Sheet_Refresh_32from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 void Sheet_Refresh_16from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 {
 	int x, y;
+	UI_Sheet_Control *ctrl;
 
+	ctrl = sheet->myctrl;
 	px0 = px0 + sheet->position.x;
 	py0 = py0 + sheet->position.y;
 	px1 = px1 + sheet->position.x;
 	py1 = py1 + sheet->position.y;
 
-	if(px0 >= sheetctrl.mainvramsize.x || py0 >= sheetctrl.mainvramsize.y || px1 < 0 || py1 < 0){
+	if(px0 >= ctrl->mainvramsize.x || py0 >= ctrl->mainvramsize.y || px1 < 0 || py1 < 0){
 		return;
 	}
 	if(px0 < 0){
@@ -390,17 +416,17 @@ void Sheet_Refresh_16from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 	if(py0 < 0){
 		py0 = 0;
 	}
-	if(px1 >= sheetctrl.mainvramsize.x){
-		px1 = sheetctrl.mainvramsize.x - 1;
+	if(px1 >= ctrl->mainvramsize.x){
+		px1 = ctrl->mainvramsize.x - 1;
 	}
-	if(py1 >= sheetctrl.mainvramsize.y){
-		py1 = sheetctrl.mainvramsize.y - 1;
+	if(py1 >= ctrl->mainvramsize.y){
+		py1 = ctrl->mainvramsize.y - 1;
 	}
 
 	for(y = py0; y <= py1; y++){
 		for(x = px0; x <= px1; x++){
-			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == (uint)sheet){
-				((ushort *)sheetctrl.mainvram)[(y * sheetctrl.mainvramsize.x) + x] = RGB_32_To_16(((uint *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)]);
+			if(ctrl->map[(y * ctrl->mainvramsize.x) + x] == (uint)sheet){
+				((ushort *)ctrl->mainvram)[(y * ctrl->mainvramsize.x) + x] = RGB_32_To_16(((uint *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)]);
 			}
 		}
 	}
@@ -410,13 +436,15 @@ void Sheet_Refresh_16from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 void Sheet_Refresh_08from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 {
 	int x, y;
+	UI_Sheet_Control *ctrl;
 
+	ctrl = sheet->myctrl;
 	px0 = px0 + sheet->position.x;
 	py0 = py0 + sheet->position.y;
 	px1 = px1 + sheet->position.x;
 	py1 = py1 + sheet->position.y;
 
-	if(px0 >= sheetctrl.mainvramsize.x || py0 >= sheetctrl.mainvramsize.y || px1 < 0 || py1 < 0){
+	if(px0 >= ctrl->mainvramsize.x || py0 >= ctrl->mainvramsize.y || px1 < 0 || py1 < 0){
 		return;
 	}
 	if(px0 < 0){
@@ -425,17 +453,17 @@ void Sheet_Refresh_08from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 	if(py0 < 0){
 		py0 = 0;
 	}
-	if(px1 >= sheetctrl.mainvramsize.x){
-		px1 = sheetctrl.mainvramsize.x - 1;
+	if(px1 >= ctrl->mainvramsize.x){
+		px1 = ctrl->mainvramsize.x - 1;
 	}
-	if(py1 >= sheetctrl.mainvramsize.y){
-		py1 = sheetctrl.mainvramsize.y - 1;
+	if(py1 >= ctrl->mainvramsize.y){
+		py1 = ctrl->mainvramsize.y - 1;
 	}
 
 	for(y = py0; y <= py1; y++){
 		for(x = px0; x <= px1; x++){
-			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == (uint)sheet){
-				((uchar *)sheetctrl.mainvram)[(y * sheetctrl.mainvramsize.x) + x] = RGB_32_To_08(((uint *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)]);
+			if(ctrl->map[(y * ctrl->mainvramsize.x) + x] == (uint)sheet){
+				((uchar *)ctrl->mainvram)[(y * ctrl->mainvramsize.x) + x] = RGB_32_To_08(((uint *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)]);
 			}
 		}
 	}
@@ -445,13 +473,15 @@ void Sheet_Refresh_08from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 void Sheet_Refresh_16from16(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 {
 	int x, y;
+	UI_Sheet_Control *ctrl;
 
+	ctrl = sheet->myctrl;
 	px0 = px0 + sheet->position.x;
 	py0 = py0 + sheet->position.y;
 	px1 = px1 + sheet->position.x;
 	py1 = py1 + sheet->position.y;
 
-	if(px0 >= sheetctrl.mainvramsize.x || py0 >= sheetctrl.mainvramsize.y || px1 < 0 || py1 < 0){
+	if(px0 >= ctrl->mainvramsize.x || py0 >= ctrl->mainvramsize.y || px1 < 0 || py1 < 0){
 		return;
 	}
 	if(px0 < 0){
@@ -460,17 +490,17 @@ void Sheet_Refresh_16from16(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 	if(py0 < 0){
 		py0 = 0;
 	}
-	if(px1 >= sheetctrl.mainvramsize.x){
-		px1 = sheetctrl.mainvramsize.x - 1;
+	if(px1 >= ctrl->mainvramsize.x){
+		px1 = ctrl->mainvramsize.x - 1;
 	}
-	if(py1 >= sheetctrl.mainvramsize.y){
-		py1 = sheetctrl.mainvramsize.y - 1;
+	if(py1 >= ctrl->mainvramsize.y){
+		py1 = ctrl->mainvramsize.y - 1;
 	}
 
 	for(y = py0; y <= py1; y++){
 		for(x = px0; x <= px1; x++){
-			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == (uint)sheet){
-				((ushort *)sheetctrl.mainvram)[(y * sheetctrl.mainvramsize.x) + x] = ((ushort *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)];
+			if(ctrl->map[(y * ctrl->mainvramsize.x) + x] == (uint)sheet){
+				((ushort *)ctrl->mainvram)[(y * ctrl->mainvramsize.x) + x] = ((ushort *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)];
 			}
 		}
 	}
@@ -480,13 +510,15 @@ void Sheet_Refresh_16from16(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 void Sheet_Refresh_08from08(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 {
 	int x, y;
+	UI_Sheet_Control *ctrl;
 
+	ctrl = sheet->myctrl;
 	px0 = px0 + sheet->position.x;
 	py0 = py0 + sheet->position.y;
 	px1 = px1 + sheet->position.x;
 	py1 = py1 + sheet->position.y;
 
-	if(px0 >= sheetctrl.mainvramsize.x || py0 >= sheetctrl.mainvramsize.y || px1 < 0 || py1 < 0){
+	if(px0 >= ctrl->mainvramsize.x || py0 >= ctrl->mainvramsize.y || px1 < 0 || py1 < 0){
 		return;
 	}
 	if(px0 < 0){
@@ -495,17 +527,17 @@ void Sheet_Refresh_08from08(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 	if(py0 < 0){
 		py0 = 0;
 	}
-	if(px1 >= sheetctrl.mainvramsize.x){
-		px1 = sheetctrl.mainvramsize.x - 1;
+	if(px1 >= ctrl->mainvramsize.x){
+		px1 = ctrl->mainvramsize.x - 1;
 	}
-	if(py1 >= sheetctrl.mainvramsize.y){
-		py1 = sheetctrl.mainvramsize.y - 1;
+	if(py1 >= ctrl->mainvramsize.y){
+		py1 = ctrl->mainvramsize.y - 1;
 	}
 
 	for(y = py0; y <= py1; y++){
 		for(x = px0; x <= px1; x++){
-			if(sheetctrl.map[(y * sheetctrl.mainvramsize.x) + x] == (uint)sheet){
-				((uchar *)sheetctrl.mainvram)[(y * sheetctrl.mainvramsize.x) + x] = ((uchar *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)];
+			if(ctrl->map[(y * ctrl->mainvramsize.x) + x] == (uint)sheet){
+				((uchar *)ctrl->mainvram)[(y * ctrl->mainvramsize.x) + x] = ((uchar *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)];
 			}
 		}
 	}
@@ -561,4 +593,15 @@ void Sheet_Draw_Point(UI_Sheet *sheet, uint c, uint x, uint y)
 	}
 	sheet->Refresh(sheet, x, y, x, y);
 	return;
+}
+
+void System_Sheet_Initialise(void *vram, uint xsize, uint ysize, uint bpp)
+{
+	Sheet_Initialise(&sys_sheet_ctrl, &sys_mem_ctrl, vram, xsize, ysize, bpp);
+	return;
+}
+
+UI_Sheet *System_Sheet_Get(uint xsize, uint ysize, uint bpp, uint invcol)
+{
+	return Sheet_Get(&sys_sheet_ctrl, xsize, ysize, bpp, invcol);
 }

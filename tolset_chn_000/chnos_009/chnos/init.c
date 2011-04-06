@@ -22,7 +22,7 @@ void Initialise_System(DATA_FIFO *fifo, DATA_FIFO *keycmd, uint *keycmd_wait, UI
 	Initialise_Keyboard(fifo, keycmd, DATA_BYTE, boot->leds, keycmd_wait);
 	Initialise_Mouse(fifo, DATA_BYTE * 2, decode);
 	Initialise_Graphic(vesa->BitsPerPixel);
-	Initialise_Sheet(vesa->PhysBasePtr, boot->scrnx, boot->scrny, vesa->BitsPerPixel);
+	System_Sheet_Initialise(vesa->PhysBasePtr, boot->scrnx, boot->scrny, vesa->BitsPerPixel);
 
 	IO_Store_EFlags(eflags);
 	return;

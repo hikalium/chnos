@@ -1,7 +1,7 @@
 
 #include "core.h"
 
-extern UI_Sheet_Control sheetctrl;
+extern UI_Sheet_Control sys_sheet_ctrl;
 extern IO_MemoryControl sys_mem_ctrl;
 
 void CHNMain(void)
@@ -26,13 +26,13 @@ void CHNMain(void)
 
 	IO_STI();
 
-	desktop = Sheet_Get(boot->scrnx, boot->scrny, 0, 0);
+	desktop = System_Sheet_Get(boot->scrnx, boot->scrny, 0, 0);
 	Sheet_Show(desktop, 0, 0, 0);
 	Sheet_Draw_Fill_Rectangle(desktop, 0x66FF66, 0, 0, desktop->size.x - 1, desktop->size.y - 1);
 
-	InputBox_Initialise(&console, 8, 16, boot->scrnx - 16, boot->scrny >> 1, 1024, 0xFFFFFF, 0xc6c6c6, 1);
+	InputBox_Initialise(&sys_sheet_ctrl, &sys_mem_ctrl, &console, 8, 16, boot->scrnx - 16, boot->scrny >> 1, 1024, 0xFFFFFF, 0xc6c6c6, 1);
 
-	taskbar = Sheet_Get(boot->scrnx, 32, 0, 0);
+	taskbar = System_Sheet_Get(boot->scrnx, 32, 0, 0);
 	Sheet_Show(taskbar, 0, boot->scrny - 32, 2);
 	Sheet_Draw_Fill_Rectangle(taskbar, 0x6666FF, 0, 0, taskbar->size.x - 1, taskbar->size.y - 1);
 	Sheet_Draw_Put_String(taskbar, 0, 0, 0xFFFFFF, "Taskbar");
@@ -85,7 +85,7 @@ void CHNMain(void)
 	Timer_Set(c_timer, 50, interval);
 	Timer_Run(c_timer);
 
-	testsheet = Sheet_Get(100, 100, 32, 0);
+	testsheet = System_Sheet_Get(100, 100, 32, 0);
 	for(y = 0; y < 100; y++){
 		for(x = 0; x < 100; x++){
 			((uint *)testsheet->vram)[100 * y + x] = 1643 * y + 1024 * x + y;
@@ -94,7 +94,7 @@ void CHNMain(void)
 	Sheet_Show(testsheet, 200, 200, 3);
 	Sheet_Draw_Put_String(testsheet, 0, 0, 0xFFFFFF, "TestSheet");
 
-	testsheet2 = Sheet_Get(100, 100, 32, 0);
+	testsheet2 = System_Sheet_Get(100, 100, 32, 0);
 	for(y = 0; y < 100; y++){
 		for(x = 0; x < 100; x++){
 			((uint *)testsheet2->vram)[100 * y + x] = (653 * y + 242 * x + y) * 1024;
