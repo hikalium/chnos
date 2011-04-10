@@ -463,7 +463,7 @@ void Sheet_Refresh_08from32(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 	for(y = py0; y <= py1; y++){
 		for(x = px0; x <= px1; x++){
 			if(ctrl->map[(y * ctrl->mainvramsize.x) + x] == (uint)sheet){
-				((uchar *)ctrl->mainvram)[(y * ctrl->mainvramsize.x) + x] = RGB_32_To_08(((uint *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)]);
+				((uchar *)ctrl->mainvram)[(y * ctrl->mainvramsize.x) + x] = RGB_32_To_08_xy(((uint *)sheet->vram)[((y - sheet->position.y) * sheet->size.x) + (x - sheet->position.x)], x, y);
 			}
 		}
 	}
@@ -604,4 +604,12 @@ void System_Sheet_Initialise(void *vram, uint xsize, uint ysize, uint bpp)
 UI_Sheet *System_Sheet_Get(uint xsize, uint ysize, uint bpp, uint invcol)
 {
 	return Sheet_Get(&sys_sheet_ctrl, xsize, ysize, bpp, invcol);
+}
+
+UI_Sheet *Sheet_Get_From_Position(UI_Sheet_Control *ctrl, int x, int y)
+{
+	if(x < 0 || y < 0 || x > ctrl->mainvramsize.x || y > ctrl->mainvramsize.y){
+		return 0;
+	}
+	return (UI_Sheet *)ctrl->map[(y * ctrl->mainvramsize.x) + x];
 }

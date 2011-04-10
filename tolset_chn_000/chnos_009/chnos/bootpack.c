@@ -16,9 +16,12 @@ void CHNMain(void)
 	uint i, j, x, y;
 	uint cpuidbuf[5];	//EAX-EBX-EDX-ECX-0x00000000
 	UI_Timer *c_timer;
-	UI_Sheet *testsheet, *testsheet2, *taskbar, *desktop;
+	UI_Sheet *testsheet, *testsheet2, *taskbar, *desktop, *focus;
 	UI_MouseInfo mdecode;
 	UI_MouseCursor mouse_cursor;
+	DATA_Position2D focus_moveorg;
+
+	focus = (UI_Sheet *)0xFFFFFFFF;
 
 	IO_CLI();
 
@@ -85,13 +88,13 @@ void CHNMain(void)
 	Timer_Set(c_timer, 50, interval);
 	Timer_Run(c_timer);
 
-	testsheet = System_Sheet_Get(100, 100, 32, 0);
-	for(y = 0; y < 100; y++){
-		for(x = 0; x < 100; x++){
-			((uint *)testsheet->vram)[100 * y + x] = 1643 * y + 1024 * x + y;
+	testsheet = System_Sheet_Get(256, 256, 32, 0);
+	for(y = 0; y < 256; y++){
+		for(x = 0; x < 256; x++){
+			((uint *)testsheet->vram)[256 * y + x] =  (y << 16) + (x << 8);
 		}
 	}
-	Sheet_Show(testsheet, 200, 200, 3);
+	Sheet_Show(testsheet, 10, 10, 3);
 	Sheet_Draw_Put_String(testsheet, 0, 0, 0xFFFFFF, "TestSheet");
 
 	testsheet2 = System_Sheet_Get(100, 100, 32, 0);
@@ -116,6 +119,11 @@ void CHNMain(void)
 		}
 		IO_CLI();
 		if(FIFO32_Status(&fifo) == 0){
+			if(focus != 0 && focus != (UI_Sheet *)0xFFFFFFFF){
+				Sheet_Slide(focus, focus->position.x + (mouse_cursor.position.x - focus_moveorg.x), focus->position.y + (mouse_cursor.position.y - focus_moveorg.y));
+				focus_moveorg.x = mouse_cursor.position.x;
+				focus_moveorg.y = mouse_cursor.position.y;
+			}
 			IO_STIHLT();
 		} else{
 			i = FIFO32_Get(&fifo);
@@ -147,6 +155,16 @@ void CHNMain(void)
 					sprintf(s, "Mouse Type:0x%02X Button:lcr (%04d, %04d)", mdecode.type, mouse_cursor.position.x, mouse_cursor.position.y);
 					if((mdecode.btn & 0x01) != 0){
 						s[23] = 'L';
+						if(focus == (UI_Sheet *)0xFFFFFFFF){
+							focus = Sheet_Get_From_Position(&sys_sheet_ctrl, mouse_cursor.position.x, mouse_cursor.position.y);
+							focus_moveorg.x = mouse_cursor.position.x;
+							focus_moveorg.y = mouse_cursor.position.y;
+							if(focus == desktop || focus == taskbar){
+								focus = 0;
+							}
+						}
+					} else{
+						focus = (UI_Sheet *)0xFFFFFFFF;
 					}
 					if((mdecode.btn & 0x02) != 0){
 						s[25] = 'R';

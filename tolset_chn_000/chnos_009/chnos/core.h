@@ -237,6 +237,7 @@ void Draw_Slide_Line_32(void *vram, uint xsize, uint ysize, uint vxsize, uint px
 /*graphic.c*/
 void Initialise_Graphic(uint bpp);
 uchar RGB_32_To_08(uint c32);
+uchar RGB_32_To_08_xy(uint c32, int x, int y);
 ushort RGB_32_To_16(uint c32);
 extern void (*Draw_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
 extern void (*Draw_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
@@ -329,6 +330,7 @@ void Sheet_Draw_Fill_Rectangle(UI_Sheet *sheet, uint c, uint x0, uint y0, uint x
 void Sheet_Draw_Point(UI_Sheet *sheet, uint c, uint x, uint y);
 void System_Sheet_Initialise(void *vram, uint xsize, uint ysize, uint bpp);
 UI_Sheet *System_Sheet_Get(uint xsize, uint ysize, uint bpp, uint invcol);
+UI_Sheet *Sheet_Get_From_Position(UI_Sheet_Control *ctrl, int x, int y);
 
 /*timer.c タイマー関連*/
 void Initialise_ProgrammableIntervalTimer(void);
