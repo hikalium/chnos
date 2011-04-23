@@ -119,3 +119,7 @@ void Keyboard_Controller_Wait_SendReady(void)
 	return;
 }
 
+uint Keyboard_Get_KeyShift(void)
+{
+	return key_shift;
+}

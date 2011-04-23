@@ -16,10 +16,11 @@ void CHNMain(void)
 	uint i, j, x, y;
 	uint cpuidbuf[5];	//EAX-EBX-EDX-ECX-0x00000000
 	UI_Timer *c_timer;
-	UI_Sheet *testsheet, *testsheet2, *taskbar, *desktop, *focus;
+	UI_Sheet *testsheet, *testsheet2, *taskbar, *desktop, *focus, *core;
 	UI_MouseInfo mdecode;
 	UI_MouseCursor mouse_cursor;
 	DATA_Position2D focus_moveorg;
+	bool coremode = false;
 
 	focus = (UI_Sheet *)0xFFFFFFFF;
 
@@ -29,14 +30,21 @@ void CHNMain(void)
 
 	IO_STI();
 
+	Mouse_Make_MouseCursor(&mouse_cursor, 0, 0, boot->scrnx - 1, boot->scrny - 1, System_Sheet_Get_Top_Of_Height());
+	Mouse_Move_Absolute(&mouse_cursor, boot->scrnx >> 1, boot->scrny >> 1);
+
+	core = System_Sheet_Get(boot->scrnx, boot->scrny, 0, 0);
+	Sheet_Show(core, 0, 0, System_Sheet_Get_Top_Of_Height());
+	Sheet_Draw_Fill_Rectangle(core, 0x333333, 0, 0, core->size.x - 1, core->size.y - 1);
+
 	desktop = System_Sheet_Get(boot->scrnx, boot->scrny, 0, 0);
-	Sheet_Show(desktop, 0, 0, 0);
+	Sheet_Show(desktop, 0, 0, System_Sheet_Get_Top_Of_Height());
 	Sheet_Draw_Fill_Rectangle(desktop, 0x66FF66, 0, 0, desktop->size.x - 1, desktop->size.y - 1);
 
-	InputBox_Initialise(&sys_sheet_ctrl, &sys_mem_ctrl, &console, 8, 16, boot->scrnx - 16, boot->scrny >> 1, 1024, 0xFFFFFF, 0xc6c6c6, 1);
+	InputBox_Initialise(&sys_sheet_ctrl, &sys_mem_ctrl, &console, 8, 16, boot->scrnx - 16, boot->scrny >> 1, 1024, 0xFFFFFF, 0xc6c6c6, System_Sheet_Get_Top_Of_Height());
 
 	taskbar = System_Sheet_Get(boot->scrnx, 32, 0, 0);
-	Sheet_Show(taskbar, 0, boot->scrny - 32, 2);
+	Sheet_Show(taskbar, 0, boot->scrny - 32, System_Sheet_Get_Top_Of_Height());
 	Sheet_Draw_Fill_Rectangle(taskbar, 0x6666FF, 0, 0, taskbar->size.x - 1, taskbar->size.y - 1);
 	Sheet_Draw_Put_String(taskbar, 0, 0, 0xFFFFFF, "Taskbar");
 
@@ -46,7 +54,7 @@ void CHNMain(void)
 	sprintf(s, "Memory:%dByte:%dMB\n", System_MemoryControl_FullSize(), System_MemoryControl_FullSize() >> 20);
 	InputBox_Put_String(&console, s);
 
-	sprintf(s, "MemoryControl:[0x%08X]\n", sys_mem_ctrl.next);
+	sprintf(s, "MemoryControl:[0x%08X] SheetControl:[0x%08X] \n", sys_mem_ctrl.next, &sys_sheet_ctrl.base);
 	InputBox_Put_String(&console, s);
 
 	sprintf(s, "Free:%dByte:%dMB\n", System_MemoryControl_FreeSize(), System_MemoryControl_FreeSize() >> 20);
@@ -94,7 +102,7 @@ void CHNMain(void)
 			((uint *)testsheet->vram)[256 * y + x] =  (y << 16) + (x << 8);
 		}
 	}
-	Sheet_Show(testsheet, 10, 10, 3);
+	Sheet_Show(testsheet, 10, 10, System_Sheet_Get_Top_Of_Height());
 	Sheet_Draw_Put_String(testsheet, 0, 0, 0xFFFFFF, "TestSheet");
 
 	testsheet2 = System_Sheet_Get(100, 100, 32, 0);
@@ -103,11 +111,12 @@ void CHNMain(void)
 			((uint *)testsheet2->vram)[100 * y + x] = (653 * y + 242 * x + y) * 1024;
 		}
 	}
-	Sheet_Show(testsheet2, 250, 250, 4);
+	Sheet_Show(testsheet2, 250, 250, System_Sheet_Get_Top_Of_Height());
 	Sheet_Draw_Put_String(testsheet2, 0, 0, 0xFFFFFF, "TestSheet2");
 
-	Mouse_Make_MouseCursor(&mouse_cursor, 0, 0, boot->scrnx - 1, boot->scrny - 1, 6);
-	Mouse_Move_Absolute(&mouse_cursor, boot->scrnx >> 1, boot->scrny >> 1);
+	Sheet_Remove(testsheet2);
+
+	Sheet_Show(testsheet2, 250, 250, System_Sheet_Get_Top_Of_Height());
 
 	InputBox_NewLine(&console);
 	InputBox_Reset_Input_Buffer(&console);
@@ -134,18 +143,28 @@ void CHNMain(void)
 			} else if(DATA_BYTE <= i && i < (DATA_BYTE * 2)){
 				Keyboard_Decode(&kinfo, i - DATA_BYTE);
 				if(kinfo.make){
-					if(kinfo.c == '\n'){
-						InputBox_NewLine_No_Prompt(&console);
-						sprintf(s, "Count=%d\n", console.input_count);
-						InputBox_Put_String(&console, console.input_buf);
-						InputBox_NewLine_No_Prompt(&console);
-						InputBox_Put_String(&console, s);
-						sprintf(s, "TimerTick=%u\n", Timer_Get_Tick());
-						InputBox_Put_String(&console, s);
-						InputBox_Reset_Input_Buffer(&console);
-						InputBox_NewLine(&console);
+					if(kinfo.c != 0){
+						if(kinfo.c == '\n'){
+							InputBox_NewLine_No_Prompt(&console);
+							sprintf(s, "Count=%d\n", console.input_count);
+							InputBox_Put_String(&console, console.input_buf);
+							InputBox_NewLine_No_Prompt(&console);
+							InputBox_Put_String(&console, s);
+							sprintf(s, "TimerTick=%u\n", Timer_Get_Tick());
+							InputBox_Put_String(&console, s);
+							InputBox_Reset_Input_Buffer(&console);
+							InputBox_NewLine(&console);
+						} else{
+							InputBox_Put_Character(&console, kinfo.c);
+						}
 					} else{
-						InputBox_Put_Character(&console, kinfo.c);
+						if(Keyboard_Get_KeyShift() != 0 && kinfo.keycode == 0x44){	//Shift + F10
+							if(coremode){
+								coremode = false;
+							} else{
+								coremode = true;
+							}
+						}
 					}
 				}
 			} else if((DATA_BYTE * 2) <= i && i < (DATA_BYTE * 3)){
@@ -161,6 +180,8 @@ void CHNMain(void)
 							focus_moveorg.y = mouse_cursor.position.y;
 							if(focus == desktop || focus == taskbar){
 								focus = 0;
+							} else{
+								Sheet_UpDown(focus, System_Sheet_Get_Top_Of_Height());
 							}
 						}
 					} else{

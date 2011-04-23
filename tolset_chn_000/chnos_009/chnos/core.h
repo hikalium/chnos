@@ -124,16 +124,6 @@ struct TIMER_CONTROL {
 	struct TIMER *next;
 };
 
-struct SHEET_CONTROL {
-	void *mainvram;
-	uint *map;
-	struct POSITION_2D mainvramsize;
-	uint mainvrambpp;
-	struct SHEET *next;
-	uint sheets;
-	struct MEMORY_CONTROL *memctrl;
-};
-
 struct SHEET {
 	void *vram;
 	struct POSITION_2D position;
@@ -146,6 +136,16 @@ struct SHEET {
 	void (*WriteMap)(struct SHEET *sheet, int x0, int y0, int x1, int y1);
 	bool visible;
 	struct SHEET_CONTROL *myctrl;
+};
+
+struct SHEET_CONTROL {
+	void *mainvram;
+	uint *map;
+	struct POSITION_2D mainvramsize;
+	uint mainvrambpp;
+	struct SHEET base;
+	uint sheets;
+	struct MEMORY_CONTROL *memctrl;
 };
 
 struct UI_INPUTBOX {
@@ -270,6 +270,7 @@ void InterruptHandler21(int *esp);
 void Keyboard_Decode(UI_KeyInfo *info, uint data);
 void Keyboard_KeyLock(uint led);
 void Keyboard_Controller_Wait_SendReady(void);
+uint Keyboard_Get_KeyShift(void);
 
 /*memory.c メモリ関連*/
 uint Memory_Test(uint start, uint end);
@@ -313,6 +314,8 @@ void Sheet_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, vo
 UI_Sheet *Sheet_Get(UI_Sheet_Control *ctrl, uint xsize, uint ysize, uint bpp, uint invcol);
 uint Sheet_Show(UI_Sheet *sheet, int px, int py, uint height);
 void Sheet_Slide(UI_Sheet *sheet, int px, int py);
+uint Sheet_UpDown(UI_Sheet *sheet, uint height);
+void Sheet_Remove(UI_Sheet *sheet);
 void Sheet_Refresh_Map(UI_Sheet *sheet, int x0, int y0, int x1, int y1);
 void Sheet_Write_Map_32(UI_Sheet *sheet, int x0, int y0, int x1, int y1);
 void Sheet_Write_Map_16(UI_Sheet *sheet, int x0, int y0, int x1, int y1);
@@ -331,6 +334,8 @@ void Sheet_Draw_Point(UI_Sheet *sheet, uint c, uint x, uint y);
 void System_Sheet_Initialise(void *vram, uint xsize, uint ysize, uint bpp);
 UI_Sheet *System_Sheet_Get(uint xsize, uint ysize, uint bpp, uint invcol);
 UI_Sheet *Sheet_Get_From_Position(UI_Sheet_Control *ctrl, int x, int y);
+uint Sheet_Get_Top_Of_Height(UI_Sheet_Control *ctrl);
+uint System_Sheet_Get_Top_Of_Height(void);
 
 /*timer.c タイマー関連*/
 void Initialise_ProgrammableIntervalTimer(void);

@@ -24,7 +24,21 @@ void Sheet_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, vo
 	sheetctrl->mainvramsize.x = xsize;
 	sheetctrl->mainvramsize.y = ysize;
 	sheetctrl->mainvrambpp = bpp;
-	sheetctrl->next = 0;
+
+	sheetctrl->base.vram = 0;
+	sheetctrl->base.position.x = 0;
+	sheetctrl->base.position.y = 0;
+	sheetctrl->base.size.x = 0;
+	sheetctrl->base.size.y = 0;
+	sheetctrl->base.bpp = 0;
+	sheetctrl->base.invcol = 0;
+	sheetctrl->base.next = 0;
+	sheetctrl->base.before = 0;
+	sheetctrl->base.Refresh = 0;
+	sheetctrl->base.WriteMap = 0;
+	sheetctrl->base.visible = 0;
+	sheetctrl->base.myctrl = sheetctrl;
+
 	sheetctrl->sheets = 0;
 	return;
 }
@@ -68,23 +82,30 @@ UI_Sheet *Sheet_Get(UI_Sheet_Control *ctrl, uint xsize, uint ysize, uint bpp, ui
 uint Sheet_Show(UI_Sheet *sheet, int px, int py, uint height)
 {
 	uint i;
-	UI_Sheet **now;
+	UI_Sheet *now;
 	UI_Sheet_Control *ctrl;
+	uint eflags;
+
+	eflags = IO_Load_EFlags();
+	IO_CLI();
 
 	ctrl = sheet->myctrl;
 
-	now = &ctrl->next;
+	now = &ctrl->base;
 	for(i = 0; i <= height; i++){
-		if((*now) == 0){
+		if(now->next == 0){
 			break;
 		}
 		if(i == height){
 			break;
 		}
-		now = &(*now)->next;
+		now = now->next;
 	}
-	sheet->next = *now;
-	*now = sheet;
+	now->next->before = sheet;
+	sheet->next = now->next;
+	sheet->before = now;
+	now->next = sheet;
+
 	ctrl->sheets++;
 	sheet->position.x = px;
 	sheet->position.y = py;
@@ -115,6 +136,7 @@ uint Sheet_Show(UI_Sheet *sheet, int px, int py, uint height)
 			sheet->Refresh = Sheet_Refresh_08from08;
 		}
 	}
+	IO_Store_EFlags(eflags);
 
 	Sheet_Refresh_Map(sheet, sheet->position.x, sheet->position.y, sheet->position.x + sheet->size.x - 1, sheet->position.y + sheet->size.y - 1);
 	sheet->Refresh(sheet, 0, 0, sheet->size.x - 1, sheet->size.y - 1);
@@ -183,7 +205,50 @@ void Sheet_Slide(UI_Sheet *sheet, int px, int py)
 	sheet->position.y = py;
 	sheet->visible = true;
 	Sheet_Refresh_Map(sheet, sheet->position.x, sheet->position.y, sheet->position.x + sheet->size.x - 1, sheet->position.y + sheet->size.y - 1);
-	Sheet_Refresh_All(ctrl->next, sheet->next, target0.x, target0.y, target1.x, target1.y);
+	Sheet_Refresh_All(ctrl->base.next, sheet->next, target0.x, target0.y, target1.x, target1.y);
+	return;
+}
+
+uint Sheet_UpDown(UI_Sheet *sheet, uint height)
+{
+	uint i;
+	UI_Sheet *now;
+
+	now = sheet;
+	for(i = 0; ; i++){
+		if(now->before->before == 0){
+			break;
+		}
+		now = now->before;
+	}
+	if(i == height - 1){
+		return i;
+	}
+	Sheet_Remove(sheet);
+	return Sheet_Show(sheet, sheet->position.x, sheet->position.y, height - 1);
+}
+
+void Sheet_Remove(UI_Sheet *sheet)
+{
+	UI_Sheet_Control *ctrl;
+	uint eflags;
+
+	eflags = IO_Load_EFlags();
+	IO_CLI();
+
+	ctrl = sheet->myctrl;
+
+	ctrl->sheets--;
+	ctrl = sheet->myctrl;
+	sheet->visible = false;
+	Sheet_Refresh_Map(sheet, sheet->position.x, sheet->position.y, sheet->position.x + sheet->size.x - 1, sheet->position.y + sheet->size.y - 1);
+	sheet->before->next = sheet->next;
+	sheet->next->before = sheet->before;
+	Sheet_Refresh_All(ctrl->base.next, sheet->next, sheet->position.x, sheet->position.y, sheet->position.x + sheet->size.x - 1, sheet->position.y + sheet->size.y - 1);
+	sheet->next = 0;
+	sheet->before = 0;
+
+	IO_Store_EFlags(eflags);
 	return;
 }
 
@@ -211,7 +276,7 @@ void Sheet_Refresh_Map(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
 		y1 = ctrl->mainvramsize.y - 1;
 	}
 
-	before = &ctrl->next;
+	before = &ctrl->base.next;
 	for(i = 0; i < ctrl->sheets; i++){
 		for(y = y0; y <= y1; y++){
 			for(x = x0; x <= x1; x++){
@@ -222,9 +287,6 @@ void Sheet_Refresh_Map(UI_Sheet *sheet, int x0, int y0, int x1, int y1)
 		}
 		if(*before == sheet){
 			break;
-		}
-		if((*before)->next != 0){
-			(*before)->next->before = *before;
 		}
 		before = &(*before)->next;
 	}
@@ -613,3 +675,17 @@ UI_Sheet *Sheet_Get_From_Position(UI_Sheet_Control *ctrl, int x, int y)
 	}
 	return (UI_Sheet *)ctrl->map[(y * ctrl->mainvramsize.x) + x];
 }
+
+uint Sheet_Get_Top_Of_Height(UI_Sheet_Control *ctrl)
+{
+	if(ctrl->sheets < 1){
+		return 0;
+	}
+	return ctrl->sheets - 1;
+}
+
+uint System_Sheet_Get_Top_Of_Height(void)
+{
+	return Sheet_Get_Top_Of_Height(&sys_sheet_ctrl);
+}
+
