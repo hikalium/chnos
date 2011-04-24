@@ -615,6 +615,14 @@ void Sheet_Draw_Put_String(UI_Sheet *sheet, uint x, uint y, uint c, const uchar 
 {
 	uint i;
 
+	for(i = 0; s[i] != 0x00; i++){
+
+	}
+
+	if(y > sheet->size.y - 16){
+		return;
+	}
+
 	if(sheet->bpp == 32){
 		Draw_Put_String_32(sheet->vram, sheet->size.x, x, y, c, s);
 	} else if(sheet->bpp == 16){
@@ -622,15 +630,43 @@ void Sheet_Draw_Put_String(UI_Sheet *sheet, uint x, uint y, uint c, const uchar 
 	} else if(sheet->bpp == 8){
 		Draw_Put_String_08(sheet->vram, sheet->size.x, x, y, c, s);
 	}
+
+	sheet->Refresh(sheet, x, y, x + (i * 8), y + 16);
+	return;
+}
+
+void Sheet_Draw_Put_String_With_BackColor(UI_Sheet *sheet, uint x, uint y, uint c, uint bc, const uchar *s)
+{
+	uint i;
+
 	for(i = 0; s[i] != 0x00; i++){
 
 	}
+
+	Sheet_Draw_Fill_Rectangle(sheet, bc, x, y, x + (i * 8) - 1,  y + 16 - 1);
+
+	if(y > sheet->size.y - 16){
+		return;
+	}
+
+	if(sheet->bpp == 32){
+		Draw_Put_String_32(sheet->vram, sheet->size.x, x, y, c, s);
+	} else if(sheet->bpp == 16){
+		Draw_Put_String_16(sheet->vram, sheet->size.x, x, y, c, s);
+	} else if(sheet->bpp == 8){
+		Draw_Put_String_08(sheet->vram, sheet->size.x, x, y, c, s);
+	}
+
 	sheet->Refresh(sheet, x, y, x + (i * 8), y + 16);
 	return;
 }
 
 void Sheet_Draw_Fill_Rectangle(UI_Sheet *sheet, uint c, uint x0, uint y0, uint x1, uint y1)
 {
+	if(x1 >= sheet->size.x || y1 >= sheet->size.y){
+		return;
+	}
+
 	if(sheet->bpp == 32){
 		Draw_Fill_Rectangle_32(sheet->vram, sheet->size.x, c, x0, y0, x1, y1);
 	} else if(sheet->bpp == 16){

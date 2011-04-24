@@ -25,6 +25,9 @@ void Draw_Put_String_08(void *vram, uint xsize, uint x, uint y, uint c, const uc
 {
 	c = RGB_32_To_08(c);
 	for(; *s != 0x00; s++){
+		if(x > xsize - 8){
+			break;
+		}
 		Draw_Put_Font_08(vram, xsize, x, y, c, hankaku + *s * 16);
 		x += 8;
 	}

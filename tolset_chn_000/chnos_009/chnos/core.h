@@ -17,7 +17,9 @@ extern unsigned int rand_seed;
 #include "core_set.h"
 
 /*new object types*/
-typedef enum _bool { false, true} bool;
+typedef unsigned char bool;
+#define false	0;
+#define true	1;
 typedef enum _state_alloc { none, initialized, allocated, configured, inuse} state_alloc;
 typedef enum _col_text { black, blue, green, skyblue, red, purple, brown, white} col_text;
 typedef enum _timer_mode { once, interval} timer_mode;
@@ -178,6 +180,54 @@ struct UI_MOUSE_CURSOR {
 	mcursor_state state;
 };
 
+struct DATA_CPU_IDENTITY {
+	bool enable;
+	uint max;
+	uchar vendor[13];
+	bool ext_enable;
+	uint ext_max;
+	uchar brand_string[48];
+	bool FPU;
+	bool VME;
+	bool DE;
+	bool PSE;
+	bool TSC;
+	bool MSR;
+	bool PAE;
+	bool MCE;
+	bool CX8;
+	bool APIC;
+	bool SEP;
+	bool MTRR;
+	bool PGE;
+	bool MCA;
+	bool CMOV;
+	bool PAT;
+	bool PSE36;
+	bool PSN;
+	bool CLFSH;
+	bool DS;
+	bool ACPI;
+	bool MMX;
+	bool FXSR;
+	bool SSE;
+	bool SSE2;
+	bool SS;
+	bool HTT;
+	bool TM;
+	bool PBE;
+
+	bool SSE3;
+	bool MONITOR;
+	bool DSCPL;
+	bool EST;
+	bool TM2;
+	bool CID;
+	bool CX16;
+	bool xTPR;
+	
+};
+
 /*typedef structures*/
 typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
 typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
@@ -195,6 +245,7 @@ typedef struct SHEET_CONTROL		UI_Sheet_Control;
 typedef struct SHEET			UI_Sheet;
 typedef struct MOUSE_DECODE		UI_MouseInfo;
 typedef struct UI_MOUSE_CURSOR		UI_MouseCursor;
+typedef struct DATA_CPU_IDENTITY	DATA_CPUID;
 
 /*virtual classes*/
 
@@ -203,6 +254,7 @@ extern uchar hankaku[4096];
 
 /*functions*/
 /*bootpack.c 基幹部分*/
+void CPU_Identify(DATA_CPUID *id);
 
 /*dsctbl.c ディスクリプター・テーブル関連*/
 void Initialise_GlobalDescriptorTable(void);
@@ -263,6 +315,9 @@ void InputBox_Change_Cursor_State(UI_InputBox *box);
 /*intrpt.c 割り込み設定とどこにも属さない割り込みハンドラー*/
 void Initialise_ProgrammableInterruptController(void);
 void InterruptHandler27(int *esp);
+
+/*io.c*/
+uint IO_Read_CMOS(uchar addr);
 
 /*keyboard.c*/
 void Initialise_Keyboard(DATA_FIFO *sendto, DATA_FIFO *keycmd, uint offset, uint leds, int *keycmd_wait);
@@ -329,6 +384,7 @@ void Sheet_Refresh_16from16(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 void Sheet_Refresh_08from08(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 void Sheet_Refresh_Invalid(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 void Sheet_Draw_Put_String(UI_Sheet *sheet, uint x, uint y, uint c, const uchar *s);
+void Sheet_Draw_Put_String_With_BackColor(UI_Sheet *sheet, uint x, uint y, uint c, uint bc, const uchar *s);
 void Sheet_Draw_Fill_Rectangle(UI_Sheet *sheet, uint c, uint x0, uint y0, uint x1, uint y1);
 void Sheet_Draw_Point(UI_Sheet *sheet, uint c, uint x, uint y);
 void System_Sheet_Initialise(void *vram, uint xsize, uint ysize, uint bpp);
@@ -418,6 +474,7 @@ void CPUID(void *addr, uint id);	//addr番地のuint[4]に、CPUの識別情報id番をEAX・
 void CPUID2(void *addr, uint id);	//addr番地のuint[4]に、CPUの識別情報id番をEAX・EBX・ECX・EDXの順番で格納する。
 					//上記二つの関数は、EFLAGS内のIDフラグ(ビット21)が変更可能な場合のみ実行できる。
 void Read_TSC(uint *addr);		//addr番地のuint[2]に、マシン固有レジスタ(MSR)内にある、タイム・スタンプ・カウンタの上位・下位それぞれ32ビットを読み込む。
+					//この関数は、cpuidのTSCビットが有効でなければ使用できない。
 uint Memory_Test_Sub(uint start, uint end);
 void INT_3(void);
 
