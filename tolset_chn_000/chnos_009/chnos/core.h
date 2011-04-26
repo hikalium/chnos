@@ -254,6 +254,8 @@ extern uchar hankaku[4096];
 
 /*functions*/
 /*bootpack.c 基幹部分*/
+
+/*cpuid.c*/
 void CPU_Identify(DATA_CPUID *id);
 
 /*dsctbl.c ディスクリプター・テーブル関連*/
