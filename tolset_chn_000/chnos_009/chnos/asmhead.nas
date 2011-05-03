@@ -1,43 +1,27 @@
 
 [INSTRSET "i486p"]
-VBEMODE equ             0x0115  ;0x0115
-;Graphic Modes
-;0x0100		640x400  	256
-;0x0101		640x480  	256
-;0x0102		800x600  	16
-;0x0103		800x600  	256
-;0x0104		1024x768  	16
-;0x0105		1024x768  	256
-;0x0106		1280x1024  	16
-;0x0107		1280x1024  	256
-;0x010D		320x200		32768		(1:5:5:5)
-;0x010E		320x200		65536		(0:5:6:5)
-;0x010F		320x200		16777216	(8:8:8:8)
-;0x0110		640x480  	32768		(1:5:5:5)
-;0x0111		640x480  	65536		(0:5:6:5)
-;0x0112		640x480  	16777216	(8:8:8:8)
-;0x0113		800x600  	32768		(1:5:5:5)
-;0x0114		800x600  	65536		(0:5:6:5)
-;0x0115		800x600  	16777216	(8:8:8:8)
-;0x0116		1024x768  	32768		(1:5:5:5)
-;0x0117		1024x768  	65536		(0:5:6:5)
-;0x0118		1024x768  	16777216	(8:8:8:8)
-;0x0119		1280x1024  	32768		(1:5:5:5)
-;0x011A		1280x1024  	65536		(0:5:6:5) 
-;0x011B		1280x1024  	16777216	(8:8:8:8) 
-
-
 BOTPAK  equ             0x00280000
 DSKCAC  equ             0x00100000
 DSKCAC0 equ             0x00008000
 
-; BOOT_INFO
-CYLS    equ             0x0ff0
-LEDS    equ             0x0ff1
-VMODE   equ             0x0ff2
-SCRNX   equ             0x0ff4
-SCRNY   equ             0x0ff6
-VRAM    equ             0x0ff8
+; BOOT_INFO_ADDR
+CYLS    equ             0x0ff0	; uchar
+LEDS    equ             0x0ff1	; uchar
+VMODE   equ             0x0ff2	; uchar
+SCRNX   equ             0x0ff4	; ushort
+SCRNY   equ             0x0ff6	; ushort
+VRAM    equ             0x0ff8	; uchar*
+VESAVER	equ		0x1002	; ushort
+APMVER	equ		0x1004	; ushort
+
+; INFO_ADDR
+ADR_VESA_BIOS_INFO	equ	0x0d00	;0x0d00-0x0dff
+ADR_VESA_MODE_INFO	equ	0x0e00	;0x0e00-0x0eff
+
+XRESOLUTION	equ	0x12
+YRESOLUTION	equ	0x14
+BITSPERPIXEL	equ	0x19
+PHYSBASEPTR	equ	0x28
 
 [BITS 16]
 
@@ -49,436 +33,765 @@ asmhead:
         mov     ds, ax
         mov     es, ax
 
-        call    backc
+	mov	ah, 0x00
+	mov	al, 0x03
+	int	0x10
 
-        lea     esi, [msg001]
-        mov     edi, 0
-        call    printf
+	lea	di, [msg000]
+	call	text_putstr
+	call	text_newline
 
-        call    a20_try_loop
+	call	a20_try_loop
+	call	text_newline
 
-        lea     esi, [msg002]
-        mov     edi, 80*2
-        call    printf
+	call	chk_apm
+	call	text_newline
 
-        call    vbecheck
-        call    keyled
+	call	chk_vesa
+
+	call	set_vesa
+	call	chk_keyled
         call    pmode
 
+halt_loop:
+	hlt
+	jmp	halt_loop
 
-;サブルーチン
+; サブルーチン
 
-halthalt:
-        lea     esi, [msg005]
-        mov     ax, 0xB800
-        mov     es, ax
-        mov     edi, 80*2*2*2*2
-        call    printf
-        call    entkeywait
-        call    shutdown
+chk_keyled:
+	mov	ah, 0x02
+	int	0x16
+	mov	[LEDS], al
+	ret
 
-printf:
-        push    eax
-        mov     ax, 0xB800
-        mov     es, ax
-printf_loop:
-        mov     al, byte [esi]
-        mov     byte [es:edi], al
-        or      al, al
-        jz      printf_end
-        inc     edi
-        mov     byte [es:edi], 0x03
-        inc     esi
-        inc     edi
-        jmp     printf_loop
-printf_end:
-        pop     eax
-        ret
-
-backc:
-        mov     ax,0xb800
-        mov     es,ax
-        mov     di,0
-        mov     ax,word[backcc]
-        mov     cx,0x7ff
-
-paint:
-        mov     word[es:di],ax
-        add     di,2
-        dec     cx
-        jnz     paint
-        ret
-
-A20_TEST_LOOPS          equ     32
-A20_ENABLE_LOOPS        equ     255
-A20_TEST_ADDR           equ     4*0x80
+A20_TEST_LOOPS		equ	32
+A20_ENABLE_LOOPS	equ	255
+A20_TEST_ADDR		equ	4*0x80
 
 
 a20_try_loop:
 a20_none:
-        call    a20_test
-        jnz     a20_done
+	call	a20_test
+	jnz	a20_done
 a20_bios:
-        mov     ax, 0x2401
-
-        pushfd
-        int     0x15
-        popfd
-        call    a20_test
-        jnz     a20_done
+	mov	ax, 0x2401
+	pushfd
+	int	0x15
+	popfd
+	call	a20_test
+	jnz	a20_done
 a20_kbc:
-        call    empty_8042
-        call    a20_test
-        jnz     a20_done
-        mov     al, 0xD1
-        out     0x64, al
-        call    empty_8042
-        mov     al, 0xDF
-        out     0x60, al
-        call    empty_8042
+	call	empty_8042
+	call	a20_test
+	jnz	a20_done
+	mov	al, 0xD1
+	out	0x64, al
+	call	empty_8042
+	mov	al, 0xDF
+	out	0x60, al
+	call	empty_8042
 a20_kbc_wait:
-        xor     cx, cx
+	xor	cx, cx
 a20_kbc_wait_loop:
-        call    a20_test
-        jnz     a20_done
-        loop    a20_kbc_wait_loop
+	call	a20_test
+	jnz	a20_done
+	loop	a20_kbc_wait_loop
 a20_fast:
-        in      al, 0x92
-        or      al, 0x02
+	in	al, 0x92
+	or	al, 0x02
 
-        and     al, 0xFE
-        out     0x92, al
+	and	al, 0xFE
+	out	0x92, al
 a20_fast_wait:
-        xor     cx, cx
+	xor	cx, cx
 a20_fast_wait_loop:
-        call    a20_test
-        jnz     a20_done
-        loop    a20_fast_wait_loop
-        dec     byte [a20_tries]
-        jnz     a20_try_loop
-
+	call	a20_test
+	jnz	a20_done
+	loop	a20_fast_wait_loop
+	dec	byte [a20_tries]
+	jnz	a20_try_loop
 a20_die:
-        lea     esi, [msg003]    
-        mov     edi, 80*2          
-        call    printf
-        jmp     halthalt
+	lea	di, [msg014]
+	call	text_putstr
+	jmp	halt_loop
 
 a20_tries:
-        db      A20_ENABLE_LOOPS
+	db	A20_ENABLE_LOOPS
 
 a20_done:
-        ret
+	lea	di, [msg015]
+	call	text_putstr
+	ret
 
 a20_test:
-        push    cx
-        push    ax
-        xor     cx, cx
-        mov     fs, cx                      
-        dec     cx
-        mov     gs, cx                      
-        mov     cx, A20_TEST_LOOPS
-        mov     ax, word [fs:A20_TEST_ADDR]
-        push    ax
+	push	cx
+	push	ax
+	xor	cx, cx
+	mov	fs, cx
+	dec	cx
+	mov	gs, cx
+	mov	cx, A20_TEST_LOOPS
+	mov	ax, word [fs:A20_TEST_ADDR]
+	push	ax
 a20_test_wait:
-        inc     ax
-        mov     word [fs:A20_TEST_ADDR], ax
-        call    delay
-        cmp     ax, word [gs:A20_TEST_ADDR+0x10]
-        loop    a20_test_wait
+	inc	ax
+	mov	word [fs:A20_TEST_ADDR], ax
+	call	delay
+	cmp	ax, word [gs:A20_TEST_ADDR + 0x10]
+	loop	a20_test_wait
 
-        pop     word [fs:A20_TEST_ADDR]
-        pop     ax
-        pop     cx
-        ret
+	pop	word [fs:A20_TEST_ADDR]
+	pop	ax
+	pop	cx
+	ret
 
 empty_8042:
-        push    ecx
-        mov     ecx, 100000
+	push	ecx
+	mov	ecx, 100000
 
 empty_8042_loop:
-        dec     ecx
-        jz      empty_8042_end_loop
+	dec	ecx
+	jz	empty_8042_end_loop
 
-        call    delay
+	call	delay
 
-        in      al, 0x64
-        test    al, 1           
-        jz      no_output
+	in	al, 0x64
+	test	al, 1			
+	jz	no_output
 
-        call    delay
-;       in      al, 0x60
-        jmp     empty_8042_loop
+	call	delay
+;	in	al, 0x60
+
+	jmp	empty_8042_loop
 
 no_output:
-        test    al, 2
-        jnz     empty_8042_loop
+	test	al, 2
+	jnz	empty_8042_loop
 
 empty_8042_end_loop:
-        pop     ecx
-        ret
+	pop	ecx
+	ret
 
 delay:
-        out     0x80, al
-        ret
+	out	0x80, al
+	ret
 
-getc:
-        mov     ah,0x00
-        int     0x16
-        ret
+set_vesa:	; cxにモード番号を保存 bxに文字数を保存
+	pusha
+set_vesa_start:
+	call	text_newline
+	lea	di, [msg007]
+	call	text_putstr
+	lea	di, [msg008]
+	call	text_putstr
+	lea	di, [msg009]
+	call	text_putstr
+	mov	bx, 0x0000
+	mov	cx, 0x0000
+set_vesa_key_loop:
+	mov	ah, 0x00
+	int	0x16
+	cmp	ah, 0x0e
+	je	set_vesa_key_bs
+	jmp	set_vesa_key_chk
+set_vesa_key_bs:
+	cmp	bx, 0
+	je	set_vesa_key_loop
+	mov	al, 0x08
+	mov	ah, 0x0e
+	int	0x10
+	mov	al, ' '
+	mov	ah, 0x0e
+	int	0x10
+	mov	al, 0x08
+	mov	ah, 0x0e
+	int	0x10
+	dec	bx
+	shr	cx, 4
+	jmp	set_vesa_key_loop
+set_vesa_key_chk:
+	cmp	bx, 4
+	je	set_vesa_key_chk_ent
+	cmp	ah, 0x0b
+	je	set_vesa_key_chk_0
+	cmp	ah, 0x02
+	je	set_vesa_key_chk_1
+	cmp	ah, 0x03
+	je	set_vesa_key_chk_2
+	cmp	ah, 0x04
+	je	set_vesa_key_chk_3
+	cmp	ah, 0x05
+	je	set_vesa_key_chk_4
+	cmp	ah, 0x06
+	je	set_vesa_key_chk_5
+	cmp	ah, 0x07
+	je	set_vesa_key_chk_6
+	cmp	ah, 0x08
+	je	set_vesa_key_chk_7
+	cmp	ah, 0x09
+	je	set_vesa_key_chk_8
+	cmp	ah, 0x0a
+	je	set_vesa_key_chk_9
+	cmp	ah, 0x1e
+	je	set_vesa_key_chk_A
+	cmp	ah, 0x30
+	je	set_vesa_key_chk_B
+	cmp	ah, 0x2e
+	je	set_vesa_key_chk_C
+	cmp	ah, 0x20
+	je	set_vesa_key_chk_D
+	cmp	ah, 0x12
+	je	set_vesa_key_chk_E
+	cmp	ah, 0x21
+	je	set_vesa_key_chk_F
+	jmp	set_vesa_key_loop
+set_vesa_key_chk_0:
+	mov	al, '0'
+	mov	ah, 0x0e
+	int	0x10
+	inc	bx
+	shl	cx, 4
+	add	cx, 0x00
+	jmp	set_vesa_key_loop
+set_vesa_key_chk_1:
+	mov	al, '1'
+	mov	ah, 0x0e
+	int	0x10
+	inc	bx
+	shl	cx, 4
+	add	cx, 0x01
+	jmp	set_vesa_key_loop
+set_vesa_key_chk_2:
+	mov	al, '2'
+	mov	ah, 0x0e
+	int	0x10
+	inc	bx
+	shl	cx, 4
+	add	cx, 0x02
+	jmp	set_vesa_key_loop
+set_vesa_key_chk_3:
+	mov	al, '3'
+	mov	ah, 0x0e
+	int	0x10
+	inc	bx
+	shl	cx, 4
+	add	cx, 0x03
+	jmp	set_vesa_key_loop
+set_vesa_key_chk_4:
+	mov	al, '4'
+	mov	ah, 0x0e
+	int	0x10
+	inc	bx
+	shl	cx, 4
+	add	cx, 0x04
+	jmp	set_vesa_key_loop
+set_vesa_key_chk_5:
+	mov	al, '5'
+	mov	ah, 0x0e
+	int	0x10
+	inc	bx
+	shl	cx, 4
+	add	cx, 0x05
+	jmp	set_vesa_key_loop
+set_vesa_key_chk_6:
+	mov	al, '6'
+	mov	ah, 0x0e
+	int	0x10
+	inc	bx
+	shl	cx, 4
+	add	cx, 0x06
+	jmp	set_vesa_key_loop
+set_vesa_key_chk_7:
+	mov	al, '7'
+	mov	ah, 0x0e
+	int	0x10
+	inc	bx
+	shl	cx, 4
+	add	cx, 0x07
+	jmp	set_vesa_key_loop
+set_vesa_key_chk_8:
+	mov	al, '8'
+	mov	ah, 0x0e
+	int	0x10
+	inc	bx
+	shl	cx, 4
+	add	cx, 0x08
+	jmp	set_vesa_key_loop
+set_vesa_key_chk_9:
+	mov	al, '9'
+	mov	ah, 0x0e
+	int	0x10
+	inc	bx
+	shl	cx, 4
+	add	cx, 0x09
+	jmp	set_vesa_key_loop
+set_vesa_key_chk_A:
+	mov	al, 'A'
+	mov	ah, 0x0e
+	int	0x10
+	inc	bx
+	shl	cx, 4
+	add	cx, 0x0a
+	jmp	set_vesa_key_loop
+set_vesa_key_chk_B:
+	mov	al, 'B'
+	mov	ah, 0x0e
+	int	0x10
+	inc	bx
+	shl	cx, 4
+	add	cx, 0x0b
+	jmp	set_vesa_key_loop
+set_vesa_key_chk_C:
+	mov	al, 'C'
+	mov	ah, 0x0e
+	int	0x10
+	inc	bx
+	shl	cx, 4
+	add	cx, 0x0c
+	jmp	set_vesa_key_loop
+set_vesa_key_chk_D:
+	mov	al, 'D'
+	mov	ah, 0x0e
+	int	0x10
+	inc	bx
+	shl	cx, 4
+	add	cx, 0x0d
+	jmp	set_vesa_key_loop
+set_vesa_key_chk_E:
+	mov	al, 'E'
+	mov	ah, 0x0e
+	int	0x10
+	inc	bx
+	shl	cx, 4
+	add	cx, 0x0e
+	jmp	set_vesa_key_loop
+set_vesa_key_chk_F:
+	mov	al, 'F'
+	mov	ah, 0x0e
+	int	0x10
+	inc	bx
+	shl	cx, 4
+	add	cx, 0x0f
+	jmp	set_vesa_key_loop
+set_vesa_key_chk_ent:
+	cmp	ah, 0x1c
+	jne	set_vesa_key_loop
+	call	text_newline
+	jmp	set_vesa_key_end
+set_vesa_key_end:
+	lea	di, [msg010]
+	call	text_putstr
+	mov	ax, cx
+	call	text_puthex_str_16
+	call	text_newline
 
-vbecheck:
-        lea     esi, [msg007]
-        mov     edi, 80*2*3             
-        call    printf
+	cmp	cx, 0x0000
+	je	set_VGA
 
-        lea     esi, [msg008]
-        mov     edi, 80*2*4
-        call    printf
+	mov	ax, 0x4f01
+	mov	di, ADR_VESA_MODE_INFO
+	int	0x10
+	cmp	al, 0x4f
+	jne	set_vesa_nosup
+	cmp	ah, 0
+	jne	set_vesa_func_err
 
-        lea     esi, [msg009]
-        mov     edi, 80*2*5
-        call    printf
+	lea	di, [msg012]
+	call	text_putstr
 
-        lea     esi, [msg010]
-        mov     edi, 80*2*6
-        call    printf
+	mov	ax, 0x0000
+	mov	al, [ADR_VESA_MODE_INFO + BITSPERPIXEL]
+	call	hex2bcd_16
+	call	text_puthex_str_08_no_0x
 
-        lea     esi, [msg011]
-        mov     edi, 80*2*7
-        call    printf
+	mov	al, '('
+	mov	ah, 0x0e
+	int	0x10
+	mov	ax, [ADR_VESA_MODE_INFO + XRESOLUTION]
+	call	hex2bcd_16
+	call	text_puthex_str_16_no_0x
+	mov	al, 'x'
+	mov	ah, 0x0e
+	int	0x10
+	mov	ax, [ADR_VESA_MODE_INFO + YRESOLUTION]
+	call	hex2bcd_16
+	call	text_puthex_str_16_no_0x
+	mov	al, ')'
+	mov	ah, 0x0e
+	int	0x10
+	call	text_newline
 
-        lea     esi, [msg012]
-        mov     edi, 80*2*8
-        call    printf
+	lea	di, [msg013]
+	call	text_putstr
+set_vesa_key_YN:
+	mov	ah, 0x00
+	int	0x16
+	cmp	ah, 0x15
+	je	set_vesa_key_Y
+	cmp	ah, 0x31
+	je	set_vesa_key_N
 
-        call    getc
+set_vesa_key_N:
+	mov	al, 'N'
+	mov	ah, 0x0e
+	int	0x10
+	call	text_newline
+	jmp	set_vesa_start
+set_vesa_key_Y:
+	mov	al, 'Y'
+	mov	ah, 0x0e
+	int	0x10
+	call	text_newline
 
-        cmp     ah,0x01
-        je      vbe00
+	mov	ax, 0x4f02
+	mov	bx, cx
+	or	bx, 0x4000
+	int	0x10
+	cmp	al, 0x4f
+	jne	set_vesa_nosup
+	cmp	ah, 0
+	jne	set_vesa_func_err
 
-        cmp     ah,0x02
-        je      vbe01
-        cmp     ah,0x03
-        je      vbe02
-        cmp     ah,0x04
-        je      vbe03
-        cmp     ah,0x05
-        je      vbe04
-        cmp     ah,0x06
-        je      vbe05
-        cmp     ah,0x07
-        je      vbe06
-        cmp     ah,0x08
-        je      vbe07
-        cmp     ah,0x09
-        je      vbe08
-        cmp     ah,0x0a
-        je      vbe09
+	mov	ax, [ADR_VESA_MODE_INFO + XRESOLUTION]
+	mov	[SCRNX], ax
+	mov	ax, [ADR_VESA_MODE_INFO + YRESOLUTION]
+	mov	[SCRNY], ax
+	mov	al, [ADR_VESA_MODE_INFO + BITSPERPIXEL]
+	mov	[VMODE], al
+	mov	eax, [ADR_VESA_MODE_INFO + PHYSBASEPTR]
+	mov	[VRAM], eax
 
-        cmp     ah,0x1e
-        je      vbe0a
-        cmp     ah,0x30
-        je      vbe0b
-        cmp     ah,0x2e
-        je      vbe0c
-        cmp     ah,0x20
-        je      vbe0d
-        cmp     ah,0x12
-        je      vbe0e
-        cmp     ah,0x21
-        je      vbe0f
-        cmp     ah,0x22
-        je      vbe0g
-        cmp     ah,0x23
-        je      vbe0h
-        cmp     ah,0x17
-        je      vbe0i
+	jmp	set_vesa_end
+set_vesa_nosup:
+	lea	di, [msg001]
+	call	text_putstr
+	lea	di, [msg003]
+	call	text_putstr
+	jmp	set_vesa_start
+set_vesa_func_err:
+	lea	di, [msg001]
+	call	text_putstr
+	lea	di, [msg011]
+	call	text_putstr
+	jmp	set_vesa_start
+set_VGA:
+	mov	ah, 0x00
+	mov	al, 0x13
+	int	0x10
+	mov	byte [VMODE], 8
+	mov	word [SCRNX], 320
+	mov	word [SCRNY], 200
+	mov	dword [VRAM], 0xa0000
+	mov	word [ADR_VESA_MODE_INFO + XRESOLUTION], 320
+	mov	word [ADR_VESA_MODE_INFO + YRESOLUTION], 200
+	mov	byte [ADR_VESA_MODE_INFO + BITSPERPIXEL], 8
+	mov	dword [ADR_VESA_MODE_INFO + PHYSBASEPTR], 0xa0000
+set_vesa_end:
+	popa
+	ret
 
-        cmp     ah,0x2d
-        je      vbetext
+chk_apm:
+	pusha
+	lea	di, [msg006]
+	call	text_putstr
+	lea	di, [msg002]
+	call	text_putstr
+	mov	ax, 0x5300
+	int	0x0000
+	jc	chk_apm_err_nosup
+	mov	[APMVER], ax
+	lea	di, [msg004]
+	call	text_putstr
+	mov	ax, [APMVER]
+	shr	ax, 8
+	call	text_puthex_char
+	mov	al, '.'
+	mov	ah, 0x0e
+	int	0x10
+	mov	ax, [APMVER]
+	shr	ax, 4
+	call	text_puthex_char
+	mov	ax, [APMVER]
+	call	text_puthex_char
+	jmp	chk_apm_end
+chk_apm_err_nosup:
+	mov	word [APMVER], 0x0000
+	lea	di, [msg006]
+	call	text_putstr
+	lea	di, [msg003]
+	call	text_putstr
+chk_apm_end:
+	call	text_newline
+	popa
+	ret
 
-        jmp     vbecheck
+chk_vesa:
+	pusha
+	lea	di, [msg001]
+	call	text_putstr
+	lea	di, [msg002]
+	call	text_putstr
 
-vbe00:
-        mov     al,0x13
-        mov     ah,0x00
-        int     0x10
-        mov     ax,0xe0
-        mov     es,ax
-        mov     di,0
-        mov     word[es:di+0x12],320
-        mov     word[es:di+0x14],200
-        mov     byte[es:di+0x19],8
-        mov     dword[es:di+0x28],0x000a0000
-        mov     byte[VMODE],8
-        mov     word[SCRNX],320
-        mov     word[SCRNY],200
-        mov     dword[VRAM],0x000a0000
-        ret
+	mov	ax, 0x4f00
+	mov	di, ADR_VESA_BIOS_INFO
+	int	0x10
+	cmp	al, 0x4f
+	jne	chk_vesa_err_nosup
+	lea	di, [msg004]
+	call	text_putstr
+	mov	ax, [ADR_VESA_BIOS_INFO + 0x04]
+	mov	[VESAVER], ax
+	shr	ax, 8
+	call	text_puthex_char
+	mov	al, '.'
+	mov	ah, 0x0e
+	int	0x10
+	mov	ax, [ADR_VESA_BIOS_INFO + 0x04]
+	shr	ax, 4
+	call	text_puthex_char
+	mov	ax, [ADR_VESA_BIOS_INFO + 0x04]
+	call	text_puthex_char
 
-vbe01:
-        mov     word[videomode],0x010f
-        jmp     vbesub
-vbe02:
-        mov     word[videomode],0x0112
-        jmp     vbesub
-vbe03:
-        mov     word[videomode],0x0115
-        jmp     vbesub
-vbe04:
-        mov     word[videomode],0x0118
-        jmp     vbesub
-vbe05:
-        mov     word[videomode],0x011b
-        jmp     vbesub
-vbe06:
-        mov     word[videomode],0x011f
-        jmp     vbesub
-vbe07:
-        mov     word[videomode],0x010e
-        jmp     vbesub
-vbe08:
-        mov     word[videomode],0x0111
-        jmp     vbesub
-vbe09:
-        mov     word[videomode],0x0114
-        jmp     vbesub
-vbe0a:
-        mov     word[videomode],0x0117
-        jmp     vbesub
-vbe0b:
-        mov     word[videomode],0x011a
-        jmp     vbesub
-vbe0c:
-        mov     word[videomode],0x011e
-        jmp     vbesub
-vbe0d:
-        mov     word[videomode],0x0100
-        jmp     vbesub
-vbe0e:
-        mov     word[videomode],0x0101
-        jmp     vbesub
-vbe0f:
-        mov     word[videomode],0x0103
-        jmp     vbesub
-vbe0g:
-        mov     word[videomode],0x0105
-        jmp     vbesub
-vbe0h:
-        mov     word[videomode],0x0107
-        jmp     vbesub
-vbe0i:
-        mov     word[videomode],0x011c
-        jmp     vbesub
+	call	text_newline
 
-vbesub:
-        mov     ax,0xe0
-        mov     es,ax
-        mov     di,0
-        mov     cx,[videomode]
-        mov     ax,0x4f01
-        int     0x10
+	mov	ax, [ADR_VESA_BIOS_INFO + 0x06 + 0x02]
+	mov	di, [ADR_VESA_BIOS_INFO + 0x06]
+	mov	bx, es
+	mov	es, ax
+	call	text_putstr
+	mov	es, bx
 
-        mov     ax,0x9000
-        mov     es,ax
-        mov     di,0
-        mov     ax,0x4f00
-        int     0x10
-        cmp     ax,0x004f
-        jne     scrn320
-        mov     ax,[es:di+4]
-        cmp     ax,0x0200
-        jb      scrn320
-        mov     cx,[videomode]
-        mov     ax,0x4f01
-        int     0x10
-        cmp     ax,0x004f
-        jne     scrn320
+	call	text_newline
 
-        mov     bx,[videomode]
-        add     bx,0x4000
-        mov     ax,0x4f02
-        int     0x10
-        mov     byte[VMODE],16
-        mov     ax,[es:di+0x12]
-        mov     [SCRNX],ax
-        mov     ax,[es:di+0x14]
-        mov     [SCRNY],ax
-        mov     eax,[es:di+0x28]
-        mov     [VRAM],eax
-        ret
+	lea	di, [msg005]
+	call	text_putstr
 
-vbetext:
-        mov     byte[VMODE],0
-        mov     word[SCRNX],80
-        mov     word[SCRNY],25
-        mov     dword[VRAM],0xb8000
-        ret
+	mov	ax, [ADR_VESA_BIOS_INFO + 0x0e + 0x02]
+	mov	di, [ADR_VESA_BIOS_INFO + 0x0e]
+	mov	bx, es
+	mov	es, ax
+chk_vesa_vmode_array_loop:
+	mov	ax, [es:di]
+	cmp	ax, 0xffff
+	je	chk_vesa_vmode_array_end
+	mov	cx, ax
 
-scrn320:
+	mov	al, '['
+	mov	ah, 0x0e
+	int	0x10
 
-        lea     esi, [msg004]            
-        mov     edi, 80*2*2*2       
-        call    printf
-	call	entkeywait
-        jmp     vbecheck
+	mov	ax, cx
+	call	text_puthex_str_16
 
-keyled:
-        mov     ah,0x02
-        int     0x16
-        mov     [LEDS],al
-        ret
+	mov	al, ']'
+	mov	ah, 0x0e
+	int	0x10
+
+	add	di, 2
+	jmp	chk_vesa_vmode_array_loop
+chk_vesa_vmode_array_end:
+	mov	es, bx
+	jmp	chk_vesa_end
+chk_vesa_err_nosup:
+	mov	word [VESAVER], 0x0000
+	lea	di, [msg001]
+	call	text_putstr
+	lea	di, [msg003]
+	call	text_putstr
+	jmp	chk_vesa_end
+chk_vesa_end:
+	call	text_newline
+	popa
+	ret
+
+hex2bcd_16:	;axをBCDに変換。最大9999まで。cxに新axを保存
+	push	cx
+	push	bx
+	push	dx
+	and	eax, 0x0000ffff
+	mov	cx, 0x000000
+
+	mov	dx, 0x0000
+	mov	bx, 1000
+	div	bx
+	shl	ax, 12
+	or	cx, ax
+
+	mov	ax, dx
+	mov	dx, 0x0000
+	mov	bx, 100
+	div	bx
+	shl	ax, 8
+	or	cx, ax
+
+	mov	ax, dx
+	mov	dx, 0x0000
+	mov	bx, 10
+	div	bx
+	shl	ax, 4
+	or	cx, ax
+
+	or	cx, dx
+
+	mov	ax, cx
+
+	pop	dx
+	pop	bx
+	pop	cx
+	ret
+
+text_puthex_str_16:	; axを出力。0xの付加あり。
+	push	ax
+	push	cx
+	mov	cx, ax
+	mov	ah, 0x0e
+	mov	al, '0'
+	int	0x10
+	mov	al, 'x'
+	int	0x10
+	mov	ax, cx
+	shr	ax, 12
+	call	text_puthex_char
+	mov	ax, cx
+	shr	ax, 8
+	call	text_puthex_char
+	mov	ax, cx
+	shr	ax, 4
+	call	text_puthex_char
+	mov	ax, cx
+	call	text_puthex_char
+	pop	cx
+	pop	ax
+	ret
+
+text_puthex_str_16_no_0x:	; axを出力。0xの付加なし。BCD表示用
+	push	ax
+	push	cx
+	mov	cx, ax
+	shr	ax, 12
+	call	text_puthex_char
+	mov	ax, cx
+	shr	ax, 8
+	call	text_puthex_char
+	mov	ax, cx
+	shr	ax, 4
+	call	text_puthex_char
+	mov	ax, cx
+	call	text_puthex_char
+	pop	cx
+	pop	ax
+	ret
+
+text_puthex_str_08_no_0x:	; alを出力。0xの付加なし。BCD表示用
+	push	ax
+	push	cx
+	mov	cx, ax
+	shr	al, 4
+	call	text_puthex_char
+	mov	ax, cx
+	call	text_puthex_char
+	pop	cx
+	pop	ax
+	ret
+
+text_puthex_char:	; alの下位4bit分出力。0xの付加はなし。
+	pusha
+	and	al, 0x0f
+	cmp	al, 9
+	ja	text_puthex_char_alphabet
+	add	al, 0x30
+	jmp	text_puthex_char_end
+text_puthex_char_alphabet:
+	add	al, 0x37
+text_puthex_char_end:
+	mov	ah, 0x0e
+	int	0x10
+	popa
+	ret
+
+text_putstr:	; di=char*
+	pusha
+	mov	cx, 0
+	mov	ah, 0x0e
+text_putstr_loop:
+	mov	al, [es:di]
+	cmp	al, 0
+	je	text_putstr_end
+	inc	di
+	int	0x10
+	jmp	text_putstr_loop
+text_putstr_end:
+	popa
+	ret
+
+text_newline:
+	pusha
+	mov	ah, 0x0e
+	mov	al, 0x0d
+	int	0x10
+	mov	al, 0x0a
+	int	0x10
+	popa
+	ret
+
+; 以下、プロテクトモード移行、bootpack実行関数群
 
 pmode:
-        mov     al,0xff
-        out     0x21,al
-        nop
-        out     0xa1,al
-        cli
+	mov	al, 0xff
+	out	0x21, al	; pic0-imr = 11111111
+	nop
+	out	0xa1, al	; pic1-imr = 11111111
+	cli
 
-        lgdt    [GDTR0]
-        mov     eax,cr0
-        and     eax,0x7fffffff
-        or      eax,0x00000001
-        mov     cr0,eax
-        jmp     pipelineflush
+	lgdt	[GDTR0]
+
+	mov	eax, cr0
+	and	eax, 0x7fffffff	; PG = 0
+	or	eax, 0x00000001	; PE = 1
+	mov	cr0, eax
+
+	jmp	pipelineflush
 pipelineflush:
-        mov     ax,1*8
-        mov     ds,ax
-        mov     es,ax
-        mov     fs,ax
-        mov     gs,ax
-        mov     ss,ax
-        mov     esi,bootpack    
-        mov     edi,BOTPAK      
-        mov     ecx,512*1024/4
-        call    memcpy
-        mov     esi,0x7c00
-        mov     edi,DSKCAC
-        mov     ecx,512/4
 
-        call    memcpy
-        mov     esi,DSKCAC0+512
-        mov     edi,DSKCAC+512
-        mov     ecx,0
-        mov     cl,byte[CYLS]
-        imul    ecx,512*18*2/4
-        sub     ecx,512/4
-        call    memcpy
+	mov	ax, 1 * 8
+	mov	ds, ax
+	mov	es, ax
+	mov	fs, ax
+	mov	gs, ax
+	mov	ss, ax
 
-        mov     ebx,BOTPAK
-        mov     ecx,[ebx+16]
-        add     ecx,3
-        shr     ecx,2
-        jz      skip
-        mov     esi,[ebx+20]
-        add     esi,ebx
-        mov     edi,[ebx+12]
-        call    memcpy
+	mov	esi, bootpack
+	mov	edi, BOTPAK
+	mov	ecx, 512 * 1024 / 4
+	call	memcpy
+
+	mov	esi, 0x7c00
+	mov	edi, DSKCAC
+	mov	ecx, 512 / 4
+	call	memcpy
+
+	mov	esi, DSKCAC0 + 512
+	mov	edi, DSKCAC + 512
+	mov	ecx, 0
+	mov	cl, byte[CYLS]
+	imul	ecx, 512 * 18 * 2 / 4
+	sub	ecx, 512 / 4
+	call	memcpy
+
+	mov	ebx, BOTPAK
+	mov	ecx, [ebx + 16]
+	add	ecx, 3
+	shr	ecx, 2
+	jz	skip
+	mov	esi, [ebx + 20]
+	add	esi, ebx
+	mov	edi, [ebx + 12]
+	call	memcpy
+
 skip:
-        mov     esp,[ebx+12]
-        jmp     dword 2*8:0x0000001b
-
+	mov	esp, [ebx + 12]
+	jmp	dword 2 * 8:0x0000001b
 
 memcpy:
         mov     eax,[esi]
@@ -489,161 +802,37 @@ memcpy:
         jnz     memcpy
         ret
 
-entkeywait:
-        mov     ah,0
-        int     0x16
-        cmp     ah,0x1c
-        jne     entkeywait
-        ret
+; データ
 
-shutdown:
-        mov     ax,0x5300
-        mov     bx,0
-        int     0x15
-        jc      thend
-        mov     ax,0x5301
-        mov     bx,0
-        int     0x15
-        mov     ax,0x530e
-        mov     bx,0
-        mov     cx,0x0101
-        int     0x15
-        jc      thend
-        mov     ax,0x530f
-        mov     bx,0x0001
-        mov     cx,0x0001
-        int     0x15
-        jc      thend
-        mov     ax,0x5308
-        mov     bx,0x0001
-        mov     cx,0x0001
-        int     0x15
-        jc      thend
-        mov     ax,0x5307
-        mov     bx,0x0001
-        mov     cx,0x0003
-        int     0x15
-        hlt
+msg000:	db	"CHNOSProject Boot Menu...", 0x0d, 0x0a, 0x00
+msg001:	db	"VESA BIOS Extention ", 0x00
+msg002:	db	"Checking...", 0x0d, 0x0a, 0x00
+msg003:	db	"is not supported by this computer.", 0x0d, 0x0a, 0x00
+msg004:	db	"Version:", 0x00
+msg005:	db	"Video Mode Numbers...", 0x0d, 0x0a, 0x00
+msg006:	db	"Advanced Power Management BIOS ", 0x00
+msg007:	db	"Please select the Video Mode Number.", 0x0d, 0x0a, 0x00
+msg008:	db	"VGA mode is 0x0000.", 0x0d, 0x0a, 0x00
+msg009:	db	">0x", 0x00
+msg010:	db	"ModeInfo:", 0x00
+msg011:	db	"Function Error...", 0x0d, 0x0a, 0x00
+msg012:	db	"bpp:", 0x00
+msg013:	db	"Do you want to start in this screen mode?[Y/N]", 0x0d, 0x0a, ">", 0x00
+msg014:	db	"A20GateLine Failed.", 0x0d, 0x0a, 0x00
+msg015:	db	"A20GateLine Passed.", 0x0d, 0x0a, 0x00
 
-thend:
-        lea     esi, [msg006]
-        mov     ax, 0xB800
-        mov     es, ax
-        mov     edi, 80*2*2*2*2
-        call    printf
-thend2:
-        hlt
-        jmp     thend2
-
-;data
-
-msg001: db      "Welcome to chnos project .",0
-msg002: db      "A20GATE on .",0
-msg003: db      "A20GATE filed .",0
-msg004: db      "Video mode is not supported or invalid.",0
-msg005: db      "Press the Enter key to shut down ...",0
-msg006: db      "Sorry . Shutdown filed . Press power button .",0
-msg007: db      "Video Mode List. Please select the mode number.",0
-msg008: db      "32bit--1:320x200--2:640x480--3:800x600--4:1024x768--5:1280x1024--6:1600x1200",0
-msg009: db      "16bit--7:320x200--8:640x480--9:800x600--a:1024x768--b:1280x1024--c:1600x1200",0
-msg010: db      " 8bit--d:640x400--e:640x480--f:800x600--g:1024x768--h:1280x1024--i:1600x1200",0
-msg011: db      "Press ESC to start in VGA mode.",0
-msg012: db      "Press X to start in TEXT mode.",0
-backcc: db      ".",0x03
-
-videomode:      dw 0
-
-                alignb  16
-GDT0:
-                resb    8                               ; ヌルセレクタ
-                dw              0xffff,0x0000,0x9200,0x00cf     ; 読み書き可能セグメント32bit
-                dw              0xffff,0x0000,0x9a28,0x0047     ; 実行可能セグメント32bit（bootpack用）
-
-                dw              0
 GDTR0:
-                dw              8*3-1
-                dd              GDT0
+	dw	8 * 3 - 1	; GDTリミット = 8 * セレクタ数 - 1
+	dd	GDT0		; GDT開始アドレス
 
-                alignb  16
+	alignb	16
+
+GDT0:	; 仮GDT
+	resb	8		; ヌル・セレクター
+	dw	0xffff, 0x0000, 0x9200, 0x00cf	; 読み書き可能32ビット
+	dw	0xffff, 0x0000, 0x9a28, 0x0047	; 実行可能32ビット
+	dw	0
+
+	alignb	16
+
 bootpack:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
