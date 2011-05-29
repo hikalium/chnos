@@ -130,14 +130,11 @@ void *MemoryControl_Allocate_Page(IO_MemoryControl *ctrl)
 void MemoryControl_Output_Info(IO_MemoryControl *ctrl)
 {
 	void *tag;
-	uchar s[128];
 
-	Send_SerialPort("Memory Free Info.\r\n");
-
+	debug("Memory Free Info.\n");
 	tag = ctrl->next;
 	for(;;){
-		sprintf(s, "Addr:0x%08X Size:0x%08X\r\n", (uint)tag, ((IO_MemoryControlTag *)tag)->size);
-		Send_SerialPort(s);
+		debug("Addr:0x%08X Size:0x%08X\n", (uint)tag, ((IO_MemoryControlTag *)tag)->size);
 		if(((IO_MemoryControlTag *)tag)->next == 0){
 			break;
 		}
@@ -165,7 +162,6 @@ uint System_MemoryControl_FreeSize(void)
 
 void *System_MemoryControl_Allocate(uint size)
 {
-	uchar s[128];
 	void *addr;
 	uint *retaddr;
 
@@ -173,8 +169,7 @@ void *System_MemoryControl_Allocate(uint size)
 
 	addr = MemoryControl_Allocate(&sys_mem_ctrl, size);
 
-	sprintf(s, "[0x%08X]Memory Allocate Request.[0x%08X](%dByte)\r\n", *(retaddr - 1), addr, size);
-	Send_SerialPort(s);
+	debug("[0x%08X]Memory Allocate Request.[0x%08X](%dByte)\n", *(retaddr - 1), addr, size);
 
 	return addr;
 }

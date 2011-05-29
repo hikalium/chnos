@@ -16,6 +16,12 @@ void Initialise_SerialPort(void)
 void Send_SerialPort(uchar *s)
 {
 	for (; *s != 0x00; s++) {
+		if(*s == '\n'){
+			IO_Out8(COM1_TX, '\r');
+			for(; (IO_In8(COM1_STA_LINE) & 0x40) == 0; ){
+
+			}
+		}
 		IO_Out8(COM1_TX, *s);
 		for(; (IO_In8(COM1_STA_LINE) & 0x40) == 0; ){
 
@@ -23,4 +29,19 @@ void Send_SerialPort(uchar *s)
 	}
 
 	return;
+}
+
+int debug(const uchar *format, ...)
+{
+	int i;
+	va_list ap;
+	uchar s[256];
+
+	va_start(ap, format);
+	i = vsprintf(s, format, ap);
+	va_end(ap);
+
+	Send_SerialPort(s);
+
+	return i;
 }

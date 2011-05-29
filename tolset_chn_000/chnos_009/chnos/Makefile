@@ -10,7 +10,7 @@ CC1      = $(TOOLPATH)cc1.exe -I$(INCPATH) -Os -Wall -quiet
 BIN2OBJ  = $(TOOLPATH)bin2obj.exe
 GAS2NASK = $(TOOLPATH)gas2nask.exe -a
 OBJ2BIM  = $(TOOLPATH)obj2bim.exe
-BIM2HRB  = $(TOOLPATH)bim2hrb.exe
+BIM2CHN  = $(TOOLPATH)bim2chn.exe
 RULEFILE = $(INCPATH)CHNOSP.rul
 EDIMG    = $(TOOLPATH)edimg.exe bias:9
 IMGTOL   = $(TOOLPATH)imgtol.com
@@ -55,11 +55,11 @@ bootpack.bim : $(OBJS_BOOTPACK) Makefile
 		$(OBJS_BOOTPACK)
 # 3MB+64KB=3136KB
 
-bootpack.hrb : bootpack.bim Makefile
-	$(BIM2HRB) bootpack.bim bootpack.hrb 0
+bootpack.chn : bootpack.bim Makefile
+	$(BIM2CHN) bootpack.bim bootpack.chn 0
 
-chnos.sys : asmhead.bin bootpack.hrb Makefile
-	copy /B asmhead.bin+bootpack.hrb chnos.sys
+chnos.sys : asmhead.bin bootpack.chn Makefile
+	copy /B asmhead.bin+bootpack.chn chnos.sys
 
 chnos.img : chnipl.bin chnos.sys Makefile
 	$(EDIMG)   imgin:../../z_tools/fdimg0at.tek \
@@ -114,7 +114,7 @@ clean :
 	-$(DEL) bootpack.nas
 	-$(DEL) bootpack.map
 	-$(DEL) bootpack.bim
-	-$(DEL) bootpack.hrb
+	-$(DEL) bootpack.chn
 	-$(DEL) chnos.sys
 
 src_only :

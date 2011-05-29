@@ -365,6 +365,7 @@ uint *Paging_Get_Entry_Setting_Address(uint entry);
 /*serial.c シリアル通信関連*/
 void Initialise_SerialPort(void);
 void Send_SerialPort(uchar *s);
+int debug(const uchar *format, ...);
 
 /*sheet.c シート関連*/
 void Sheet_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, void *vram, uint xsize, uint ysize, uint bpp);
