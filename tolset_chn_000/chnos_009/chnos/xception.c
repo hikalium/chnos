@@ -60,6 +60,15 @@ void CPU_Exception_Abort(int exception, int *esp)
 {
 	int i;
 
+Emergency_Out_Reset();
+Emergency_Out((uchar *)cpu_exceptions[exception]);
+for(i = 0; i < 8; i++){
+	Emergency_Out("%s0x%08X %s0x%08X", cpu_exception_infos[i << 1], esp[i << 1], cpu_exception_infos[(i << 1) + 1], esp[(i << 1) + 1]);
+}
+Emergency_Out("CR0 = 0x%08X", Load_CR0());
+Emergency_Out("CR2 = 0x%08X", Load_CR2());
+Emergency_Out("CR3 = 0x%08X", Load_CR3());
+
 	debug("%s\n", (uchar *)cpu_exceptions[exception]);
 
 	debug("#PUSHAD by _asm_CPU_ExceptionHandler\n");

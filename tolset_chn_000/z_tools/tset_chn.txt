@@ -1,12 +1,12 @@
-tolset_chnの説明書（19:36 2010/09/28）
+tolset_chnの説明書（11:23 2011/07/02）
   これは「30日でできる！ OS自作入門」についているtolsetをパワーアップしたものです。
 と共に、CHNOSProjectを開発したり、テストするための追加も含まれています。
 
-このパッケージには、ＯＳは含まれていません。
-ＯＳのソースをダウンロードし、解凍したら、chnos_xxxフォルダを、z_toolsフォルダと同じ場所にコピーしてください。
+このパッケージには、OSは含まれていません。
+OSのソースをダウンロードし、解凍したら、chnos_xxxフォルダを、z_toolsフォルダと同じ階層にコピーしてください。
 それ以降は、そのソースに附属しているドキュメントを参照してください。
 
-基本的に、このパッケージの中に含まれているものはほとんどが、このファイルと同じ階層にある「license.txt」にもあるように、
+基本的に、このパッケージの中に含まれているものはほとんどが、このファイルと同じ階層にある「license.txt」にある、
 KL-01となっています。
 
 KL-01でないものは、次の通りです。
@@ -31,9 +31,12 @@ KL-01でないものは、次の通りです。
 	bochs/bios.bin
 	上記のものは、LGPLライセンスが適用されます。
 
+	RWFD.EXE
+	RWFD.TXTを参照してください。
+
 	ライセンスについては、詳しく確認していないので、間違いがあるかもしれません。
 	間違いの指摘、大歓迎です。
 
-
-
-hikarupsp:hikarupsp@users.sourceforge.jp:http://sourceforge.jp/projects/chnosproject/
+hikarupsp:
+	hikarupsp@users.sourceforge.jp
+	http://sourceforge.jp/projects/chnosproject/

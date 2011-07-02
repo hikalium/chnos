@@ -194,6 +194,9 @@ void CHNMain(void)
 					}
 					Sheet_Draw_Put_String(taskbar, 0, 0, 0xFFFFFF, s);
 				}
+				Sheet_Draw_Fill_Rectangle(taskbar, 0x6666FF, 0, 16, taskbar->size.x - 1, 31);
+				sprintf(s, "Phase:%d", mdecode.phase);
+				Sheet_Draw_Put_String(taskbar, 0, 16, 0xFFFFFF, s);
 			}
 		}
 	}

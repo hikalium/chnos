@@ -39,7 +39,7 @@ void Initialise_Mouse(DATA_FIFO *sendto, uint offset, UI_MouseInfo *decode)
 	decode_m = decode;
 
 	decode->phase = 0;
-	Mouse_Send_Command(MOUSECMD_ENABLE);
+	Mouse_Send_Command(MOUSECMD_RESET);
 	Set_GateDescriptor((IO_GateDescriptor *)ADR_IDT + 0x2c, (int) asm_InterruptHandler2c, 2 * 8, AR_INTGATE32);
 	IO_Out8(PIC1_IMR, IO_In8(PIC1_IMR) & 0xef);
 
@@ -62,98 +62,134 @@ int Mouse_Decode(uint data)
 	switch (decode_m->phase){
 		case 0:
 			if(data == 0xfa){
-				decode_m->phase = 4;
+				decode_m->phase++;
 			}
-			Mouse_Send_Command(0xf3);
-			Mouse_Send_Command(200);
 			break;
 		case 1:
-			if((data & 0xc8) == 0x08) {
-				decode_m->buf[0] = data;
-				decode_m->phase = 2;
+			if(data == 0xaa){
+				Mouse_Send_Command(MOUSECMD_SET_SAMPLE_RATE);
+				decode_m->phase++;
 			}
 			break;
 		case 2:
-			decode_m->buf[1] = data;
-			decode_m->phase = 3;
+			if(data == 0xfa){
+				Mouse_Send_Command(200);
+				decode_m->phase++;
+			}
 			break;
 		case 3:
-			decode_m->buf[2] = data;
-			decode_m->phase = 1;
-			decode_m->btn = decode_m->buf[0];
-			decode_m->move.x = decode_m->buf[1];
-			decode_m->move.y = decode_m->buf[2];
-			if((decode_m->buf[0] & 0x10) != 0){
-				decode_m->move.x |= 0xffffff00;
+			if(data == 0xfa){
+				Mouse_Send_Command(MOUSECMD_SET_SAMPLE_RATE);
+				decode_m->phase++;
 			}
-			if((decode_m->buf[0] & 0x20) != 0){
-				decode_m->move.y |= 0xffffff00;
-			}
-			decode_m->move.y = - decode_m->move.y;
-			return 1;
+			break;
 		case 4:
 			if(data == 0xfa){
-				decode_m->phase = 5;
+				Mouse_Send_Command(100);
+				decode_m->phase++;
 			}
-			Mouse_Send_Command(0xf3);
-			Mouse_Send_Command(100);
 			break;
 		case 5:
 			if(data == 0xfa){
-				decode_m->phase = 6;
+				Mouse_Send_Command(MOUSECMD_SET_SAMPLE_RATE);
+				decode_m->phase++;
 			}
-			Mouse_Send_Command(0xf3);
-			Mouse_Send_Command(80);
 			break;
 		case 6:
 			if(data == 0xfa){
-				decode_m->phase = 7;
+				Mouse_Send_Command(80);
+				decode_m->phase++;
 			}
-			Mouse_Send_Command(0xf2);
 			break;
 		case 7:
+			if(data == 0xfa){
+				Mouse_Send_Command(MOUSECMD_GET_DEVICE_ID);
+				decode_m->phase++;
+			}
+			break;
+		case 8:
 			if(data == 0xfa){
 				break;
 			}
 			if(data == 0x00){
-				decode_m->type = 0x00;
-				decode_m->scrool = 0x00;
-				decode_m->phase = 1;
-			} else {
-				decode_m->type = data;
-				decode_m->phase = 8;
-			}			
-			break;
-		case 8:
-			if((data & 0xc8) == 0x08) {
-				decode_m->buf[0] = data;
-				decode_m->phase = 9;
+				decode_m->type = threebtn;
+				Mouse_Send_Command(MOUSECMD_ENABLE_DATA_REPORTING);
+				decode_m->phase = 10;
+			} else if(data == 0x03){
+				decode_m->type = threebtn_scroll;
+				Mouse_Send_Command(MOUSECMD_ENABLE_DATA_REPORTING);
+				decode_m->phase = 20;
+			} else{
+				Mouse_Send_Command(MOUSECMD_RESET);
+				decode_m->phase = 0;
 			}
 			break;
-		case 9:
-			decode_m->buf[1] = data;
-			decode_m->phase = 10;
-			break;
+
 		case 10:
+			if(data == 0xfa){
+				decode_m->phase++;
+			}
+			break;
+		case 11:
+			if((data & 0xc8) == 0x08) {
+				decode_m->buf[0] = data;
+				decode_m->phase++;
+			}
+			break;
+		case 12:
+			decode_m->buf[1] = data;
+			decode_m->phase++;
+			break;
+		case 13:
+			decode_m->buf[2] = data;
+			decode_m->phase -= 2;
+			decode_m->btn = decode_m->buf[0];
+			decode_m->move.x = decode_m->buf[1];
+			decode_m->move.y = decode_m->buf[2];
+			if(decode_m->buf[0] & 0x10){
+				decode_m->move.x |= 0xffffff00;
+			}
+			if(decode_m->buf[0] & 0x20){
+				decode_m->move.y |= 0xffffff00;
+			}
+			decode_m->move.y = - decode_m->move.y;
+			return 1;
+
+		case 20:
+			if(data == 0xfa){
+				decode_m->phase++;
+			}
+			break;
+		case 21:
+			if((data & 0xc8) == 0x08) {
+				decode_m->buf[0] = data;
+				decode_m->phase++;
+			}
+			break;
+		case 22:
+			decode_m->buf[1] = data;
+			decode_m->phase++;
+			break;
+		case 23:
 			decode_m->buf[2] = data;
 			decode_m->btn = decode_m->buf[0];
 			decode_m->move.x = decode_m->buf[1];
 			decode_m->move.y = decode_m->buf[2];
-			if((decode_m->buf[0] & 0x10) != 0){
+			if(decode_m->buf[0] & 0x10){
 				decode_m->move.x |= 0xffffff00;
 			}
-			if((decode_m->buf[0] & 0x20) != 0){
+			if(decode_m->buf[0] & 0x20){
 				decode_m->move.y |= 0xffffff00;
 			}
 			decode_m->move.y = - decode_m->move.y;
-			decode_m->phase = 11;
+			decode_m->phase++;
 			break;
-		case 11:
-			decode_m->phase = 8;
+		case 24:
+			decode_m->phase -= 3;
 			decode_m->buf[3] = data;
-			decode_m->scrool = decode_m->buf[3] & 0x0f;
-			if(decode_m->scrool & 0x08) {
-				decode_m->scrool |= 0xfffffff0;
+			decode_m->scroll = decode_m->buf[3] & 0x0f;
+			if(decode_m->scroll & 0x08) {
+				decode_m->scroll |= 0xfffffff0;
 			}
 			return 1;
 	}

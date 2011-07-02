@@ -13,7 +13,7 @@ OBJ2BIM  = $(TOOLPATH)obj2bim.exe
 BIM2CHN  = $(TOOLPATH)bim2chn.exe
 RULEFILE = $(INCPATH)CHNOSP.rul
 EDIMG    = $(TOOLPATH)edimg.exe bias:9
-IMGTOL   = $(TOOLPATH)imgtol.com
+IMGTOL   = $(TOOLPATH)RWFD.EXE
 MAKEFONT = $(TOOLPATH)makefont.exe
 COPY     = copy
 DEL      = del
@@ -104,7 +104,7 @@ run_cd :
 
 install :
 	$(MAKE) img
-	$(IMGTOL) w a: chnos.img
+	$(IMGTOL) chnos.img a:
 
 clean :
 	-$(DEL) *.bin

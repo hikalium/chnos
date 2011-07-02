@@ -10,20 +10,34 @@ void Initialise_System(DATA_FIFO *fifo, DATA_FIFO *keycmd, uint *keycmd_wait, UI
 	eflags = IO_Load_EFlags();
 	IO_CLI();
 
+Emergency_Out_Reset();
 	Initialise_SerialPort();
-	Initialise_GlobalDescriptorTable();
-	Initialise_InterruptDescriptorTable();
-	System_MemoryControl_Initialise();
-	Initialise_Paging(vesa->PhysBasePtr, boot->scrnx, boot->scrny, vesa->BitsPerPixel);
-	FIFO32_Initialise(fifo, 128);
-	FIFO32_Initialise(keycmd, 128);
-	Initialise_ProgrammableInterruptController();
-	Initialise_ProgrammableIntervalTimer();
-	Initialise_Keyboard(fifo, keycmd, DATA_BYTE, boot->leds, keycmd_wait);
-	Initialise_Mouse(fifo, DATA_BYTE * 2, decode);
 	Initialise_Graphic(vesa->BitsPerPixel);
+	Draw_Fill_Rectangle(vesa->PhysBasePtr, boot->scrnx - 1, 0x00000000, 0, 0, boot->scrnx - 1, boot->scrny - 1);
+Emergency_Out("CHNOSProject Core loaded...:Graphics");
+	Initialise_GlobalDescriptorTable();
+Emergency_Out("CHNOSProject Core loaded...:GDT");
+	Initialise_InterruptDescriptorTable();
+Emergency_Out("CHNOSProject Core loaded...:IDT");
+	System_MemoryControl_Initialise();
+Emergency_Out("CHNOSProject Core loaded...:Memory");
+	Initialise_Paging(vesa->PhysBasePtr, boot->scrnx, boot->scrny, vesa->BitsPerPixel);
+Emergency_Out("CHNOSProject Core loaded...:Memory-Paging");
+	FIFO32_Initialise(fifo, 128);
+Emergency_Out("CHNOSProject Core loaded...:SystemFIFO");
+	FIFO32_Initialise(keycmd, 128);
+Emergency_Out("CHNOSProject Core loaded...:KeycmdFIFO");
+	Initialise_ProgrammableInterruptController();
+Emergency_Out("CHNOSProject Core loaded...:PIC");
+	Initialise_ProgrammableIntervalTimer();
+Emergency_Out("CHNOSProject Core loaded...:PIT");
+	Initialise_Keyboard(fifo, keycmd, DATA_BYTE, boot->leds, keycmd_wait);
+Emergency_Out("CHNOSProject Core loaded...:Keyboard");
+	Initialise_Mouse(fifo, DATA_BYTE * 2, decode);
+Emergency_Out("CHNOSProject Core loaded...:Mouse");
 	System_Sheet_Initialise(vesa->PhysBasePtr, boot->scrnx, boot->scrny, vesa->BitsPerPixel);
-
+Emergency_Out("CHNOSProject Core loaded...:SystemSheet");
 	IO_Store_EFlags(eflags);
+Emergency_Out_Reset();
 	return;
 }

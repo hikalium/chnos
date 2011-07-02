@@ -86,3 +86,32 @@ ushort RGB_32_To_16(uint c32)
 	return c16;
 }
 
+uchar Emergency_Out_Count;
+
+void Emergency_Out_Reset(void)
+{
+	Emergency_Out_Count = 0;
+	return;
+}
+
+int Emergency_Out(const uchar *format, ...)
+{
+	int i;
+	va_list ap;
+	uchar s[256];
+	DATA_VESAInfo *vesa = (DATA_VESAInfo *) ADR_VESAINFO;
+	DATA_BootInfo *boot = (DATA_BootInfo *) ADR_BOOTINFO;
+
+	va_start(ap, format);
+	i = vsprintf(s, format, ap);
+	va_end(ap);
+
+	Draw_Fill_Rectangle(vesa->PhysBasePtr, boot->scrnx, 0x000000, 0, Emergency_Out_Count << 4, boot->scrnx - 1, (Emergency_Out_Count << 4) + 15);
+	Draw_Put_String(vesa->PhysBasePtr, boot->scrnx, 0, Emergency_Out_Count << 4, 0xFFFFFF, s);
+
+	if(Emergency_Out_Count < 12){
+		Emergency_Out_Count++;
+	}
+
+	return i;
+}

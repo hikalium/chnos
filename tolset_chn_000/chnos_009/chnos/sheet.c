@@ -18,7 +18,7 @@ void Sheet_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, vo
 	}
 	for(y = 0; y < ysize; y++){
 		for(x = 0; x < xsize; x++){
-			sheetctrl->map[(y * sheetctrl->mainvramsize.x) + x] = 0;
+			sheetctrl->map[(y * xsize) + x] = 0;
 		}
 	}
 	sheetctrl->mainvramsize.x = xsize;

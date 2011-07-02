@@ -3,7 +3,7 @@ INCPATH  = ../z_tools/CHNOSProject/
 
 MAKE     = $(TOOLPATH)make.exe -r
 EDIMG    = $(TOOLPATH)edimg.exe
-IMGTOL   = $(TOOLPATH)imgtol.com
+IMGTOL   = $(TOOLPATH)RWFD.EXE
 COPY     = copy
 DEL      = del
 
@@ -43,7 +43,7 @@ run_cd :
 
 install :
 	$(MAKE) chnos.img
-	$(IMGTOL) w a: chnos.img
+	$(IMGTOL) chnos.img a:
 
 full :
 	$(MAKE) -C chnos
@@ -56,7 +56,7 @@ run_full :
 
 install_full :
 	$(MAKE) full
-	$(IMGTOL) w a: chnos.img
+	$(IMGTOL) chnos.img a:
 
 run_os :
 	$(MAKE) -C chnos

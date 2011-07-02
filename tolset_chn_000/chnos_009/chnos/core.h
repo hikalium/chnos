@@ -23,6 +23,7 @@ typedef unsigned char bool;
 typedef enum _state_alloc { none, initialized, allocated, configured, inuse} state_alloc;
 typedef enum _col_text { black, blue, green, skyblue, red, purple, brown, white} col_text;
 typedef enum _timer_mode { once, interval} timer_mode;
+typedef enum _mouse_type { threebtn, threebtn_scroll} mouse_type;
 typedef enum _mcursor_state { normal, wait} mcursor_state;
 typedef unsigned char uchar;
 typedef unsigned short ushort;
@@ -166,9 +167,10 @@ struct UI_INPUTBOX {
 };
 
 struct MOUSE_DECODE {
-	uint buf[4], scrool;
+	uint buf[4], scroll;
 	struct POSITION_2D move;
-	int btn, type;
+	int btn;
+	mouse_type type;
 	uchar phase; 
 };
 
@@ -296,6 +298,8 @@ ushort RGB_32_To_16(uint c32);
 extern void (*Draw_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
 extern void (*Draw_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 extern void (*Draw_Slide_Line)(void *vram, uint xsize, uint ysize, uint vxsize, uint px, uint py);
+void Emergency_Out_Reset(void);
+int Emergency_Out(const uchar *format, ...);
 
 /*init.c*/
 void Initialise_System(DATA_FIFO *fifo, DATA_FIFO *keycmd, uint *keycmd_wait, UI_MouseInfo *decode);
@@ -479,7 +483,7 @@ void CPUID2(void *addr, uint id);	//addr”Ô’n‚Ìuint[4]‚ÉACPU‚Ì¯•Êî•ñid”Ô‚ğEAX
 void Read_TSC(uint *addr);		//addr”Ô’n‚Ìuint[2]‚ÉAƒ}ƒVƒ“ŒÅ—LƒŒƒWƒXƒ^(MSR)“à‚É‚ ‚éAƒ^ƒCƒ€EƒXƒ^ƒ“ƒvEƒJƒEƒ“ƒ^‚ÌãˆÊE‰ºˆÊ‚»‚ê‚¼‚ê32ƒrƒbƒg‚ğ“Ç‚İ‚ŞB
 					//‚±‚ÌŠÖ”‚ÍAcpuid‚ÌTSCƒrƒbƒg‚ª—LŒø‚Å‚È‚¯‚ê‚Îg—p‚Å‚«‚È‚¢B
 uint Memory_Test_Sub(uint start, uint end);
-void INT_3(void);
+void INT_3(void);			//ƒuƒŒ[ƒNƒ|ƒCƒ“ƒg—áŠO‚ğ”­¶‚³‚¹‚éB
 
 /*nasfunc1.nas CŒ¾Œê‚ÌŠÖ”‚ÉˆË‘¶‚·‚éŠÖ”ŒQB‚¨‚à‚ÉŠ„‚è‚İŠÖŒWB*/
 void asm_CPU_ExceptionHandler00(void);

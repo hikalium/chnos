@@ -9,8 +9,7 @@ void Initialise_Paging(void *vram, uint xsize, uint ysize, uint bpp)
 	uint *page;
 
 	j = (System_MemoryControl_FullSize() + 0x003FFFFF) >> 22;
-	l = ((System_MemoryControl_FullSize() - (j << 22)) + 0xFFF) & 0xFFFFF000;
-
+	l = (((j << 22) - System_MemoryControl_FullSize()) + 0xFFF) >> 12;
 	ADR_Paging_Directory = (uint *)System_MemoryControl_Allocate_Page();
 
 	for(i = 0; i < 1024; i++){
@@ -21,9 +20,10 @@ void Initialise_Paging(void *vram, uint xsize, uint ysize, uint bpp)
 		}
 	}
 
+Emergency_Out("Mem-Paging:Tables-Initialized");
+
 	for(i = 0; i < j; i++){
 		Paging_Set_Entry_Directory(&ADR_Paging_Directory[i], Paging_Get_Entry_Setting_Address(ADR_Paging_Directory[i]), PG_PRESENT | PG_WRITABLE | PG_SUPERVISOR | PG_WRITEBACK | PG_CACHE_ENABLE | PG_NOTACCESSED | PG_NOTWRITTEN | PG_4KBPAGE | PG_NOTGLOBAL, 0x00000000);
-
 		if(i == j - 1 && l != 0){
 			for(k = 0; k < l; k++){
 				Paging_Set_Entry_Table(&(Paging_Get_Entry_Setting_Address(ADR_Paging_Directory[i])[k]), (uint *)((i << 22) + (k * 1024 * 4)), PG_PRESENT | PG_WRITABLE | PG_SUPERVISOR | PG_WRITEBACK | PG_CACHE_ENABLE | PG_NOTACCESSED | PG_NOTWRITTEN | PG_4KBPAGE | PG_NOTGLOBAL, 0x00000000);
@@ -34,6 +34,8 @@ void Initialise_Paging(void *vram, uint xsize, uint ysize, uint bpp)
 			}
 		}
 	}
+
+Emergency_Out("Mem-Paging:PhisMemory-Initialized");
 
 	m = (uint)vram >> 22;
 	n = xsize * ysize * (bpp >> 3);
@@ -55,10 +57,14 @@ void Initialise_Paging(void *vram, uint xsize, uint ysize, uint bpp)
 		}
 	}
 
+Emergency_Out("Mem-Paging:VideoMemory-Initialized");
+
 	Store_CR3((uint)ADR_Paging_Directory);
 	cr0 = Load_CR0();
 	cr0 |= CR0_PAGING + CR0_PROTECTIONENABLE;
 	Store_CR0(cr0);
+
+Emergency_Out("Mem-Paging:Paging-Enabled");
 
 	return;
 }
