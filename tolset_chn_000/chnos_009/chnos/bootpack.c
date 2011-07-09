@@ -4,6 +4,16 @@
 extern UI_Sheet_Control sys_sheet_ctrl;
 extern IO_MemoryControl sys_mem_ctrl;
 
+extern uint memcounter;
+
+char *ACPI_MemoryMap_Type[5] = {
+	"  USABLE",
+	"RESERVED",
+	"    ACPI",
+	"ACPI_NVS",
+	"UNUSABLE"
+};
+
 void CHNMain(void)
 {
 	DATA_VESAInfo *vesa = (DATA_VESAInfo *) ADR_VESAINFO;
@@ -13,9 +23,9 @@ void CHNMain(void)
 	int keycmd_wait = 0;
 	UI_InputBox console;
 	UI_KeyInfo kinfo;
-	uint i, x, y;
+	uint i, j;
 	UI_Timer *c_timer, *core_timer;
-	UI_Sheet *testsheet, *taskbar, *desktop, *focus, *core;
+	UI_Sheet *taskbar, *desktop, *focus, *core;
 	UI_MouseInfo mdecode;
 	UI_MouseCursor mouse_cursor;
 	DATA_Position2D focus_moveorg;
@@ -94,15 +104,6 @@ void CHNMain(void)
 	Timer_Set(core_timer, 10, interval);
 	Timer_Run(core_timer);
 
-	testsheet = System_Sheet_Get(256, 256, 32, 0);
-	for(y = 0; y < 256; y++){
-		for(x = 0; x < 256; x++){
-			((uint *)testsheet->vram)[256 * y + x] =  (y << 16) + (x << 8);
-		}
-	}
-	Sheet_Show(testsheet, 100, 100, System_Sheet_Get_Top_Of_Height());
-	Sheet_Draw_Put_String(testsheet, 0, 0, 0xFFFFFF, "TestSheet");
-
 	InputBox_NewLine(&console);
 	InputBox_Reset_Input_Buffer(&console);
 	for (;;) {
@@ -142,13 +143,31 @@ void CHNMain(void)
 				if(kinfo.make){
 					if(kinfo.c != 0){
 						if(kinfo.c == '\n'){
-							InputBox_NewLine_No_Prompt(&console);
-							sprintf(s, "Count=%d\n", console.input_count);
-							InputBox_Put_String(&console, console.input_buf);
-							InputBox_NewLine_No_Prompt(&console);
-							InputBox_Put_String(&console, s);
-							sprintf(s, "TimerTick=%u\n", Timer_Get_Tick());
-							InputBox_Put_String(&console, s);
+							if(console.input_buf[0] != 0x00){
+								InputBox_NewLine_No_Prompt(&console);
+							}
+							if(strcmp(console.input_buf, "cls") == 0){
+								InputBox_Clear(&console);
+							} else if(strcmp(console.input_buf, "memmap") == 0){
+								sprintf(s, "ACPI 0xe820 MemoryMaps:%d\n", boot->ACPI_MemoryMapEntries);
+								InputBox_Put_String(&console, s);
+								for(j = 0; j < boot->ACPI_MemoryMapEntries; j++){
+									sprintf(s, "%02d:[0x%08X%08X](0x%08X%08X) %s 0x%08X\n", j, boot->ACPI_MemoryMap[j].Base.high, boot->ACPI_MemoryMap[j].Base.low, boot->ACPI_MemoryMap[j].Length.high, boot->ACPI_MemoryMap[j].Length.low, ACPI_MemoryMap_Type[boot->ACPI_MemoryMap[j].Type], boot->ACPI_MemoryMap[j].Attribute);
+									InputBox_Put_String(&console, s);
+								}
+							} else if(strcmp(console.input_buf, "systeminfo") == 0){
+								sprintf(s, "ACPI 0xe820 MemoryMaps:%d\n", boot->ACPI_MemoryMapEntries);
+								InputBox_Put_String(&console, s);
+								sprintf(s, "APM-Version:%X.%X\n", boot->APM_Version >> 8, boot->APM_Version & 0x00FF);
+								InputBox_Put_String(&console, s);
+								sprintf(s, "APM-Flags:0x%04X\n", boot->APM_Flags);
+								InputBox_Put_String(&console, s);
+								sprintf(s, "VESA-Version:%X.%X\n", boot->VESA_Version >> 8, boot->VESA_Version & 0x00FF);
+								InputBox_Put_String(&console, s);
+							} else if(strcmp(console.input_buf, "mem") == 0){
+							} else if(console.input_buf[0] != 0x00){
+								InputBox_Put_String(&console, "Bad Command...");
+							}
 							InputBox_Reset_Input_Buffer(&console);
 							InputBox_NewLine(&console);
 						} else{
@@ -194,9 +213,6 @@ void CHNMain(void)
 					}
 					Sheet_Draw_Put_String(taskbar, 0, 0, 0xFFFFFF, s);
 				}
-				Sheet_Draw_Fill_Rectangle(taskbar, 0x6666FF, 0, 16, taskbar->size.x - 1, 31);
-				sprintf(s, "Phase:%d", mdecode.phase);
-				Sheet_Draw_Put_String(taskbar, 0, 16, 0xFFFFFF, s);
 			}
 		}
 	}

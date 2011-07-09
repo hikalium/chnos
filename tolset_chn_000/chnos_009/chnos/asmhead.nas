@@ -8,11 +8,15 @@ DSKCAC0 equ             0x00008000
 CYLS    equ             0x0ff0	; uchar
 LEDS    equ             0x0ff1	; uchar
 VMODE   equ             0x0ff2	; uchar
+				; uchar Padding
 SCRNX   equ             0x0ff4	; ushort
 SCRNY   equ             0x0ff6	; ushort
 VRAM    equ             0x0ff8	; uchar*
-VESAVER	equ		0x1002	; ushort
-APMVER	equ		0x1004	; ushort
+VESAVER	equ		0x0ffc	; ushort
+APMVER	equ		0x0ffe	; ushort
+ACPI_MEMMAPS	equ	0x1000	; uint
+ACPI_MEMMAP	equ	0x1004	; 0x18(24)*16=0x180(384)bytes
+APM_FLAGS	equ	0x1184
 
 ; INFO_ADDR
 ADR_VESA_BIOS_INFO	equ	0x0d00	;0x0d00-0x0dff
@@ -44,6 +48,8 @@ asmhead:
 	call	a20_try_loop
 	call	text_newline
 
+	call	chk_acpi_memmap
+
 	call	chk_apm
 	call	text_newline
 
@@ -58,6 +64,40 @@ halt_loop:
 	jmp	halt_loop
 
 ; サブルーチン
+
+chk_acpi_memmap:
+	pushad
+	mov	edi, ACPI_MEMMAP
+	mov	ebx, 0
+chk_acpi_memmap_loop:
+	mov	eax, 0xe820
+	mov	ecx, 24
+	mov	edx, 0x534d4150	; edx="SMAP"
+	int	0x15
+	jc	chk_acpi_memmap_err
+	add	edi, 24
+	or	ebx, ebx
+	jnz	chk_acpi_memmap_loop
+	sub	edi, ACPI_MEMMAP
+	mov	eax, edi
+	xor	edx, edx
+	mov	ecx, 24
+	div	ecx
+	mov	[ACPI_MEMMAPS], eax
+	lea	di, [msg017]
+	call	text_putstr
+	call	text_newline
+	jmp	chk_acpi_memmap_end
+
+chk_acpi_memmap_err:
+	lea	di, [msg016]
+	call	text_putstr
+	call	text_newline
+	mov	dword [ACPI_MEMMAPS], 0
+
+chk_acpi_memmap_end:
+	popad
+	ret
 
 chk_keyled:
 	mov	ah, 0x02
@@ -497,10 +537,16 @@ chk_apm:
 	call	text_putstr
 	lea	di, [msg002]
 	call	text_putstr
+
 	mov	ax, 0x5300
-	int	0x0000
+	mov	bx, 0x0000
+	pusha
+	int	0x15
 	jc	chk_apm_err_nosup
 	mov	[APMVER], ax
+	mov	[APM_FLAGS], cx
+	popa
+
 	lea	di, [msg004]
 	call	text_putstr
 	mov	ax, [APMVER]
@@ -515,14 +561,15 @@ chk_apm:
 	mov	ax, [APMVER]
 	call	text_puthex_char
 	jmp	chk_apm_end
+
 chk_apm_err_nosup:
 	mov	word [APMVER], 0x0000
+	mov	word [APM_FLAGS], 0x0000
 	lea	di, [msg006]
 	call	text_putstr
 	lea	di, [msg003]
 	call	text_putstr
 chk_apm_end:
-	call	text_newline
 	popa
 	ret
 
@@ -820,6 +867,8 @@ msg012:	db	"bpp:", 0x00
 msg013:	db	"Do you want to start in this screen mode?[Y/N]", 0x0d, 0x0a, ">", 0x00
 msg014:	db	"A20GateLine Failed.", 0x0d, 0x0a, 0x00
 msg015:	db	"A20GateLine Passed.", 0x0d, 0x0a, 0x00
+msg016:	db	"ACPI 0xe820 Failed.", 0x0d, 0x0a, 0x00
+msg017:	db	"ACPI 0xe820 Passed.", 0x0d, 0x0a, 0x00
 
 GDTR0:
 	dw	8 * 3 - 1	; GDTリミット = 8 * セレクタ数 - 1

@@ -28,6 +28,7 @@ typedef enum _mcursor_state { normal, wait} mcursor_state;
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned int uint;
+typedef struct { uint low, high; } uint64;
 
 /*structures*/
 struct SEGMENT_DESCRIPTOR { 
@@ -42,6 +43,13 @@ struct GATE_DESCRIPTOR {
 	short offset_high;
 };
 
+struct ACPI_MemoryMapEntry {
+	uint64 Base;
+	uint64 Length;
+	uint Type;
+	uint Attribute;
+};
+
 struct BOOTINFO { 
 	uchar cyls; 
 	uchar leds; 
@@ -49,6 +57,11 @@ struct BOOTINFO {
 	uchar reserve;
 	ushort scrnx, scrny;
 	uchar *vram;
+	ushort VESA_Version;
+	ushort APM_Version;
+	uint ACPI_MemoryMapEntries;
+	struct ACPI_MemoryMapEntry ACPI_MemoryMap[16];
+	ushort APM_Flags;
 };
 
 struct VESAINFO {/*0xe00--->512byte*/
@@ -317,6 +330,7 @@ void InputBox_Slide_Line(UI_InputBox *box);
 void InputBox_Put_Prompt(UI_InputBox *box);
 void InputBox_Reset_Input_Buffer(UI_InputBox *box);
 void InputBox_Change_Cursor_State(UI_InputBox *box);
+void InputBox_Clear(UI_InputBox *box);
 
 /*intrpt.c Š„‚è‚İİ’è‚Æ‚Ç‚±‚É‚à‘®‚³‚È‚¢Š„‚è‚İƒnƒ“ƒhƒ‰[*/
 void Initialise_ProgrammableInterruptController(void);

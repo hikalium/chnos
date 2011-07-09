@@ -10,14 +10,13 @@ void InputBox_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl,
 	box->input_buf = (uchar *)MemoryControl_Allocate(memctrl, box->input_buf_size);
 	box->input_count = 0;
 	box->cursor.x = 0;
-	box->cursor.y = 0;
-	box->prompt.x = 0;
+	box->cursor.y = -16;
+	box->prompt.x = -8;
 	box->prompt.y = 0;
 	box->forecol = forecol;
 	box->backcol = backcol;
 	box->cursor_state = false;
 	Draw_Fill_Rectangle(box->sheet->vram, box->sheet->size.x, box->backcol, 0, 0, box->sheet->size.x - 1, box->sheet->size.y - 1);
-	InputBox_Put_Prompt(box);
 	Sheet_Show(box->sheet, x, y, height);
 	return;
 }
@@ -75,6 +74,8 @@ void InputBox_Put_String_Main(UI_InputBox *box, const uchar *str)
 {
 	int i;
 	uchar s[3];
+
+	InputBox_Check_NewLine(box);
 
 	for(i = 0; ; i++){
 		if(str[i] == 0x00){
@@ -139,7 +140,10 @@ void InputBox_Check_NewLine(UI_InputBox *box)
 				box->prompt.x = 0;
 			}
 		}
-	} 
+	}
+	if(box->cursor.y < box->prompt.y){
+		box->cursor.y = box->prompt.y;
+	}
 	return;
 }
 
@@ -183,6 +187,7 @@ void InputBox_Slide_Line(UI_InputBox *box)
 void InputBox_Put_Prompt(UI_InputBox *box)
 {
 	Sheet_Draw_Fill_Rectangle(box->sheet, box->backcol, box->cursor.x, box->cursor.y, box->cursor.x + 16 - 1, box->cursor.y + 16 - 1);
+	box->prompt.x = 0;
 	Sheet_Draw_Put_String(box->sheet, box->prompt.x, box->prompt.y, box->forecol, ">");
 	box->cursor.x = box->prompt.x + 8;
 	box->cursor.y = box->prompt.y;
@@ -208,3 +213,13 @@ void InputBox_Change_Cursor_State(UI_InputBox *box)
 	return;
 }
 
+void InputBox_Clear(UI_InputBox *box)
+{
+	InputBox_Reset_Input_Buffer(box);
+	box->cursor.x = 0;
+	box->cursor.y = -16;
+	box->prompt.x = -8;
+	box->prompt.y = 0;
+	Sheet_Draw_Fill_Rectangle(box->sheet, box->backcol, 0, 0, box->sheet->size.x - 1, box->sheet->size.y - 1);
+	return;
+}
