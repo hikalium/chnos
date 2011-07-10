@@ -4,10 +4,8 @@
 int FIFO32_Initialise(DATA_FIFO *fifo, uint size)
 {
 	fifo->size = size;
-	fifo->buf = System_MemoryControl_Allocate(size * 4);
-	if(fifo->buf == 0){
-		return -1;
-	}
+	fifo->buf = MemoryBlock_Allocate_System(size * 4);
+	MemoryBlock_Write_Description(fifo->buf, "FIFO_BUFFER");
 	fifo->free = size;	/*freesize*/
 	fifo->flags = 0;
 	fifo->p = 0;	/*write*/
@@ -68,5 +66,5 @@ int FIFO32_Free(DATA_FIFO *fifo)
 	fifo->flags = 0;
 	fifo->p = 0;
 	fifo->q = 0;
-	return System_MemoryControl_Free(fifo->buf, fifo->size * 4);
+	return MemoryBlock_Free(fifo->buf);
 }

@@ -358,11 +358,12 @@ uint Keyboard_Get_KeyShift(void);
 
 /*memblock.c ÉÅÉÇÉää÷òA*/
 void Initialise_MemoryBlock(IO_MemoryControl *mainctrl);
-Memory *MemoryBlock_Allocate_System(uint size);
-Memory *MemoryBlock_Allocate_User(uint size, IO_MemoryControl *ctrl);
-bool MemoryBlock_Verify(Memory *block);
-int MemoryBlock_Write_Description(Memory *block, const uchar *s);
-int MemoryBlock_Free(Memory *block);
+void *MemoryBlock_Allocate_System(uint size);
+void *MemoryBlock_Allocate_User(uint size, IO_MemoryControl *ctrl);
+Memory *MemoryBlock_Verify(void *addr);
+int MemoryBlock_Write_Description(void *addr, const uchar *s);
+int MemoryBlock_Free(void *addr);
+
 
 /*memory.c ÉÅÉÇÉää÷òA*/
 uint Memory_Test(uint start, uint end);

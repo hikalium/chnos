@@ -12,10 +12,8 @@ void Sheet_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, vo
 	sheetctrl->memctrl = memctrl;
 
 	sheetctrl->mainvram = vram;
-	sheetctrl->map = MemoryControl_Allocate(sheetctrl->memctrl, xsize * ysize * 4);
-	if(sheetctrl->map == 0){
-		return;
-	}
+	sheetctrl->map = MemoryBlock_Allocate_User(xsize * ysize * 4, sheetctrl->memctrl);
+	MemoryBlock_Write_Description(sheetctrl->map, "SHTCTRL_MAP");
 	for(y = 0; y < ysize; y++){
 		for(x = 0; x < xsize; x++){
 			sheetctrl->map[(y * xsize) + x] = 0;
@@ -51,8 +49,10 @@ UI_Sheet *Sheet_Get(UI_Sheet_Control *ctrl, uint xsize, uint ysize, uint bpp, ui
 		bpp = ctrl->mainvrambpp;
 	}
 
-	sheet = MemoryControl_Allocate(ctrl->memctrl, sizeof(UI_Sheet));
-	sheet->vram = MemoryControl_Allocate(ctrl->memctrl, xsize * ysize * (bpp >> 3));
+	sheet = MemoryBlock_Allocate_User(sizeof(UI_Sheet), ctrl->memctrl);
+	MemoryBlock_Write_Description(sheet, "UI_Sheet");
+	sheet->vram = MemoryBlock_Allocate_User(xsize * ysize * (bpp >> 3), ctrl->memctrl);
+	MemoryBlock_Write_Description(sheet->vram, "UI_Sheet_VRAM");
 	sheet->position.x = 0;
 	sheet->position.y = 0;
 	sheet->size.x = xsize;

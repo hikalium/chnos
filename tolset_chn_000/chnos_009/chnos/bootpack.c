@@ -32,6 +32,7 @@ void CHNMain(void)
 	DATA_CPUID cpuid;
 	uint tsc[2];
 	Memory *memblock;
+	uint memusing;
 
 	focus = (UI_Sheet *)0xFFFFFFFF;
 
@@ -85,7 +86,7 @@ void CHNMain(void)
 	Sheet_Show(desktop, 0, 0, System_Sheet_Get_Top_Of_Height());
 	Sheet_Draw_Fill_Rectangle(desktop, 0x66FF66, 0, 0, desktop->size.x - 1, desktop->size.y - 1);
 
-	InputBox_Initialise(&sys_sheet_ctrl, &sys_mem_ctrl, &console, 8, 16, boot->scrnx - 16, boot->scrny >> 1, 1024, 0xFFFFFF, 0xc6c6c6, System_Sheet_Get_Top_Of_Height());
+	InputBox_Initialise(&sys_sheet_ctrl, &sys_mem_ctrl, &console, 8, 16, boot->scrnx - 16, boot->scrny >> 1, 1024, 0xFFFFFF, 0x868686, System_Sheet_Get_Top_Of_Height());
 
 	taskbar = System_Sheet_Get(boot->scrnx, 32, 0, 0);
 	Sheet_Show(taskbar, 0, boot->scrny - 32, System_Sheet_Get_Top_Of_Height());
@@ -156,12 +157,16 @@ void CHNMain(void)
 									InputBox_Put_String(&console, s);
 								}
 							} else if(strcmp(console.input_buf, "memblock") == 0){
+								memusing = 0;
 								sprintf(s, "MemoryBlocks:%d\n", SystemMemory.size);
 								InputBox_Put_String(&console, s);
 								for(memblock = &SystemMemory; memblock->next != 0; memblock = memblock->next){
-									sprintf(s, "[0x%08X](%dBytes)-%s\n", memblock->next->addr, memblock->next->size, memblock->next->description);
+									sprintf(s, "[0x%08X](%8u Bytes):%s\n", memblock->next->addr, memblock->next->size, memblock->next->description);
 									InputBox_Put_String(&console, s);
+									memusing += memblock->next->size;
 								}
+								sprintf(s, "MemoryUsing:%u Bytes + (%u Bytes * %u) = %u Bytes.", memusing, sizeof(Memory), SystemMemory.size, memusing + (sizeof(Memory) * SystemMemory.size));
+								InputBox_Put_String(&console, s);
 							} else if(strcmp(console.input_buf, "systeminfo") == 0){
 								sprintf(s, "ACPI 0xe820 MemoryMaps:%d\n", boot->ACPI_MemoryMapEntries);
 								InputBox_Put_String(&console, s);

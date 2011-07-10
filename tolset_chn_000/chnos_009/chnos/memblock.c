@@ -13,7 +13,7 @@ void Initialise_MemoryBlock(IO_MemoryControl *mainctrl)
 	return;
 }
 
-Memory *MemoryBlock_Allocate_System(uint size)
+void *MemoryBlock_Allocate_System(uint size)
 {
 	Memory *block = MemoryControl_Allocate(SystemMemory.ctrl, sizeof(Memory));
 	uint *retaddr;
@@ -44,10 +44,10 @@ Memory *MemoryBlock_Allocate_System(uint size)
 	SystemMemory.size++;
 	block->ctrl = SystemMemory.ctrl;
 	block->description[0] = 0x00;
-	return block;
+	return block->addr;
 }
 
-Memory *MemoryBlock_Allocate_User(uint size, IO_MemoryControl *ctrl)
+void *MemoryBlock_Allocate_User(uint size, IO_MemoryControl *ctrl)
 {
 	Memory *block = MemoryControl_Allocate(SystemMemory.ctrl, sizeof(Memory));
 	uint *retaddr;
@@ -78,26 +78,29 @@ Memory *MemoryBlock_Allocate_User(uint size, IO_MemoryControl *ctrl)
 	SystemMemory.size++;
 	block->ctrl = ctrl;
 	block->description[0] = 0x00;
-	return block;
+	return block->addr;
 }
 
-bool MemoryBlock_Verify(Memory *block)
+Memory *MemoryBlock_Verify(void *addr)
 {
 	Memory *next;
 
 	for(next = &SystemMemory; next->next != 0; next = next->next){
-		if(next->next == block){
-			return true;
+		if(next->next->addr == addr){
+			return next->next;
 		}
 	}
-	return false;
+	return 0;
 }
 
-int MemoryBlock_Write_Description(Memory *block, const uchar *s)
+int MemoryBlock_Write_Description(void *addr, const uchar *s)
 {
 	uint i;
+	Memory *block;
 
-	if(MemoryBlock_Verify(block)){
+	block = MemoryBlock_Verify(addr);
+
+	if(block){
 		for(i = 0; i < (MEMORY_DESCRIPTION_LENGTH - 1); i++){
 			if(s[i] == 0x00){
 				break;
@@ -110,12 +113,13 @@ int MemoryBlock_Write_Description(Memory *block, const uchar *s)
 	return -1;
 }
 
-int MemoryBlock_Free(Memory *block)
+int MemoryBlock_Free(void *addr)
 {
-	Memory *next;
+	Memory *next, *block;
 
 	for(next = &SystemMemory; next->next != 0; next = next->next){
-		if(next->next == block){
+		if(next->next->addr == addr){
+			block = next->next;
 			next->next = block->next;
 			if(MemoryControl_Free(block->ctrl, block->addr, block->size) != 0){
 				return -2;

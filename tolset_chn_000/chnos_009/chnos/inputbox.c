@@ -7,7 +7,8 @@ void InputBox_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl,
 	ysize = ysize & ~15;
 	box->sheet = Sheet_Get(sheetctrl, xsize, ysize, 0, 0);
 	box->input_buf_size = txtbufsize;
-	box->input_buf = (uchar *)MemoryControl_Allocate(memctrl, box->input_buf_size);
+	box->input_buf = (uchar *)MemoryBlock_Allocate_User(box->input_buf_size, memctrl);
+	MemoryBlock_Write_Description(box->input_buf, "INPBOX_TXTBUF");
 	box->input_count = 0;
 	box->cursor.x = 0;
 	box->cursor.y = -16;

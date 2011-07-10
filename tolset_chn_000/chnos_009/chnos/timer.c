@@ -60,7 +60,8 @@ UI_Timer *Timer_Get(DATA_FIFO *fifo, uint data)
 {
 	UI_Timer *timer;
 
-	timer = System_MemoryControl_Allocate(sizeof(UI_Timer));
+	timer = MemoryBlock_Allocate_System(sizeof(UI_Timer));
+	MemoryBlock_Write_Description(timer, "UI_Timer");
 	if(timer == 0){
 		return 0;
 	}
