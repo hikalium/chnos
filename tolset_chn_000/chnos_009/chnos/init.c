@@ -1,6 +1,8 @@
 
 #include "core.h"
 
+extern IO_MemoryControl sys_mem_ctrl;
+
 void Initialise_System(DATA_FIFO *fifo, DATA_FIFO *keycmd, uint *keycmd_wait, UI_MouseInfo *decode)
 {
 	DATA_VESAInfo *vesa = (DATA_VESAInfo *) ADR_VESAINFO;
@@ -23,6 +25,8 @@ Emergency_Out("CHNOSProject Core loaded...:IDT");
 Emergency_Out("CHNOSProject Core loaded...:Memory");
 	Initialise_Paging(vesa->PhysBasePtr, boot->scrnx, boot->scrny, vesa->BitsPerPixel);
 Emergency_Out("CHNOSProject Core loaded...:Memory-Paging");
+	Initialise_MemoryBlock(&sys_mem_ctrl);
+Emergency_Out("CHNOSProject Core loaded...:Memory-Block");
 	FIFO32_Initialise(fifo, 128);
 Emergency_Out("CHNOSProject Core loaded...:SystemFIFO");
 	FIFO32_Initialise(keycmd, 128);

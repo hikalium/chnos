@@ -243,6 +243,14 @@ struct DATA_CPU_IDENTITY {
 	
 };
 
+struct MEMORY_BLOCK {
+	void *addr;
+	uint size;
+	struct MEMORY_BLOCK *next;
+	struct MEMORY_CONTROL *ctrl;
+	uchar description[MEMORY_DESCRIPTION_LENGTH];
+};
+
 /*typedef structures*/
 typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
 typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
@@ -261,6 +269,7 @@ typedef struct SHEET			UI_Sheet;
 typedef struct MOUSE_DECODE		UI_MouseInfo;
 typedef struct UI_MOUSE_CURSOR		UI_MouseCursor;
 typedef struct DATA_CPU_IDENTITY	DATA_CPUID;
+typedef struct MEMORY_BLOCK		Memory;
 
 /*virtual classes*/
 
@@ -346,6 +355,14 @@ void Keyboard_Decode(UI_KeyInfo *info, uint data);
 void Keyboard_KeyLock(uint led);
 void Keyboard_Controller_Wait_SendReady(void);
 uint Keyboard_Get_KeyShift(void);
+
+/*memblock.c ÉÅÉÇÉää÷òA*/
+void Initialise_MemoryBlock(IO_MemoryControl *mainctrl);
+Memory *MemoryBlock_Allocate_System(uint size);
+Memory *MemoryBlock_Allocate_User(uint size, IO_MemoryControl *ctrl);
+bool MemoryBlock_Verify(Memory *block);
+int MemoryBlock_Write_Description(Memory *block, const uchar *s);
+int MemoryBlock_Free(Memory *block);
 
 /*memory.c ÉÅÉÇÉää÷òA*/
 uint Memory_Test(uint start, uint end);

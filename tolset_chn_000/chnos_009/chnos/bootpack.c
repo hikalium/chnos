@@ -3,8 +3,7 @@
 
 extern UI_Sheet_Control sys_sheet_ctrl;
 extern IO_MemoryControl sys_mem_ctrl;
-
-extern uint memcounter;
+extern Memory SystemMemory;
 
 char *ACPI_MemoryMap_Type[5] = {
 	"  USABLE",
@@ -32,6 +31,7 @@ void CHNMain(void)
 	bool coremode = false;
 	DATA_CPUID cpuid;
 	uint tsc[2];
+	Memory *memblock;
 
 	focus = (UI_Sheet *)0xFFFFFFFF;
 
@@ -153,6 +153,13 @@ void CHNMain(void)
 								InputBox_Put_String(&console, s);
 								for(j = 0; j < boot->ACPI_MemoryMapEntries; j++){
 									sprintf(s, "%02d:[0x%08X%08X](0x%08X%08X) %s 0x%08X\n", j, boot->ACPI_MemoryMap[j].Base.high, boot->ACPI_MemoryMap[j].Base.low, boot->ACPI_MemoryMap[j].Length.high, boot->ACPI_MemoryMap[j].Length.low, ACPI_MemoryMap_Type[boot->ACPI_MemoryMap[j].Type], boot->ACPI_MemoryMap[j].Attribute);
+									InputBox_Put_String(&console, s);
+								}
+							} else if(strcmp(console.input_buf, "memblock") == 0){
+								sprintf(s, "MemoryBlocks:%d\n", SystemMemory.size);
+								InputBox_Put_String(&console, s);
+								for(memblock = &SystemMemory; memblock->next != 0; memblock = memblock->next){
+									sprintf(s, "[0x%08X](%dBytes)-%s\n", memblock->next->addr, memblock->next->size, memblock->next->description);
 									InputBox_Put_String(&console, s);
 								}
 							} else if(strcmp(console.input_buf, "systeminfo") == 0){
