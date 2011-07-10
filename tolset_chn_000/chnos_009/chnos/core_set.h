@@ -1,4 +1,36 @@
 
+/* MemoryMap */
+//00 00 0d 00	VESA_BIOS_INFO			0x100(256)Bytes
+
+//00 00 0e 00	VESA_MODE_INFO			0x100(256)Bytes
+
+//00 00 0f f0	BootInfo	CYLS		uchar
+//00 00 0f f1			LEDS		uchar
+//00 00 0f f2			VMODE		uchar
+//00 00 0f f3			(Padding)	uchar
+//00 00 0f f4			SCRNX		ushort
+//00 00 0f f6			SCRNY		ushort
+//00 00 0f f8			VRAM		*uchar
+//00 00 0f fc			VESAVER		ushort
+//00 00 0f fe			APMVER		ushort
+//00 00 10 00			ACPI_MEMMAPS	uint
+//00 00 10 04			ACPI_MEMMAP	0x18(24)*16=0x180(384)Bytes
+//00 00 11 84			APM_FLAGS	ushort
+
+//00 00 7c 00	IPL				0x200(512)Bytes
+
+//00 00 80 00	DSKCAC0				0x168000(1.44M)Bytes
+
+//00 10 00 00	DSKCAC				0x168000(1.44M)Bytes
+
+//00 26 f8 00	IDT				0x800(2K)Bytes
+
+//00 27 00 00	GDT				0x10000(64K)Bytes
+
+//00 28 00 00	bootpack.chn			0x80000(512K)Bytes
+
+//00 40 00 00	ÉÅÉÇÉäóÃàÊäJén
+
 #define ADR_BOOTINFO	0x00000ff0
 #define ADR_VESAINFO	0x00000e00
 #define ADR_DISKIMG	0x00100000

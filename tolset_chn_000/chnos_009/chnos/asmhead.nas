@@ -16,7 +16,7 @@ VESAVER	equ		0x0ffc	; ushort
 APMVER	equ		0x0ffe	; ushort
 ACPI_MEMMAPS	equ	0x1000	; uint
 ACPI_MEMMAP	equ	0x1004	; 0x18(24)*16=0x180(384)bytes
-APM_FLAGS	equ	0x1184
+APM_FLAGS	equ	0x1184	; ushort
 
 ; INFO_ADDR
 ADR_VESA_BIOS_INFO	equ	0x0d00	;0x0d00-0x0dff
