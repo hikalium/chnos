@@ -4,6 +4,7 @@
 extern UI_Sheet_Control sys_sheet_ctrl;
 extern IO_MemoryControl sys_mem_ctrl;
 extern Memory SystemMemory;
+extern UI_TaskControl *taskctrl;
 
 uchar *ACPI_MemoryMap_Type[5] = {
 	"  USABLE",
@@ -33,6 +34,7 @@ void CHNMain(void)
 	uint tsc[2];
 	Memory *memblock;
 	uint memusing;
+	UI_Task *task;
 
 	focus = (UI_Sheet *)0xFFFFFFFF;
 
@@ -86,7 +88,7 @@ void CHNMain(void)
 	Sheet_Show(desktop, 0, 0, System_Sheet_Get_Top_Of_Height());
 	Sheet_Draw_Fill_Rectangle(desktop, 0x66FF66, 0, 0, desktop->size.x - 1, desktop->size.y - 1);
 
-	InputBox_Initialise(&sys_sheet_ctrl, &sys_mem_ctrl, &console, 8, 16, boot->scrnx - 16, boot->scrny >> 1, 1024, 0xFFFFFF, 0x868686, System_Sheet_Get_Top_Of_Height());
+	InputBox_Initialise(&sys_sheet_ctrl, &sys_mem_ctrl, &console, 8, 16, boot->scrnx - 16, boot->scrny - 100, 1024, 0xFFFFFF, 0x868686, System_Sheet_Get_Top_Of_Height());
 
 	taskbar = System_Sheet_Get(boot->scrnx, 32, 0, 0);
 	Sheet_Show(taskbar, 0, boot->scrny - 32, System_Sheet_Get_Top_Of_Height());
@@ -166,7 +168,7 @@ void CHNMain(void)
 									InputBox_Put_String(&console, s);
 									memusing += memblock->next->size;
 								}
-								sprintf(s, "MemoryUsing:%u Bytes + (%u Bytes * %u) = %u Bytes.", memusing, sizeof(Memory), SystemMemory.size, memusing + (sizeof(Memory) * SystemMemory.size));
+								sprintf(s, "MemoryUsing:%u Bytes + (%u Bytes * %u) = %u(%uM)Bytes.", memusing, sizeof(Memory), SystemMemory.size, memusing + (sizeof(Memory) * SystemMemory.size), (memusing + (sizeof(Memory) * SystemMemory.size)) >> 20);
 								InputBox_Put_String(&console, s);
 							} else if(strcmp(console.input_buf, "systeminfo") == 0){
 								sprintf(s, "ACPI 0xe820 MemoryMaps:%d\n", boot->ACPI_MemoryMapEntries);
@@ -177,6 +179,14 @@ void CHNMain(void)
 								InputBox_Put_String(&console, s);
 								sprintf(s, "VESA-Version:%X.%X\n", boot->VESA_Version >> 8, boot->VESA_Version & 0x00FF);
 								InputBox_Put_String(&console, s);
+							} else if(strcmp(console.input_buf, "task") == 0){
+								for(task = taskctrl->next; ; task = task->next){
+									sprintf(s, "0x%04X:%s\n", task->selector, task->description);
+									InputBox_Put_String(&console, s);
+									if(task->next == 0){
+										break;
+									}
+								}
 							} else if(strcmp(console.input_buf, "gdt") == 0){
 								for(j = 0; j < 8192; j++){
 									if(SegmentDescriptor_Get_Limit(j) != 0){

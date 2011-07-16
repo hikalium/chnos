@@ -275,7 +275,7 @@ struct TASK_STATUS_SEGMENT {
 };
 
 struct TASK_CONTROL {
-	struct TASK *now, *main, *idle;
+	struct TASK *now, *main, *idle, *next;
 	struct TIMER *ts;
 };
 
@@ -283,6 +283,9 @@ struct TASK {
 	struct TASK_STATUS_SEGMENT tss;
 	uint selector;
 	uchar description[TASK_DESCRIPTION_LENGTH];
+	uint quantum;
+	struct TASK *next;
+	state_alloc state;
 };
 
 /*typedef structures*/
@@ -436,6 +439,9 @@ void Mouse_Move_Absolute(UI_MouseCursor *cursor, int px, int py);
 /*mtask.c マルチタスク関連*/
 void Initialise_MultiTask(void);
 UI_Task *MultiTask_Task_Get(const uchar *description);
+void MultiTask_Task_Change_Quantum(UI_Task *task, uint quantum);
+void MultiTask_Task_Run(UI_Task *task);
+void MultiTask_Task_Arguments(UI_Task *task, int args, ...);
 void MultiTask_TaskSwitch(void);
 void MultiTask_IdleTask(void);
 

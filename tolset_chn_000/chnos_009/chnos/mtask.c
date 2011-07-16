@@ -10,6 +10,8 @@ void Initialise_MultiTask(void)
 	taskctrl = MemoryBlock_Allocate_System(sizeof(UI_TaskControl));
 	MemoryBlock_Write_Description(taskctrl, "SystemTaskCtrl");
 
+	taskctrl->next = 0;
+
 	taskctrl->main = MultiTask_Task_Get("SystemMainTask");
 	taskctrl->main->tss.ldtr = 0;
 	taskctrl->idle->tss.iomap = 0x4000;
@@ -23,6 +25,7 @@ void Initialise_MultiTask(void)
 	taskctrl->idle->tss.eip = (uint)&MultiTask_IdleTask;
 	taskctrl->idle->tss.eflags = 0x00000202;
 	taskctrl->idle->tss.esp = (uint)MemoryBlock_Allocate_System(64 * 1024) + 64 * 1024;
+	MemoryBlock_Write_Description((void *)(taskctrl->idle->tss.esp - 64 * 1024), "IdleTaskStack");
 	taskctrl->idle->tss.es = 1 * 8;
 	taskctrl->idle->tss.cs = 2 * 8;
 	taskctrl->idle->tss.ss = 1 * 8;
@@ -30,6 +33,9 @@ void Initialise_MultiTask(void)
 	taskctrl->idle->tss.fs = 1 * 8;
 	taskctrl->idle->tss.gs = 1 * 8;
 	taskctrl->idle->tss.cr3 = (uint)ADR_Paging_Directory;
+
+	MultiTask_Task_Run(taskctrl->idle);
+	MultiTask_Task_Run(taskctrl->main);
 
 	taskctrl->ts = Timer_Get(0, 0);
 	Timer_Set(taskctrl->ts, 2, once);
@@ -88,6 +94,10 @@ UI_Task *MultiTask_Task_Get(const uchar *description)
 
 	task->selector = SegmentDescriptor_Set(sizeof(IO_TaskStatusSegment) - 1, (int)&task->tss, AR_TSS32);
 
+	task->quantum = 2; /*0.02sec Default*/
+
+	task->state = initialized;
+
 	for(i = 0; i < (TASK_DESCRIPTION_LENGTH - 1); i++){
 		if(description[i] == 0x00){
 			break;
@@ -98,15 +108,74 @@ UI_Task *MultiTask_Task_Get(const uchar *description)
 	return task;
 }
 
+void MultiTask_Task_Change_Quantum(UI_Task *task, uint quantum)
+{
+	if(1 <= quantum && quantum <= 25){	/*0.01-0.25sec*/
+		task->quantum = quantum;
+	}
+	return;
+}
+
+void MultiTask_Task_Run(UI_Task *task)
+{
+	uint eflags;
+
+	if(!(1 <= task->quantum && task->quantum <= 25)){
+		task->quantum = 2;
+	}
+	if(task->state == inuse){
+		return;
+	}
+	eflags = IO_Load_EFlags();
+	IO_CLI();
+		task->next = taskctrl->next;
+		taskctrl->next = task;
+		task->state = inuse;
+	IO_Store_EFlags(eflags);
+	return;
+}
+
+void MultiTask_Task_Arguments(UI_Task *task, int args, ...)
+{
+	int i;
+	va_list ap;
+
+	va_start(ap, args);
+	
+	task->tss.esp -= 4 * (args + 1);
+
+	for(i = 1; i < args + 1; i++){
+		*((int *)(task->tss.esp + (i * 4))) = va_arg(ap, int);
+	}
+	va_end(ap);
+	return; 
+}
+
 void MultiTask_TaskSwitch(void)
 {
-	if(taskctrl->now == taskctrl->main){
-		taskctrl->now = taskctrl->idle;
+	UI_Task *old;
+	uint eflags;
+
+	eflags = IO_Load_EFlags();
+	IO_CLI();
+
+	old = taskctrl->now;
+
+	if(taskctrl->now->next != 0){
+		taskctrl->now = taskctrl->now->next;
 	} else{
-		taskctrl->now = taskctrl->main;
+		taskctrl->now = taskctrl->next;
 	}
+	if(old == taskctrl->now){
+		taskctrl->now = old;
+		old = 0;
+	}
+	Timer_Set(taskctrl->ts, taskctrl->now->quantum, once);
 	Timer_Run(taskctrl->ts);
-	FarJMP(0, taskctrl->now->selector << 3);
+	if(old){
+		FarJMP(0, taskctrl->now->selector << 3);
+	}
+	IO_Store_EFlags(eflags);
 	return;
 }
 
