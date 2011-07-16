@@ -40,7 +40,7 @@ void Initialise_Mouse(DATA_FIFO *sendto, uint offset, UI_MouseInfo *decode)
 
 	decode->phase = 0;
 	Mouse_Send_Command(MOUSECMD_RESET);
-	Set_GateDescriptor((IO_GateDescriptor *)ADR_IDT + 0x2c, (int) asm_InterruptHandler2c, 2 * 8, AR_INTGATE32);
+	GateDescriptor_Set(0x2c, (uint)asm_InterruptHandler2c, 0x02, AR_INTGATE32);
 	IO_Out8(PIC1_IMR, IO_In8(PIC1_IMR) & 0xef);
 
 	return;

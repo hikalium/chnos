@@ -93,7 +93,7 @@ Memory *MemoryBlock_Verify(void *addr)
 	return 0;
 }
 
-int MemoryBlock_Write_Description(void *addr, const uchar *s)
+int MemoryBlock_Write_Description(void *addr, const uchar *description)
 {
 	uint i;
 	Memory *block;
@@ -102,10 +102,10 @@ int MemoryBlock_Write_Description(void *addr, const uchar *s)
 
 	if(block){
 		for(i = 0; i < (MEMORY_DESCRIPTION_LENGTH - 1); i++){
-			if(s[i] == 0x00){
+			if(description[i] == 0x00){
 				break;
 			}
-			block->description[i] = s[i];
+			block->description[i] = description[i];
 		}
 		block->description[i] = 0x00;
 		return i;

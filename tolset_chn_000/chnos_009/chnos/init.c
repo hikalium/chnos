@@ -35,6 +35,8 @@ Emergency_Out("CHNOSProject Core loaded...:KeycmdFIFO");
 Emergency_Out("CHNOSProject Core loaded...:PIC");
 	Initialise_ProgrammableIntervalTimer();
 Emergency_Out("CHNOSProject Core loaded...:PIT");
+	Initialise_MultiTask();
+Emergency_Out("CHNOSProject Core loaded...:MultiTask");
 	Initialise_Keyboard(fifo, keycmd, DATA_BYTE, boot->leds, keycmd_wait);
 Emergency_Out("CHNOSProject Core loaded...:Keyboard");
 	Initialise_Mouse(fifo, DATA_BYTE * 2, decode);

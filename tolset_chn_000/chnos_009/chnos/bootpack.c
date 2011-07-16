@@ -5,7 +5,7 @@ extern UI_Sheet_Control sys_sheet_ctrl;
 extern IO_MemoryControl sys_mem_ctrl;
 extern Memory SystemMemory;
 
-char *ACPI_MemoryMap_Type[5] = {
+uchar *ACPI_MemoryMap_Type[5] = {
 	"  USABLE",
 	"RESERVED",
 	"    ACPI",
@@ -22,7 +22,7 @@ void CHNMain(void)
 	int keycmd_wait = 0;
 	UI_InputBox console;
 	UI_KeyInfo kinfo;
-	uint i, j;
+	uint i, j, k;
 	UI_Timer *c_timer, *core_timer;
 	UI_Sheet *taskbar, *desktop, *focus, *core;
 	UI_MouseInfo mdecode;
@@ -107,6 +107,7 @@ void CHNMain(void)
 
 	InputBox_NewLine(&console);
 	InputBox_Reset_Input_Buffer(&console);
+
 	for (;;) {
 		if(FIFO32_Status(&keycmd) > 0 && keycmd_wait < 0){
 			keycmd_wait = FIFO32_Get(&keycmd);
@@ -176,7 +177,61 @@ void CHNMain(void)
 								InputBox_Put_String(&console, s);
 								sprintf(s, "VESA-Version:%X.%X\n", boot->VESA_Version >> 8, boot->VESA_Version & 0x00FF);
 								InputBox_Put_String(&console, s);
-							} else if(strcmp(console.input_buf, "mem") == 0){
+							} else if(strcmp(console.input_buf, "gdt") == 0){
+								for(j = 0; j < 8192; j++){
+									if(SegmentDescriptor_Get_Limit(j) != 0){
+										sprintf(s, "0x%04X:[0x%08X](0x%08X) ", j, SegmentDescriptor_Get_Base(j), SegmentDescriptor_Get_Limit(j));
+										InputBox_Put_String(&console, s);
+										k = SegmentDescriptor_Get_AccessRight(j);
+										if((k & AR_CODE_OR_DATA) != 0){	/*code or data*/
+											if((k & 0x08) != 0){	/*code*/
+												InputBox_Put_String(&console, "Code Execute");
+												if((k & 0x02) != 0){	/*Read*/
+													InputBox_Put_String(&console, "/Read ");
+												} else{
+													InputBox_Put_String(&console, " Only ");
+												}
+												if((k & 0x04) != 0){	/*Read*/
+													InputBox_Put_String(&console, "Conforming");
+												}
+											} else{	/*data*/
+												InputBox_Put_String(&console, "Data Read");
+												if((k & 0x02) != 0){	/*Read*/
+													InputBox_Put_String(&console, "/Write ");
+												} else{
+													InputBox_Put_String(&console, " Only ");
+												}
+												if((k & 0x04) != 0){	/*Read*/
+													InputBox_Put_String(&console, "Expand Down");
+												}
+											}
+										} else{	/*SystemDescriptor*/
+											if((k & 0x0f) == 0x02){	/*LDT*/
+												InputBox_Put_String(&console, "LDT");
+											} else if((k & 0x0f) == 0x05){	/*TaskGate*/
+												InputBox_Put_String(&console, "TaskGate");
+											} else{
+												if((k & 0x07) == 0x01){
+													InputBox_Put_String(&console, "TSS-Ready");
+												} else if((k & 0x07) == 0x03){
+													InputBox_Put_String(&console, "TSS-Busy");
+												} else if((k & 0x07) == 0x04){
+													InputBox_Put_String(&console, "CallGate");
+												} else if((k & 0x07) == 0x06){
+													InputBox_Put_String(&console, "INTGate");
+												} else if((k & 0x07) == 0x07){
+													InputBox_Put_String(&console, "TrapGate");
+												}
+												if((k & 0x08) != 0){	/*32bit*/
+													InputBox_Put_String(&console, "(32bit)");
+												} else{	/*16bit*/
+													InputBox_Put_String(&console, "(16bit)");
+												}
+											}
+										}
+										InputBox_Put_String(&console, "\n");
+									}
+								}
 							} else if(console.input_buf[0] != 0x00){
 								InputBox_Put_String(&console, "Bad Command...");
 							}

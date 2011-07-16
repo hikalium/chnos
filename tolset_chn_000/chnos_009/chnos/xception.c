@@ -3,38 +3,38 @@
 
 /*CPU Exceptions*/
 char *cpu_exceptions[0x20] = {
-	"Exception 0x00:\nDivided by zero.",
-	"Exception 0x01:\nReserved.",
-	"Exception 0x02:\nNonmaskable interrupt.",
-	"Exception 0x03:\nBreakpoint.",
-	"Exception 0x04:\nOverflow.",
-	"Exception 0x05:\nOutside BOUND.",
-	"Exception 0x06:\nInvalid opcode.",
-	"Exception 0x07:\nDisable Device.",
-	"Exception 0x08:\nDouble fault.",
-	"Exception 0x09:\nCoprocessor Segment Overrun.",
-	"Exception 0x0a:\nInvalid task status segment.",
-	"Exception 0x0b:\nSegment absent.",
-	"Exception 0x0c:\nStack Segment Fault.",
-	"Exception 0x0d:\nGeneral Protection Exception.",
-	"Exception 0x0e:\nPage fault.",
-	"Exception 0x0f:\nReserved.",
-	"Exception 0x10:\nFloating point error.",
-	"Exception 0x11:\nAlignment Check.",
-	"Exception 0x12:\nMachine Check.",
-	"Exception 0x13:\nSIMD floating-point exception.",
-	"Exception 0x14:\nReserved.",
-	"Exception 0x15:\nReserved.",
-	"Exception 0x16:\nReserved.",
-	"Exception 0x17:\nReserved.",
-	"Exception 0x18:\nReserved.",
-	"Exception 0x19:\nReserved.",
-	"Exception 0x1a:\nReserved.",
-	"Exception 0x1b:\nReserved.",
-	"Exception 0x1c:\nReserved.",
-	"Exception 0x1d:\nReserved.",
-	"Exception 0x1e:\nReserved.",
-	"Exception 0x1f:\nReserved."
+	"Divided by zero.",
+	"Reserved.",
+	"Nonmaskable interrupt.",
+	"Breakpoint.",
+	"Overflow.",
+	"Outside BOUND.",
+	"Invalid opcode.",
+	"Disable Device.",
+	"Double fault.",
+	"Coprocessor Segment Overrun.",
+	"Invalid task status segment.",
+	"Segment not present.",
+	"Stack Segment Fault.",
+	"General Protection Exception.",
+	"Page fault.",
+	"Reserved.",
+	"Floating point error.",
+	"Alignment Check.",
+	"Machine Check.",
+	"SIMD floating-point exception.",
+	"Reserved.",
+	"Reserved.",
+	"Reserved.",
+	"Reserved.",
+	"Reserved.",
+	"Reserved.",
+	"Reserved.",
+	"Reserved.",
+	"Reserved.",
+	"Reserved.",
+	"Reserved.",
+	"Reserved."
 };
 
 char *cpu_exception_infos[16] = {
@@ -61,7 +61,7 @@ void CPU_Exception_Abort(int exception, int *esp)
 	int i;
 
 Emergency_Out_Reset();
-Emergency_Out((uchar *)cpu_exceptions[exception]);
+Emergency_Out("Exception 0x%02X:%s", exception, (uchar *)cpu_exceptions[exception]);
 for(i = 0; i < 8; i++){
 	Emergency_Out("%s0x%08X %s0x%08X", cpu_exception_infos[i << 1], esp[i << 1], cpu_exception_infos[(i << 1) + 1], esp[(i << 1) + 1]);
 }
@@ -69,7 +69,7 @@ Emergency_Out("CR0 = 0x%08X", Load_CR0());
 Emergency_Out("CR2 = 0x%08X", Load_CR2());
 Emergency_Out("CR3 = 0x%08X", Load_CR3());
 
-	debug("%s\n", (uchar *)cpu_exceptions[exception]);
+	debug("Exception 0x%02X:\n%s\n", exception, (uchar *)cpu_exceptions[exception]);
 
 	debug("#PUSHAD by _asm_CPU_ExceptionHandler\n");
 	for(i = 0; i <= 7; i++){

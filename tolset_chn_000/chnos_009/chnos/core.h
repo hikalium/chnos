@@ -32,15 +32,15 @@ typedef struct { uint low, high; } uint64;
 
 /*structures*/
 struct SEGMENT_DESCRIPTOR { 
-	short limit_low,base_low;
-	char base_mid,access_right;
-	char limit_high,base_high;
+	ushort limit_low, base_low;
+	uchar base_mid, access_right;
+	uchar limit_high, base_high;
 };
 
 struct GATE_DESCRIPTOR { 
-	short offset_low,selector;
-	char dw_count,access_right;
-	short offset_high;
+	ushort offset_low, selector;
+	uchar dw_count, access_right;
+	ushort offset_high;
 };
 
 struct ACPI_MemoryMapEntry {
@@ -138,6 +138,7 @@ struct TIMER {
 struct TIMER_CONTROL {
 	uint count;
 	struct TIMER *next;
+	struct TIMER *ts;
 };
 
 struct SHEET {
@@ -251,6 +252,39 @@ struct MEMORY_BLOCK {
 	uchar description[MEMORY_DESCRIPTION_LENGTH];
 };
 
+struct TASK_STATUS_SEGMENT {
+	ushort backlink, reserve00;
+	uint esp0;
+	ushort ss0, reserve01;
+	uint esp1;
+	ushort ss1, reserve02;
+	uint esp2;
+	ushort ss2, reserve03;
+	uint cr3;
+	uint eip;
+	uint eflags;
+	uint eax, ecx, edx, ebx, esp, ebp, esi, edi;
+	ushort es, reserve04;
+	ushort cs, reserve05;
+	ushort ss, reserve06;
+	ushort ds, reserve07;
+	ushort fs, reserve08;
+	ushort gs, reserve09;
+	ushort ldtr, reserve10;
+	ushort flags, iomap;
+};
+
+struct TASK_CONTROL {
+	struct TASK *now, *main, *idle;
+	struct TIMER *ts;
+};
+
+struct TASK {
+	struct TASK_STATUS_SEGMENT tss;
+	uint selector;
+	uchar description[TASK_DESCRIPTION_LENGTH];
+};
+
 /*typedef structures*/
 typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
 typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
@@ -270,6 +304,9 @@ typedef struct MOUSE_DECODE		UI_MouseInfo;
 typedef struct UI_MOUSE_CURSOR		UI_MouseCursor;
 typedef struct DATA_CPU_IDENTITY	DATA_CPUID;
 typedef struct MEMORY_BLOCK		Memory;
+typedef struct TASK_STATUS_SEGMENT	IO_TaskStatusSegment;
+typedef struct TASK_CONTROL		UI_TaskControl;
+typedef struct TASK			UI_Task;
 
 /*virtual classes*/
 
@@ -285,8 +322,12 @@ void CPU_Identify(DATA_CPUID *id);
 /*dsctbl.c ディスクリプター・テーブル関連*/
 void Initialise_GlobalDescriptorTable(void);
 void Initialise_InterruptDescriptorTable(void);
-void Set_SegmentDescriptor(IO_SegmentDescriptor *sd, uint limit, int base, int ar);
-void Set_GateDescriptor(IO_GateDescriptor *gd, int offset, int selector, int ar);
+void SegmentDescriptor_Set_Absolute(uint sd, uint limit, uint base, uint ar);
+uint SegmentDescriptor_Get_Base(uint sd);
+uint SegmentDescriptor_Get_Limit(uint sd);
+uint SegmentDescriptor_Get_AccessRight(uint sd);
+uint SegmentDescriptor_Set(uint limit, int base, int ar);
+void GateDescriptor_Set(uint gd, uint offset, uint selector, uint ar);
 
 /*fifo.c FIFOバッファ関連*/
 int FIFO32_Initialise(DATA_FIFO *fifo, uint size);
@@ -361,7 +402,7 @@ void Initialise_MemoryBlock(IO_MemoryControl *mainctrl);
 void *MemoryBlock_Allocate_System(uint size);
 void *MemoryBlock_Allocate_User(uint size, IO_MemoryControl *ctrl);
 Memory *MemoryBlock_Verify(void *addr);
-int MemoryBlock_Write_Description(void *addr, const uchar *s);
+int MemoryBlock_Write_Description(void *addr, const uchar *description);
 int MemoryBlock_Free(void *addr);
 
 
@@ -391,6 +432,12 @@ void Mouse_Make_MouseCursor(UI_MouseCursor *cursor, int rangex0, int rangey0, in
 void Mouse_Draw_MouseCursor(UI_MouseCursor *cursor, mcursor_state state);
 void Mouse_Move_Relative(UI_MouseCursor *cursor, int movex, int movey);
 void Mouse_Move_Absolute(UI_MouseCursor *cursor, int px, int py);
+
+/*mtask.c マルチタスク関連*/
+void Initialise_MultiTask(void);
+UI_Task *MultiTask_Task_Get(const uchar *description);
+void MultiTask_TaskSwitch(void);
+void MultiTask_IdleTask(void);
 
 /*paging.c ページング関連*/
 void Initialise_Paging(void *vram, uint xsize, uint ysize, uint bpp);
@@ -439,6 +486,7 @@ uint Timer_Get_Tick(void);
 UI_Timer *Timer_Get(DATA_FIFO *fifo, uint data);
 void Timer_Set(UI_Timer *timer, uint count, timer_mode mode);
 void Timer_Run(UI_Timer *timer);
+void Timer_TaskSwitch_Set(UI_Timer *ts);
 
 /*xception.c CPU例外関連*/
 void CPU_Exception_Abort(int exception, int *esp);

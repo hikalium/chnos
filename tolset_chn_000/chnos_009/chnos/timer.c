@@ -10,7 +10,7 @@ void Initialise_ProgrammableIntervalTimer(void)
 	IO_Out8(PIT_CTRL, 0x34);
 	IO_Out8(PIT_CNT0, 0x9c);
 	IO_Out8(PIT_CNT0, 0x2e);
-	Set_GateDescriptor((IO_GateDescriptor *)ADR_IDT + 0x20, (int) asm_InterruptHandler20, 2 * 8, AR_INTGATE32);
+	GateDescriptor_Set(0x20, (uint)asm_InterruptHandler20, 0x02, AR_INTGATE32);
 	IO_Out8(PIC0_IMR, IO_In8(PIC0_IMR) & 0xfe);
 	timerctrl.count = 0;
 	watch = Timer_Get(0, 0);
@@ -18,6 +18,7 @@ void Initialise_ProgrammableIntervalTimer(void)
 	watch->count = 0xFFFFFFFF;
 	watch->state = inuse;
 	timerctrl.next = watch;
+	timerctrl.ts = 0;
 
 	return;
 }
@@ -25,9 +26,11 @@ void Initialise_ProgrammableIntervalTimer(void)
 void InterruptHandler20(int *esp)
 {
 	UI_Timer *tree, *old;
+	bool taskswitch;
 
 	IO_Out8(PIC0_OCW2, 0x60);	/* IRQ-00受付完了をPICに通知 。0x60+番号。*/
 	timerctrl.count++;
+	taskswitch = false;
 
 	if(timerctrl.count == timerctrl.next->timeout){	//時間になった
 		tree = timerctrl.next;
@@ -35,6 +38,8 @@ void InterruptHandler20(int *esp)
 		for(;;){	//同一タイムアウトを探す。
 			if(tree->fifo != 0){	//FIFOの送信先が有効かチェック
 				FIFO32_Put(tree->fifo, tree->data);
+			} else if(tree == timerctrl.ts){
+				taskswitch = true;
 			}
 			old = tree;
 			tree = old->tree;
@@ -47,6 +52,9 @@ void InterruptHandler20(int *esp)
 				break;
 			}
 		}
+	}
+	if(taskswitch){
+		MultiTask_TaskSwitch();
 	}
 	return;
 }
@@ -122,5 +130,11 @@ void Timer_Run(UI_Timer *timer)
 		target = &(*target)->next;
 	}
 	IO_Store_EFlags(eflags);
+	return;
+}
+
+void Timer_TaskSwitch_Set(UI_Timer *ts)
+{
+	timerctrl.ts = ts;
 	return;
 }

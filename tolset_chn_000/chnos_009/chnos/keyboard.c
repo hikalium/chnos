@@ -40,7 +40,7 @@ void Initialise_Keyboard(DATA_FIFO *sendto, DATA_FIFO *keycmd, uint offset, uint
 	Keyboard_Controller_Wait_SendReady();
 	IO_Out8(KEYB_DATA, KBC_MODE);
 
-	Set_GateDescriptor((IO_GateDescriptor *)ADR_IDT + 0x21, (int) asm_InterruptHandler21, 2 * 8, AR_INTGATE32);
+	GateDescriptor_Set(0x21, (uint)asm_InterruptHandler21, 0x02, AR_INTGATE32);
 	IO_Out8(PIC0_IMR, IO_In8(PIC0_IMR) & 0xfd);
 
 	key_leds = (leds >> 4) & 7;
