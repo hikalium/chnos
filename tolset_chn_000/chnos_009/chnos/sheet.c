@@ -34,7 +34,8 @@ void Sheet_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, vo
 	sheetctrl->base.before = 0;
 	sheetctrl->base.Refresh = 0;
 	sheetctrl->base.WriteMap = 0;
-	sheetctrl->base.visible = 0;
+	sheetctrl->base.visible = false;
+	sheetctrl->base.mouse_movable = false;
 	sheetctrl->base.myctrl = sheetctrl;
 
 	sheetctrl->sheets = 0;
@@ -75,6 +76,9 @@ UI_Sheet *Sheet_Get(UI_Sheet_Control *ctrl, uint xsize, uint ysize, uint bpp, ui
 
 	sheet->Refresh = Sheet_Refresh_Invalid;
 	sheet->myctrl = ctrl;
+
+	sheet->visible = false;
+	sheet->mouse_movable = true;
 
 	return sheet;
 }
@@ -142,6 +146,12 @@ uint Sheet_Show(UI_Sheet *sheet, int px, int py, uint height)
 	sheet->Refresh(sheet, 0, 0, sheet->size.x - 1, sheet->size.y - 1);
 
 	return i;
+}
+
+void Sheet_Set_Movable(UI_Sheet *sheet, bool movable)
+{
+	sheet->mouse_movable = movable;
+	return;
 }
 
 void Sheet_Slide(UI_Sheet *sheet, int px, int py)

@@ -48,17 +48,36 @@ void CHNMain(void)
 	MultiTask_Task_Arguments(systemdata.keyctrltask, 1, &systemdata);
 	MultiTask_Task_Run(systemdata.keyctrltask);
 
+	Mouse_Make_MouseCursor(&systemdata.mouse_cursor, 0, 0, systemdata.bootinfo->scrnx - 1, systemdata.bootinfo->scrny - 1, System_Sheet_Get_Top_Of_Height());
+	Mouse_Move_Absolute(&systemdata.mouse_cursor, systemdata.bootinfo->scrnx >> 1, systemdata.bootinfo->scrny >> 1);
+
+	systemdata.mousectrltask = MultiTask_Task_Get("MouseCtrlTask");
+	systemdata.mousectrltask->tss.ldtr = 0;
+	systemdata.mousectrltask->tss.iomap = 0x4000;
+	systemdata.mousectrltask->tss.eip = (uint)&CHNOS_MouseControlTask;
+	systemdata.mousectrltask->tss.eflags = 0x00000202;
+	systemdata.mousectrltask->tss.esp = (uint)MemoryBlock_Allocate_System(64 * 1024) + 64 * 1024;
+	MemoryBlock_Write_Description((void *)(systemdata.mousectrltask->tss.esp - 64 * 1024), "SysMCT-Stack");
+	systemdata.mousectrltask->tss.es = 1 * 8;
+	systemdata.mousectrltask->tss.cs = 2 * 8;
+	systemdata.mousectrltask->tss.ss = 1 * 8;
+	systemdata.mousectrltask->tss.ds = 1 * 8;
+	systemdata.mousectrltask->tss.fs = 1 * 8;
+	systemdata.mousectrltask->tss.gs = 1 * 8;
+	systemdata.mousectrltask->tss.cr3 = (uint)ADR_Paging_Directory;
+	MultiTask_Task_Arguments(systemdata.mousectrltask, 1, &systemdata);
+	MultiTask_Task_Run(systemdata.mousectrltask);
+
 	desktop = System_Sheet_Get(systemdata.bootinfo->scrnx, systemdata.bootinfo->scrny, 0, 0);
-//	Sheet_Show(desktop, 0, 0, System_Sheet_Get_Top_Of_Height());
-	Sheet_Show(desktop, 0, 0, 0);
+	Sheet_Set_Movable(desktop, false);
+	Sheet_Show(desktop, 0, 0, System_Sheet_Get_Top_Of_Height());
 	Sheet_Draw_Fill_Rectangle(desktop, 0x66FF66, 0, 0, desktop->size.x - 1, desktop->size.y - 1);
 
-//	InputBox_Initialise(&sys_sheet_ctrl, &sys_mem_ctrl, &console, 8, 16, systemdata.bootinfo->scrnx - 16, systemdata.bootinfo->scrny - 100, 1024, 0xFFFFFF, 0x868686, System_Sheet_Get_Top_Of_Height());
-	InputBox_Initialise(&sys_sheet_ctrl, &sys_mem_ctrl, &console, 8, 16, systemdata.bootinfo->scrnx - 16, systemdata.bootinfo->scrny - 100, 1024, 0xFFFFFF, 0x868686, 1);
+	InputBox_Initialise(&sys_sheet_ctrl, &sys_mem_ctrl, &console, 8, 16, systemdata.bootinfo->scrnx - 16, systemdata.bootinfo->scrny - 100, 1024, 0xFFFFFF, 0x868686, System_Sheet_Get_Top_Of_Height());
 
 	taskbar = System_Sheet_Get(systemdata.bootinfo->scrnx, 32, 0, 0);
-//	Sheet_Show(taskbar, 0, systemdata.bootinfo->scrny - 32, System_Sheet_Get_Top_Of_Height());
-	Sheet_Show(taskbar, 0, systemdata.bootinfo->scrny - 32, 2);
+	Sheet_Set_Movable(taskbar, false);
+	Sheet_Show(taskbar, 0, systemdata.bootinfo->scrny - 32, System_Sheet_Get_Top_Of_Height());
 	Sheet_Draw_Fill_Rectangle(taskbar, 0x6666FF, 0, 0, taskbar->size.x - 1, taskbar->size.y - 1);
 	Sheet_Draw_Put_String(taskbar, 0, 0, 0xFFFFFF, "Taskbar");
 
@@ -256,6 +275,61 @@ void CHNOS_KeyboardControlTask(System_CommonData *systemdata)
 					} else{	/*特殊文字*/
 
 					}
+				}
+			}
+		}
+	}
+}
+
+void CHNOS_MouseControlTask(System_CommonData *systemdata)
+{
+	UI_Task *mytask;
+	UI_Sheet *focus;
+	DATA_Position2D focus_moveorg;
+	uint i;
+
+	mytask = MultiTask_Get_NowTask();
+	focus = (UI_Sheet *)0xFFFFFFFF;
+
+	FIFO32_Set_Task(&systemdata->mousefifo, mytask);
+
+	for (;;) {
+		if(FIFO32_Status(&systemdata->mousefifo) == 0){
+			if(focus != 0 && focus != (UI_Sheet *)0xFFFFFFFF){
+				Sheet_Slide(focus, focus->position.x + (systemdata->mouse_cursor.position.x - focus_moveorg.x), focus->position.y + (systemdata->mouse_cursor.position.y - focus_moveorg.y));
+				focus_moveorg.x = systemdata->mouse_cursor.position.x;
+				focus_moveorg.y = systemdata->mouse_cursor.position.y;
+			}
+			MultiTask_Task_Sleep(mytask);
+			IO_STI();
+		} else{
+			i = FIFO32_Get(&systemdata->mousefifo);
+			if(i < DATA_BYTE){	/*タスクへのコマンド*/
+
+			} else if(DATA_BYTE <= i && i < (DATA_BYTE * 2)){	/*マウスからの受信データ*/
+				if(Mouse_Decode(i - DATA_BYTE) != 0){
+					Mouse_Move_Relative(&systemdata->mouse_cursor, systemdata->mousedecode.move.x, systemdata->mousedecode.move.y);
+					if((systemdata->mousedecode.btn & 0x01) != 0){	/*L*/
+						if(focus == (UI_Sheet *)0xFFFFFFFF){
+							focus = Sheet_Get_From_Position(&sys_sheet_ctrl, systemdata->mouse_cursor.position.x, systemdata->mouse_cursor.position.y);
+							focus_moveorg.x = systemdata->mouse_cursor.position.x;
+							focus_moveorg.y = systemdata->mouse_cursor.position.y;
+							if(!focus->mouse_movable){
+								focus = 0;
+							} else{
+								Sheet_UpDown(focus, System_Sheet_Get_Top_Of_Height());
+							}
+						}
+					} else{
+						focus = (UI_Sheet *)0xFFFFFFFF;
+					}
+					if((systemdata->mousedecode.btn & 0x02) != 0){	/*R*/
+
+					}
+					if((systemdata->mousedecode.btn & 0x04) != 0){	/*C*/
+
+					}
+
 				}
 			}
 		}

@@ -17,9 +17,7 @@ extern unsigned int rand_seed;
 #include "core_set.h"
 
 /*new object types*/
-typedef unsigned char bool;
-#define false	0;
-#define true	1;
+typedef enum _bool { false, true} bool;
 typedef enum _state_alloc { none, initialized, allocated, configured, inuse} state_alloc;
 typedef enum _col_text { black, blue, green, skyblue, red, purple, brown, white} col_text;
 typedef enum _timer_mode { once, interval} timer_mode;
@@ -153,6 +151,7 @@ struct SHEET {
 	void (*Refresh)(struct SHEET *sheet, int px0, int py0, int px1, int py1);
 	void (*WriteMap)(struct SHEET *sheet, int x0, int y0, int x1, int y1);
 	bool visible;
+	bool mouse_movable;
 	struct SHEET_CONTROL *myctrl;
 };
 
@@ -304,6 +303,7 @@ struct SYSTEM_COMMON_DATA {
 	struct TASK *mousectrltask;
 	struct FIFO32 mousefifo;
 	struct MOUSE_DECODE mousedecode;
+	struct UI_MOUSE_CURSOR mouse_cursor;
 };
 
 /*typedef structures*/
@@ -344,6 +344,7 @@ extern uint *ADR_Paging_Directory;
 /*functions*/
 /*bootpack.c ŠîŠ²•”•ª*/
 void CHNOS_KeyboardControlTask(System_CommonData *systemdata);
+void CHNOS_MouseControlTask(System_CommonData *systemdata);
 
 /*cpuid.c*/
 void CPU_Identify(DATA_CPUID *id);
@@ -491,6 +492,7 @@ int debug(const uchar *format, ...);
 void Sheet_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, void *vram, uint xsize, uint ysize, uint bpp);
 UI_Sheet *Sheet_Get(UI_Sheet_Control *ctrl, uint xsize, uint ysize, uint bpp, uint invcol);
 uint Sheet_Show(UI_Sheet *sheet, int px, int py, uint height);
+void Sheet_Set_Movable(UI_Sheet *sheet, bool movable);
 void Sheet_Slide(UI_Sheet *sheet, int px, int py);
 uint Sheet_UpDown(UI_Sheet *sheet, uint height);
 void Sheet_Remove(UI_Sheet *sheet);
