@@ -100,6 +100,7 @@ struct VESAINFO {/*0xe00--->512byte*/
 struct FIFO32 {
 	uint *buf;
 	uint p, q, size, free, flags;
+	struct TASK *task;
 };
 
 struct MEMORY_CONTROL_TAG {
@@ -167,16 +168,12 @@ struct SHEET_CONTROL {
 
 struct UI_INPUTBOX {
 	struct SHEET *sheet;
-//	void *vram;
 	uint forecol, backcol;
 	uchar *input_buf;
 	uint input_buf_size;
-//	uint vxsize;
 	uint input_count;
 	struct POSITION_2D cursor;
 	struct POSITION_2D prompt;
-//	struct POSITION_2D size;
-//	struct POSITION_2D position;
 	bool cursor_state;
 };
 
@@ -315,6 +312,10 @@ typedef struct TASK			UI_Task;
 
 /*externs*/
 extern uchar hankaku[4096];
+extern UI_Sheet_Control sys_sheet_ctrl;
+extern IO_MemoryControl sys_mem_ctrl;
+extern Memory SystemMemory;
+extern UI_TaskControl *taskctrl;
 
 /*functions*/
 /*bootpack.c 基幹部分*/
@@ -335,6 +336,7 @@ void GateDescriptor_Set(uint gd, uint offset, uint selector, uint ar);
 /*fifo.c FIFOバッファ関連*/
 int FIFO32_Initialise(DATA_FIFO *fifo, uint size);
 int FIFO32_Put(DATA_FIFO *fifo, uint data);
+void FIFO32_Set_Task(DATA_FIFO *fifo, UI_Task *task);
 uint FIFO32_Get(DATA_FIFO *fifo);
 uint FIFO32_Status(DATA_FIFO *fifo);
 int FIFO32_Free(DATA_FIFO *fifo);
@@ -441,6 +443,8 @@ void Initialise_MultiTask(void);
 UI_Task *MultiTask_Task_Get(const uchar *description);
 void MultiTask_Task_Change_Quantum(UI_Task *task, uint quantum);
 void MultiTask_Task_Run(UI_Task *task);
+void MultiTask_Task_Sleep(UI_Task *task);
+void MultiTask_Task_Remove(UI_Task *task);
 void MultiTask_Task_Arguments(UI_Task *task, int args, ...);
 void MultiTask_TaskSwitch(void);
 void MultiTask_IdleTask(void);
@@ -492,6 +496,7 @@ uint Timer_Get_Tick(void);
 UI_Timer *Timer_Get(DATA_FIFO *fifo, uint data);
 void Timer_Set(UI_Timer *timer, uint count, timer_mode mode);
 void Timer_Run(UI_Timer *timer);
+void Timer_Cancel(UI_Timer *timer);
 void Timer_TaskSwitch_Set(UI_Timer *ts);
 
 /*xception.c CPU例外関連*/

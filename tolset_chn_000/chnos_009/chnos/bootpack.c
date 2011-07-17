@@ -1,11 +1,6 @@
 
 #include "core.h"
 
-extern UI_Sheet_Control sys_sheet_ctrl;
-extern IO_MemoryControl sys_mem_ctrl;
-extern Memory SystemMemory;
-extern UI_TaskControl *taskctrl;
-
 uchar *ACPI_MemoryMap_Type[5] = {
 	"  USABLE",
 	"RESERVED",
@@ -123,7 +118,8 @@ void CHNMain(void)
 				focus_moveorg.x = mouse_cursor.position.x;
 				focus_moveorg.y = mouse_cursor.position.y;
 			}
-			IO_STIHLT();
+			MultiTask_Task_Sleep(taskctrl->main);
+			IO_STI();
 		} else{
 			i = FIFO32_Get(&fifo);
 			if(i < DATA_BYTE){

@@ -70,9 +70,7 @@ UI_Timer *Timer_Get(DATA_FIFO *fifo, uint data)
 
 	timer = MemoryBlock_Allocate_System(sizeof(UI_Timer));
 	MemoryBlock_Write_Description(timer, "UI_Timer");
-	if(timer == 0){
-		return 0;
-	}
+
 	timer->next = 0;
 	timer->tree = 0;
 	timer->timeout = 0;
@@ -121,7 +119,8 @@ void Timer_Run(UI_Timer *timer)
 				}
 				target = &(*target)->tree;
 			}
-			timer->next = *target;	//自分の前のタイマーを指す
+//			timer->next = *target;	//自分の前のタイマーを指す
+			timer->next = 0;	//常に0
 			*target = timer;//自分を前のタイマーに連結
 			timer->tree = 0;	//自分が終端
 			timer->state = inuse;	//動作中
@@ -129,6 +128,54 @@ void Timer_Run(UI_Timer *timer)
 		}
 		target = &(*target)->next;
 	}
+	IO_Store_EFlags(eflags);
+	return;
+}
+
+void Timer_Cancel(UI_Timer *timer)
+{
+	UI_Timer **root, **tree;
+	uint eflags;
+
+	eflags = IO_Load_EFlags();
+	IO_CLI();
+
+	root = &timerctrl.next;
+
+	for(;;){
+		if((*root) == 0){	/*ルートの終端*/
+			return;
+		}
+		if((*root) == timer){	/*ルートタイマーをキャンセル*/
+			if((*root)->tree == 0){	/*ツリーなし*/
+				*root = timer->next;
+			} else{	/*ツリーあり*/
+				*root = timer->tree;
+				timer->tree->next = timer->next;
+			}
+			goto cancel;
+		} else{
+			tree = &(*root)->tree;
+			for(;;){
+				if((*tree) == 0){	/*ツリーの終端*/
+					break;
+				}
+				if((*tree) == timer){	/*ツリータイマーをキャンセル*/
+					*tree = timer->tree;
+					goto cancel;
+				}
+				tree = &(*tree)->tree;
+			}
+		}
+		root = &(*root)->next;
+	}
+
+cancel:
+	timer->next = 0;
+	timer->tree = 0;
+	timer->timeout = 0;
+	timer->state = configured;
+
 	IO_Store_EFlags(eflags);
 	return;
 }

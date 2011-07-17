@@ -45,5 +45,9 @@ Emergency_Out("CHNOSProject Core loaded...:Mouse");
 Emergency_Out("CHNOSProject Core loaded...:SystemSheet");
 	IO_Store_EFlags(eflags);
 Emergency_Out_Reset();
+
+	FIFO32_Set_Task(fifo, taskctrl->main);
+	FIFO32_Set_Task(keycmd, taskctrl->main);
+
 	return;
 }

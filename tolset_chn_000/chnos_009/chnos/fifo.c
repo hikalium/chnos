@@ -10,6 +10,7 @@ int FIFO32_Initialise(DATA_FIFO *fifo, uint size)
 	fifo->flags = 0;
 	fifo->p = 0;	/*write*/
 	fifo->q = 0;	/*read*/
+	fifo->task = 0;
 	return 0;
 }
 
@@ -30,9 +31,20 @@ int FIFO32_Put(DATA_FIFO *fifo, uint data)
 		fifo->p = 0;
 		}
 	fifo->free--;
+	if(fifo->task != 0){
+		if(fifo->task->state != inuse){
+			MultiTask_Task_Run(fifo->task);
+		}
+	}
 	IO_Store_EFlags(eflags);
 
 	return 0;
+}
+
+void FIFO32_Set_Task(DATA_FIFO *fifo, UI_Task *task)
+{
+	fifo->task = task;
+	return;
 }
 
 uint FIFO32_Get(DATA_FIFO *fifo)

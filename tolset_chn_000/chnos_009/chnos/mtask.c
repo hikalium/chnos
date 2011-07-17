@@ -125,12 +125,71 @@ void MultiTask_Task_Run(UI_Task *task)
 	}
 	if(task->state == inuse){
 		return;
+	} else if(task->state == configured){
+		task->state = inuse;
+		return;
 	}
 	eflags = IO_Load_EFlags();
 	IO_CLI();
-		task->next = taskctrl->next;
-		taskctrl->next = task;
-		task->state = inuse;
+
+	task->next = taskctrl->next;
+	taskctrl->next = task;
+	task->state = inuse;
+
+	IO_Store_EFlags(eflags);
+	return;
+}
+
+void MultiTask_Task_Sleep(UI_Task *task)
+{
+	uint eflags;
+
+	eflags = IO_Load_EFlags();
+	IO_CLI();
+
+	task->state = configured;
+	if(taskctrl->now == task){
+		Timer_Cancel(taskctrl->ts);
+		MultiTask_TaskSwitch();
+	}
+
+	IO_Store_EFlags(eflags);
+
+	return;
+}
+
+void MultiTask_Task_Remove(UI_Task *task)
+{
+	UI_Task **next, *newnow;
+	uint eflags;
+	bool ts;
+
+	ts = false;
+
+	eflags = IO_Load_EFlags();
+	IO_CLI();
+
+	if(taskctrl->now == task){
+		ts = true;
+	}
+
+	for(newnow = taskctrl->next; newnow->next != 0; newnow = newnow->next){
+
+	}
+
+	for(next = &taskctrl->next; (*next)->next != 0; next = &(*next)->next){
+		if((*next) == task){
+			(*next) = task->next;
+			task->next = 0;
+			task->state = initialized;
+			break;
+		}
+		newnow = (*next);
+	}
+	if(ts){
+		taskctrl->now = newnow;
+		MultiTask_TaskSwitch();
+	}
 	IO_Store_EFlags(eflags);
 	return;
 }
@@ -153,7 +212,7 @@ void MultiTask_Task_Arguments(UI_Task *task, int args, ...)
 
 void MultiTask_TaskSwitch(void)
 {
-	UI_Task *old;
+	UI_Task *old, *new;
 	uint eflags;
 
 	eflags = IO_Load_EFlags();
@@ -161,10 +220,14 @@ void MultiTask_TaskSwitch(void)
 
 	old = taskctrl->now;
 
-	if(taskctrl->now->next != 0){
-		taskctrl->now = taskctrl->now->next;
-	} else{
-		taskctrl->now = taskctrl->next;
+	for(new = taskctrl->now->next; ; new = new->next){
+		if(new == 0){
+			new = taskctrl->next;
+		}
+		if(new->state == inuse){	/*configured = sleep*/
+			taskctrl->now = new;
+			break;
+		}
 	}
 	if(old == taskctrl->now){
 		taskctrl->now = old;
