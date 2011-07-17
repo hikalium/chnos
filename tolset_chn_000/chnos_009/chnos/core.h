@@ -285,6 +285,27 @@ struct TASK {
 	state_alloc state;
 };
 
+struct LISTENER {
+	struct LISTENER *next;
+	struct FIFO32 *fifo;
+	uint flags;
+	uint offset;
+};
+
+struct SYSTEM_COMMON_DATA {
+	struct BOOTINFO *bootinfo;
+	struct VESAINFO *vesainfo;
+	struct TASK *maintask;
+	struct FIFO32 sysfifo;
+	struct TASK *keyctrltask;
+	struct FIFO32 keyboardfifo;
+	struct FIFO32 keycmdfifo;
+	int keycmd_wait;
+	struct TASK *mousectrltask;
+	struct FIFO32 mousefifo;
+	struct MOUSE_DECODE mousedecode;
+};
+
 /*typedef structures*/
 typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
 typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
@@ -307,6 +328,8 @@ typedef struct MEMORY_BLOCK		Memory;
 typedef struct TASK_STATUS_SEGMENT	IO_TaskStatusSegment;
 typedef struct TASK_CONTROL		UI_TaskControl;
 typedef struct TASK			UI_Task;
+typedef struct LISTENER			UI_Listener;
+typedef struct SYSTEM_COMMON_DATA	System_CommonData;
 
 /*virtual classes*/
 
@@ -316,9 +339,11 @@ extern UI_Sheet_Control sys_sheet_ctrl;
 extern IO_MemoryControl sys_mem_ctrl;
 extern Memory SystemMemory;
 extern UI_TaskControl *taskctrl;
+extern uint *ADR_Paging_Directory;
 
 /*functions*/
 /*bootpack.c 基幹部分*/
+void CHNOS_KeyboardControlTask(System_CommonData *systemdata);
 
 /*cpuid.c*/
 void CPU_Identify(DATA_CPUID *id);
@@ -336,6 +361,7 @@ void GateDescriptor_Set(uint gd, uint offset, uint selector, uint ar);
 /*fifo.c FIFOバッファ関連*/
 int FIFO32_Initialise(DATA_FIFO *fifo, uint size);
 int FIFO32_Put(DATA_FIFO *fifo, uint data);
+int FIFO32_Put_Arguments(DATA_FIFO *fifo, uint args[]);
 void FIFO32_Set_Task(DATA_FIFO *fifo, UI_Task *task);
 uint FIFO32_Get(DATA_FIFO *fifo);
 uint FIFO32_Status(DATA_FIFO *fifo);
@@ -370,7 +396,7 @@ void Emergency_Out_Reset(void);
 int Emergency_Out(const uchar *format, ...);
 
 /*init.c*/
-void Initialise_System(DATA_FIFO *fifo, DATA_FIFO *keycmd, uint *keycmd_wait, UI_MouseInfo *decode);
+void Initialise_System(System_CommonData *systemdata);
 
 /*inputbox.c*/
 void InputBox_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, UI_InputBox *box, uint x, uint y, uint xsize, uint ysize, uint txtbufsize, uint forecol, uint backcol, uint height);
@@ -447,6 +473,7 @@ void MultiTask_Task_Sleep(UI_Task *task);
 void MultiTask_Task_Remove(UI_Task *task);
 void MultiTask_Task_Arguments(UI_Task *task, int args, ...);
 void MultiTask_TaskSwitch(void);
+UI_Task *MultiTask_Get_NowTask(void);
 void MultiTask_IdleTask(void);
 
 /*paging.c ページング関連*/

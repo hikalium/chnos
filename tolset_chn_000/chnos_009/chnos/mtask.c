@@ -1,8 +1,6 @@
 
 #include "core.h"
 
-extern uint *ADR_Paging_Directory;
-
 UI_TaskControl *taskctrl;
 
 void Initialise_MultiTask(void)
@@ -240,6 +238,11 @@ void MultiTask_TaskSwitch(void)
 	}
 	IO_Store_EFlags(eflags);
 	return;
+}
+
+UI_Task *MultiTask_Get_NowTask(void)
+{
+	return taskctrl->now;
 }
 
 void MultiTask_IdleTask(void)
