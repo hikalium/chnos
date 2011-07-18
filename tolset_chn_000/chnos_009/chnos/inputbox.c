@@ -17,6 +17,7 @@ void InputBox_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl,
 	box->forecol = forecol;
 	box->backcol = backcol;
 	box->cursor_state = false;
+	box->record = true;
 	Draw_Fill_Rectangle(box->sheet->vram, box->sheet->size.x, box->backcol, 0, 0, box->sheet->size.x - 1, box->sheet->size.y - 1);
 	Sheet_Show(box->sheet, x, y, height);
 	return;
@@ -26,6 +27,11 @@ int InputBox_Put_String(UI_InputBox *box, const uchar *s)
 {
 	uint i;
 	int count, old;
+
+	if(!box->record){
+		InputBox_Put_String_Main(box, s);
+		return 0;
+	}
 
 	count = 0;
 
@@ -99,7 +105,7 @@ void InputBox_Put_String_Main(UI_InputBox *box, const uchar *str)
 			box->cursor.x -= 8;
 			InputBox_Check_NewLine(box);
 			Sheet_Draw_Fill_Rectangle(box->sheet, box->backcol, box->cursor.x, box->cursor.y, box->cursor.x + 8 - 1, box->cursor.y + 16 - 1);
-			if(box->input_count != 0){
+			if(box->input_count != 0 && box->record){
 				box->input_count--;
 				box->input_buf[box->input_count] = 0x00;
 			}
@@ -222,5 +228,11 @@ void InputBox_Clear(UI_InputBox *box)
 	box->prompt.x = -8;
 	box->prompt.y = 0;
 	Sheet_Draw_Fill_Rectangle(box->sheet, box->backcol, 0, 0, box->sheet->size.x - 1, box->sheet->size.y - 1);
+	return;
+}
+
+void InputBox_Set_Record(UI_InputBox *box, bool record)
+{
+	box->record = record;
 	return;
 }

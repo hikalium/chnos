@@ -18,10 +18,12 @@ void CHNMain(void)
 	UI_Sheet *taskbar, *desktop;
 	uint sendargs[8];
 	UI_Task *mytask;
-	uchar s[128];
+	uchar s[128], filename[11];
 	Memory *memblock;
 	uint memusing;
 	UI_Task *task;
+	IO_FloppyDisk *fd;
+	bool type_found;
 
 	IO_CLI();
 
@@ -46,7 +48,7 @@ void CHNMain(void)
 	systemdata.keyctrltask->tss.gs = 1 * 8;
 	systemdata.keyctrltask->tss.cr3 = (uint)ADR_Paging_Directory;
 	MultiTask_Task_Arguments(systemdata.keyctrltask, 1, &systemdata);
-	MultiTask_Task_Run(systemdata.keyctrltask);
+//	MultiTask_Task_Run(systemdata.keyctrltask);
 
 	Mouse_Make_MouseCursor(&systemdata.mouse_cursor, 0, 0, systemdata.bootinfo->scrnx - 1, systemdata.bootinfo->scrny - 1, System_Sheet_Get_Top_Of_Height());
 	Mouse_Move_Absolute(&systemdata.mouse_cursor, systemdata.bootinfo->scrnx >> 1, systemdata.bootinfo->scrny >> 1);
@@ -67,6 +69,7 @@ void CHNMain(void)
 	systemdata.mousectrltask->tss.cr3 = (uint)ADR_Paging_Directory;
 	MultiTask_Task_Arguments(systemdata.mousectrltask, 1, &systemdata);
 	MultiTask_Task_Run(systemdata.mousectrltask);
+	MultiTask_Task_Run(systemdata.keyctrltask);
 
 	desktop = System_Sheet_Get(systemdata.bootinfo->scrnx, systemdata.bootinfo->scrny, 0, 0);
 	Sheet_Set_Movable(desktop, false);
@@ -100,11 +103,11 @@ void CHNMain(void)
 
 	FIFO32_Set_Task(&systemdata.sysfifo, mytask);
 
+	fd = FloppyDisk_Initialise((uint *)ADR_DISKIMG);
+
 	for (;;) {
-		IO_CLI();
 		if(FIFO32_Status(&systemdata.sysfifo) == 0){
 			MultiTask_Task_Sleep(mytask);
-			IO_STI();
 		} else{
 			i = FIFO32_Get(&systemdata.sysfifo);
 			if(i < DATA_BYTE){
@@ -114,6 +117,7 @@ void CHNMain(void)
 			} else if(DATA_BYTE <= i && i < (DATA_BYTE * 2)){
 				i -= DATA_BYTE;
 				if(i == '\n'){
+					InputBox_Set_Record(&console, false);
 					if(console.input_buf[0] != 0x00){
 						InputBox_NewLine_No_Prompt(&console);
 					}
@@ -148,10 +152,71 @@ void CHNMain(void)
 						InputBox_Put_String(&console, s);
 					} else if(strcmp(console.input_buf, "task") == 0){
 						for(task = taskctrl->next; ; task = task->next){
-							sprintf(s, "0x%04X:%s\n", task->selector, task->description);
+							sprintf(s, "0x%04X (%10u):%s\n", task->selector, task->cputime, task->description);
 							InputBox_Put_String(&console, s);
 							if(task->next == 0){
 								break;
+							}
+						}
+					} else if(strncmp(console.input_buf, "type ", 5) == 0){
+						k = 0;
+						type_found = false;
+						for(j = 0; j < 11; j++){
+							filename[j] = 0x20;
+						}
+						for(j = 0; k < 11; ){
+							if(console.input_buf[5 + j] == 0x00){
+								k++;
+							} else{
+								if(console.input_buf[5 + j] == '.'){
+									k = 8;
+								} else{
+									filename[k] = console.input_buf[5 + j];
+									if('a' <= filename[k] && filename[k] <= 'z'){
+										filename[k] -= 0x20;
+									}
+									k++;
+								}
+								j++;
+							}
+						}
+						for(j = 0; j < 224; j++){
+							if(fd->files[j].name[0] == 0x00){
+								break;
+							}
+							if(fd->files[j].name[0] != 0xe5){
+								for(k = 0; k < 11; k++){
+									if(filename[k] != fd->files[j].name[k]){
+										break;
+									}
+								}
+								if(k == 11){
+									type_found = true;
+									break;
+								}
+							}
+						}
+						if(type_found){
+							for(k = 0; k < fd->files[j].size; k++){
+								InputBox_Put_Character(&console, fd->userdataarea[fd->files[j].cluster - 2][k]);
+							}
+						} else{
+							InputBox_Put_String(&console, "type:File not found.\n");
+						}
+					} else if(strcmp(console.input_buf, "dir") == 0){
+						for(j = 0; j < 224; j++){
+							if(fd->files[j].name[0] == 0x00){
+								break;
+							}
+							if(fd->files[j].name[0] != 0xe5){
+								sprintf(s, "FILENAME.EXT %7d %04d/%02d/%02d %02d:%02d:%02d\n", fd->files[j].size, (fd->files[j].updatedate >> 9) + 1980, (fd->files[j].updatedate & 0x01e0) >> 5, fd->files[j].updatedate & 0x001f, fd->files[j].updatetime >> 11, (fd->files[j].updatetime & 0x07e0) >> 5, fd->files[j].updatetime & 0x1f);
+								for(k = 0; k < 8; k++){
+									s[k] = fd->files[j].name[k];
+								}
+								for(k = 9; k < 12; k++){
+									s[k] = fd->files[j].name[k - 1];
+								}
+								InputBox_Put_String(&console, s);
 							}
 						}
 					} else if(strcmp(console.input_buf, "gdt") == 0){
@@ -212,6 +277,7 @@ void CHNMain(void)
 					} else if(console.input_buf[0] != 0x00){
 						InputBox_Put_String(&console, "Bad Command...");
 					}
+					InputBox_Set_Record(&console, true);
 					InputBox_Reset_Input_Buffer(&console);
 					InputBox_NewLine(&console);
 				} else{
@@ -242,10 +308,8 @@ void CHNOS_KeyboardControlTask(System_CommonData *systemdata)
 			Keyboard_Controller_Wait_SendReady();
 			IO_Out8(KEYB_DATA, systemdata->keycmd_wait);
 		}
-		IO_CLI();
 		if(FIFO32_Status(&systemdata->keyboardfifo) == 0){
 			MultiTask_Task_Sleep(mytask);
-			IO_STI();
 		} else{
 			i = FIFO32_Get(&systemdata->keyboardfifo);
 			if(i < DATA_BYTE){	/*タスクへのコマンド*/
@@ -259,6 +323,7 @@ void CHNOS_KeyboardControlTask(System_CommonData *systemdata)
 
 						}
 						*now = MemoryBlock_Allocate_System(sizeof(UI_Listener));
+						MemoryBlock_Write_Description(*now, "UI_Listener");
 						(*now)->next = 0;
 						(*now)->fifo = (DATA_FIFO *)buf[1];
 						(*now)->flags = buf[2];
@@ -301,7 +366,6 @@ void CHNOS_MouseControlTask(System_CommonData *systemdata)
 				focus_moveorg.y = systemdata->mouse_cursor.position.y;
 			}
 			MultiTask_Task_Sleep(mytask);
-			IO_STI();
 		} else{
 			i = FIFO32_Get(&systemdata->mousefifo);
 			if(i < DATA_BYTE){	/*タスクへのコマンド*/

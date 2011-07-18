@@ -94,6 +94,8 @@ UI_Task *MultiTask_Task_Get(const uchar *description)
 
 	task->quantum = 2; /*0.02sec Default*/
 
+	task->cputime = 0;
+
 	task->state = initialized;
 
 	for(i = 0; i < (TASK_DESCRIPTION_LENGTH - 1); i++){
@@ -233,6 +235,7 @@ void MultiTask_TaskSwitch(void)
 	}
 	Timer_Set(taskctrl->ts, taskctrl->now->quantum, once);
 	Timer_Run(taskctrl->ts);
+	taskctrl->now->cputime += taskctrl->now->quantum;
 	if(old){
 		FarJMP(0, taskctrl->now->selector << 3);
 	}

@@ -72,7 +72,7 @@ void *MemoryBlock_Allocate_User(uint size, IO_MemoryControl *ctrl)
 		}
 	}
 
-	block->size = size;
+	block->size = (size + 7) & ~7;
 	block->next = SystemMemory.next;
 	SystemMemory.next = block;
 	SystemMemory.size++;

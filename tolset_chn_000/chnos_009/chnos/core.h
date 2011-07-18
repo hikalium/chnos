@@ -27,6 +27,7 @@ typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned int uint;
 typedef struct { uint low, high; } uint64;
+typedef uchar sector[512];
 
 /*structures*/
 struct SEGMENT_DESCRIPTOR { 
@@ -174,6 +175,7 @@ struct UI_INPUTBOX {
 	struct POSITION_2D cursor;
 	struct POSITION_2D prompt;
 	bool cursor_state;
+	bool record;
 };
 
 struct MOUSE_DECODE {
@@ -280,6 +282,7 @@ struct TASK {
 	uint selector;
 	uchar description[TASK_DESCRIPTION_LENGTH];
 	uint quantum;
+	uint cputime;
 	struct TASK *next;
 	state_alloc state;
 };
@@ -306,6 +309,41 @@ struct SYSTEM_COMMON_DATA {
 	struct UI_MOUSE_CURSOR mouse_cursor;
 };
 
+struct DEVICE_FLOPPYDISK {
+	uchar *img;
+	struct DEVICE_FLOPPYDISK_RDE {
+		uchar name[8];		//0x00:empty
+					//0x05:=0xe5
+					//0x2e:(only directory)
+					//.	0x2e:current directory
+					//..	0x2e, 0x2e:parent directory
+					//0xe5:deleted(usable)
+		uchar ext[3];
+		uchar attribute;	//bit0:readonly
+					//bit1:hidden
+					//bit2:system
+					//bit3:volumelabel
+					//bit4:directory
+					//bit5:archive
+					//0x0f=LongFileNameEntry
+		uchar reserve;
+		uchar VFAT_createTimeMs;
+		ushort VFAT_createTime;
+		ushort VFAT_createDate;
+		ushort VFAT_accessDate;
+		ushort VFAT_clusterHighWord;
+		ushort updatetime;	//0 -4 bit:second/2
+					//5 -10bit:minute
+					//11-15bit:hour
+		ushort updatedate;	//0 -4 bit:day(1-31) 
+					//5 -8 bit:month(1-12)
+					//9 -15bit:year(from 1980)
+		ushort cluster;
+		uint size;
+	} *files;
+	sector *userdataarea;
+};
+
 /*typedef structures*/
 typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
 typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
@@ -330,6 +368,8 @@ typedef struct TASK_CONTROL		UI_TaskControl;
 typedef struct TASK			UI_Task;
 typedef struct LISTENER			UI_Listener;
 typedef struct SYSTEM_COMMON_DATA	System_CommonData;
+typedef struct DEVICE_FLOPPYDISK_RDE	IO_FloppyDisk_RootDirectoryEntry;
+typedef struct DEVICE_FLOPPYDISK	IO_FloppyDisk;
 
 /*virtual classes*/
 
@@ -367,6 +407,9 @@ void FIFO32_Set_Task(DATA_FIFO *fifo, UI_Task *task);
 uint FIFO32_Get(DATA_FIFO *fifo);
 uint FIFO32_Status(DATA_FIFO *fifo);
 int FIFO32_Free(DATA_FIFO *fifo);
+
+/*file.c ファイル関連*/
+IO_FloppyDisk *FloppyDisk_Initialise(void *img);
 
 /*grap_08.c*/
 void Draw_Put_Font_08(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
@@ -413,6 +456,7 @@ void InputBox_Put_Prompt(UI_InputBox *box);
 void InputBox_Reset_Input_Buffer(UI_InputBox *box);
 void InputBox_Change_Cursor_State(UI_InputBox *box);
 void InputBox_Clear(UI_InputBox *box);
+void InputBox_Set_Record(UI_InputBox *box, bool record);
 
 /*intrpt.c 割り込み設定とどこにも属さない割り込みハンドラー*/
 void Initialise_ProgrammableInterruptController(void);
