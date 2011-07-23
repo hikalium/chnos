@@ -342,6 +342,13 @@ struct DEVICE_FLOPPYDISK {
 		uint size;
 	} *files;
 	sector *userdataarea;
+	void *fat;
+};
+
+struct FILEINFO {
+	uchar *data;
+	uint size;
+	uchar name[13];
 };
 
 /*typedef structures*/
@@ -370,6 +377,7 @@ typedef struct LISTENER			UI_Listener;
 typedef struct SYSTEM_COMMON_DATA	System_CommonData;
 typedef struct DEVICE_FLOPPYDISK_RDE	IO_FloppyDisk_RootDirectoryEntry;
 typedef struct DEVICE_FLOPPYDISK	IO_FloppyDisk;
+typedef struct FILEINFO			IO_File;
 
 /*virtual classes*/
 
@@ -410,6 +418,10 @@ int FIFO32_Free(DATA_FIFO *fifo);
 
 /*file.c ファイル関連*/
 IO_FloppyDisk *FloppyDisk_Initialise(void *img);
+int FloppyDisk_Search_File(IO_FloppyDisk *fd, const uchar *name);
+int FloppyDisk_Load_File(IO_FloppyDisk *fd, IO_File *fileinfo, int fileno);
+int File_Free(IO_File *fileinfo);
+void FloppyDisk_Decode_FAT16(uchar *img, ushort *fat, bool backup);
 
 /*grap_08.c*/
 void Draw_Put_Font_08(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
