@@ -25,6 +25,7 @@ void CHNMain(void)
 	UI_Task *task;
 	IO_FloppyDisk *fd;
 	IO_File type_file;
+	UI_Window *win;
 
 	IO_CLI();
 
@@ -85,7 +86,6 @@ void CHNMain(void)
 	Sheet_Draw_Put_String(taskbar, 0, 0, 0xFFFFFF, "Taskbar");
 
 	InputBox_Put_String(&console, "Welcome to CHNOSProject.\n");
-	InputBox_Put_String(&console, "Press [Shift + F10] to show System Console.\n");
 
 	c_timer = Timer_Get(&systemdata.sysfifo, 5);
 	Timer_Set(c_timer, 50, interval);
@@ -171,13 +171,17 @@ void CHNMain(void)
 						sprintf(s, "VESA-Version:%X.%X\n", systemdata.bootinfo->VESA_Version >> 8, systemdata.bootinfo->VESA_Version & 0x00FF);
 						InputBox_Put_String(&console, s);
 					} else if(strcmp(console.input_buf, "task") == 0){
-						for(task = taskctrl->next; ; task = task->next){
+						for(task = taskctrl->next; task != 0; task = task->next){
 							sprintf(s, "0x%04X (%10u):%s\n", task->selector, task->cputime, task->description);
 							InputBox_Put_String(&console, s);
-							if(task->next == 0){
-								break;
-							}
 						}
+					} else if(strcmp(console.input_buf, "window") == 0){
+						for(win = systemdata.windowctrl.next; win != 0; win = win->next){
+							sprintf(s, "%s\n", win->title);
+							InputBox_Put_String(&console, s);
+						}
+					} else if(strcmp(console.input_buf, "testcons") == 0){
+						Window_Create("TestWin", 0, 200, 100);
 					} else if(strncmp(console.input_buf, "type ", 5) == 0){
 						n = FloppyDisk_Search_File(fd, &console.input_buf[5]);
 						if(n != -1){
@@ -340,13 +344,18 @@ void CHNOS_MouseControlTask(System_CommonData *systemdata)
 {
 	UI_Task *mytask;
 	UI_Sheet *focus;
+	UI_Window *focus_win;
 	DATA_Position2D focus_moveorg;
 	uint i;
+	int button_before;
 
 	mytask = MultiTask_Get_NowTask();
 	focus = (UI_Sheet *)0xFFFFFFFF;
 
 	FIFO32_Set_Task(&systemdata->mousefifo, mytask);
+
+	button_before = 0;
+	focus_win = 0;
 
 	for (;;) {
 		if(FIFO32_Status(&systemdata->mousefifo) == 0){
@@ -366,15 +375,33 @@ void CHNOS_MouseControlTask(System_CommonData *systemdata)
 					if((systemdata->mousedecode.btn & 0x01) != 0){	/*L*/
 						if(focus == (UI_Sheet *)0xFFFFFFFF){
 							focus = Sheet_Get_From_Position(&sys_sheet_ctrl, systemdata->mouse_cursor.position.x, systemdata->mouse_cursor.position.y);
+							focus_win = Window_Get_From_Sheet(focus);
 							focus_moveorg.x = systemdata->mouse_cursor.position.x;
 							focus_moveorg.y = systemdata->mouse_cursor.position.y;
-							if(!focus->mouse_movable){
-								focus = 0;
-							} else{
-								Sheet_UpDown(focus, System_Sheet_Get_Top_Of_Height());
+							if(focus_win != 0){	/*フォーカスはウィンドウ*/
+								Sheet_UpDown(focus_win->control, System_Sheet_Get_Top_Of_Height());
+								Sheet_UpDown(focus_win->client, System_Sheet_Get_Top_Of_Height());
+								if(focus == focus_win->client){	/*フォーカスはウィンドウクライアント領域*/
+										if(!focus->mouse_movable){
+											focus = 0;
+										}
+								} else{	/*フォーカスはウィンドウコントロール領域*/
+									
+								}
+							} else{	/*フォーカスは一般シート*/
+								if(!focus->mouse_movable){
+									focus = 0;
+								} else{
+									Sheet_UpDown(focus, System_Sheet_Get_Top_Of_Height());
+								}
 							}
 						}
-					} else{
+					} else if((button_before & 0x01) != 0){	/*L release*/
+						if(focus != 0 && focus != (UI_Sheet *)0xFFFFFFFF){
+							if(focus_win != 0){
+								Sheet_Slide(focus_win->client, focus->position.x, focus->position.y + focus->size.y);
+							}
+						}
 						focus = (UI_Sheet *)0xFFFFFFFF;
 					}
 					if((systemdata->mousedecode.btn & 0x02) != 0){	/*R*/
@@ -385,6 +412,7 @@ void CHNOS_MouseControlTask(System_CommonData *systemdata)
 					}
 
 				}
+				button_before = systemdata->mousedecode.btn;
 			}
 		}
 	}

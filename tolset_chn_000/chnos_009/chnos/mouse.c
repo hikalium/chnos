@@ -229,7 +229,6 @@ void Mouse_Draw_MouseCursor(UI_MouseCursor *cursor, mcursor_state state)
 	if(state == normal){
 		cursor->state = normal;
 	} else if(state == wait){
-		pattern = 0;
 		cursor->state = wait;
 	}
 

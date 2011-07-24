@@ -294,21 +294,6 @@ struct LISTENER {
 	uint offset;
 };
 
-struct SYSTEM_COMMON_DATA {
-	struct BOOTINFO *bootinfo;
-	struct VESAINFO *vesainfo;
-	struct TASK *maintask;
-	struct FIFO32 sysfifo;
-	struct TASK *keyctrltask;
-	struct FIFO32 keyboardfifo;
-	struct FIFO32 keycmdfifo;
-	int keycmd_wait;
-	struct TASK *mousectrltask;
-	struct FIFO32 mousefifo;
-	struct MOUSE_DECODE mousedecode;
-	struct UI_MOUSE_CURSOR mouse_cursor;
-};
-
 struct DEVICE_FLOPPYDISK {
 	uchar *img;
 	struct DEVICE_FLOPPYDISK_RDE {
@@ -351,6 +336,31 @@ struct FILEINFO {
 	uchar name[13];
 };
 
+struct WINDOW {
+	struct SHEET *client;
+	struct SHEET *control;
+	uchar title[WINDOW_TITLE_LENGTH];
+	struct WINDOW *next;
+	struct FIFO32 *fifo;
+};
+
+struct SYSTEM_COMMON_DATA {
+	struct BOOTINFO *bootinfo;
+	struct VESAINFO *vesainfo;
+	struct TASK *maintask;
+	struct FIFO32 sysfifo;
+	struct TASK *keyctrltask;
+	struct FIFO32 keyboardfifo;
+	struct FIFO32 keycmdfifo;
+	int keycmd_wait;
+	struct TASK *mousectrltask;
+	struct FIFO32 mousefifo;
+	struct MOUSE_DECODE mousedecode;
+	struct UI_MOUSE_CURSOR mouse_cursor;
+	struct SHEET *focus;
+	struct WINDOW windowctrl;
+};
+
 /*typedef structures*/
 typedef struct SEGMENT_DESCRIPTOR	IO_SegmentDescriptor;
 typedef struct GATE_DESCRIPTOR		IO_GateDescriptor;
@@ -374,10 +384,11 @@ typedef struct TASK_STATUS_SEGMENT	IO_TaskStatusSegment;
 typedef struct TASK_CONTROL		UI_TaskControl;
 typedef struct TASK			UI_Task;
 typedef struct LISTENER			UI_Listener;
-typedef struct SYSTEM_COMMON_DATA	System_CommonData;
 typedef struct DEVICE_FLOPPYDISK_RDE	IO_FloppyDisk_RootDirectoryEntry;
 typedef struct DEVICE_FLOPPYDISK	IO_FloppyDisk;
 typedef struct FILEINFO			IO_File;
+typedef struct WINDOW			UI_Window;
+typedef struct SYSTEM_COMMON_DATA	System_CommonData;
 
 /*virtual classes*/
 
@@ -583,6 +594,11 @@ void Timer_Set(UI_Timer *timer, uint count, timer_mode mode);
 void Timer_Run(UI_Timer *timer);
 void Timer_Cancel(UI_Timer *timer);
 void Timer_TaskSwitch_Set(UI_Timer *ts);
+
+/*window.c ウィンドウ関連*/
+void Initialise_Window(UI_Window *windowctrl);
+UI_Window *Window_Create(const uchar *title, uint flags, uint xsize, uint ysize);
+UI_Window *Window_Get_From_Sheet(UI_Sheet *sheet);
 
 /*xception.c CPU例外関連*/
 void CPU_Exception_Abort(int exception, int *esp);

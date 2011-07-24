@@ -38,6 +38,7 @@ void Initialise_System(System_CommonData *systemdata)
 	Initialise_Mouse(&systemdata->mousefifo, DATA_BYTE, &systemdata->mousedecode);
 
 	System_Sheet_Initialise(systemdata->vesainfo->PhysBasePtr, systemdata->bootinfo->scrnx, systemdata->bootinfo->scrny, systemdata->vesainfo->BitsPerPixel);
+	Initialise_Window(&systemdata->windowctrl);
 
 	IO_Store_EFlags(eflags);
 
