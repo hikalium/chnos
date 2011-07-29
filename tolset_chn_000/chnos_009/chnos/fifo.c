@@ -41,25 +41,30 @@ int FIFO32_Put(DATA_FIFO *fifo, uint data)
 	return 0;
 }
 
-int FIFO32_Put_Arguments(DATA_FIFO *fifo, uint args[])
+int FIFO32_Put_Arguments(DATA_FIFO *fifo, uint args, ...)
 {
-	uint i;
+	int i;
+	va_list ap;
 	uint eflags;
 
 	eflags = IO_Load_EFlags();
 	IO_CLI();
 
-	for(i = 0; i < 128; i++){
-		if(FIFO32_Put(fifo, args[i]) == -1){
+	va_start(ap, args);
+
+	for(i = 0; i < args; i++){
+		if(fifo->free <= 1){
 			i = -1;
 			break;
 		}
-		if(args[i] == 0xFFFFFFFF){
-			break;
-		}
+		FIFO32_Put(fifo, va_arg(ap, uint));
 	}
+	FIFO32_Put(fifo, SIGNAL_ARGUMENTS_END);
+
+	va_end(ap);
 	IO_Store_EFlags(eflags);
-	return i;
+
+	return i; 
 }
 
 void FIFO32_Set_Task(DATA_FIFO *fifo, UI_Task *task)

@@ -1,8 +1,13 @@
 
 #include "core.h"
 
-void InputBox_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, UI_InputBox *box, uint x, uint y, uint xsize, uint ysize, uint txtbufsize, uint forecol, uint backcol, uint height)
+UI_InputBox *InputBox_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, uint x, uint y, uint xsize, uint ysize, uint txtbufsize, uint forecol, uint backcol, uint height)
 {
+	UI_InputBox *box;
+
+	box = MemoryBlock_Allocate_System(sizeof(UI_InputBox));
+	MemoryBlock_Write_Description(box, "UI_InputBox");
+
 	xsize = xsize & ~7;
 	ysize = ysize & ~15;
 	box->sheet = Sheet_Get(sheetctrl, xsize, ysize, 0, 0);
@@ -11,7 +16,7 @@ void InputBox_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl,
 	MemoryBlock_Write_Description(box->input_buf, "INPBOX_TXTBUF");
 	box->input_count = 0;
 	box->cursor.x = 0;
-	box->cursor.y = -16;
+	box->cursor.y = 0;
 	box->prompt.x = -8;
 	box->prompt.y = 0;
 	box->forecol = forecol;
@@ -20,7 +25,7 @@ void InputBox_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl,
 	box->record = true;
 	Draw_Fill_Rectangle(box->sheet->vram, box->sheet->size.x, box->backcol, 0, 0, box->sheet->size.x - 1, box->sheet->size.y - 1);
 	Sheet_Show(box->sheet, x, y, height);
-	return;
+	return box;
 }
 
 int InputBox_Put_String(UI_InputBox *box, const uchar *s)
@@ -123,28 +128,25 @@ void InputBox_Put_String_Main(UI_InputBox *box, const uchar *str)
 
 void InputBox_Check_NewLine(UI_InputBox *box)
 {
-	if(box->cursor.x <= box->prompt.x){
-		if(box->cursor.y != box->prompt.y){
-			if(box->cursor.x < box->prompt.x){
+	if(box->cursor.x <= box->prompt.x || box->cursor.x < 0){	/*プロンプトまたは画面より左に移動しようとした*/
+		if(box->cursor.y != box->prompt.y){	/*プロンプトと同じ行ではない*/
 				box->cursor.y -= 16;
 				box->cursor.x = box->sheet->size.x - 8;
-			}
-		} else{
+		} else{/*プロンプトと同じ行*/
 			box->cursor.y = box->prompt.y;
-			box->cursor.x = 8;
+			box->cursor.x = box->prompt.x + 8;
 		}
 	} else if(box->cursor.x >= box->sheet->size.x){
 		if(box->cursor.y <= box->sheet->size.y - 17){
-			box->cursor.x = 0;
+			box->cursor.x = box->prompt.x + 8;
 			box->cursor.y += 16;
 		} else{
 			InputBox_Slide_Line(box);
-			box->cursor.x = 0;
+			box->cursor.x = box->prompt.x + 8;
 			if(box->prompt.y > 0){
 				box->prompt.y -= 16;
 			} else{
 				box->prompt.y = 0;
-				box->prompt.x = 0;
 			}
 		}
 	}
@@ -158,13 +160,14 @@ void InputBox_NewLine_No_Prompt(UI_InputBox *box)
 {
 	if(box->cursor.y <= box->sheet->size.y - 17){
 		Sheet_Draw_Fill_Rectangle(box->sheet, box->backcol, box->cursor.x, box->cursor.y, box->cursor.x + 8 - 1, box->cursor.y + 16 - 1);
-		box->cursor.x = 0;
+		box->cursor.x = box->prompt.x + 8;
 		box->cursor.y = box->cursor.y + 16;
 	} else{
 		Sheet_Draw_Fill_Rectangle(box->sheet, box->backcol, box->cursor.x, box->cursor.y, box->cursor.x + 8 - 1, box->cursor.y + 16 - 1);
 		InputBox_Slide_Line(box);
-		box->cursor.x = 0;
+		box->cursor.x = box->prompt.x + 8;
 	}
+	InputBox_Check_NewLine(box);
 	return;
 }
 
@@ -224,7 +227,7 @@ void InputBox_Clear(UI_InputBox *box)
 {
 	InputBox_Reset_Input_Buffer(box);
 	box->cursor.x = 0;
-	box->cursor.y = -16;
+	box->cursor.y = 0;
 	box->prompt.x = -8;
 	box->prompt.y = 0;
 	Sheet_Draw_Fill_Rectangle(box->sheet, box->backcol, 0, 0, box->sheet->size.x - 1, box->sheet->size.y - 1);

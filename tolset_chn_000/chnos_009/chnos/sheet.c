@@ -37,6 +37,7 @@ void Sheet_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, vo
 	sheetctrl->base.visible = false;
 	sheetctrl->base.mouse_movable = false;
 	sheetctrl->base.myctrl = sheetctrl;
+	sheetctrl->base.fifo = 0;
 
 	sheetctrl->sheets = 0;
 	return;
@@ -78,7 +79,9 @@ UI_Sheet *Sheet_Get(UI_Sheet_Control *ctrl, uint xsize, uint ysize, uint bpp, ui
 	sheet->myctrl = ctrl;
 
 	sheet->visible = false;
-	sheet->mouse_movable = true;
+	sheet->mouse_movable = false;
+	sheet->MouseEventProcedure = 0;
+	sheet->fifo = 0;
 
 	return sheet;
 }
@@ -154,6 +157,18 @@ void Sheet_Set_Movable(UI_Sheet *sheet, bool movable)
 	return;
 }
 
+void Sheet_Set_MouseEventProcedure(UI_Sheet *sheet, void (*procedure)(UI_MouseEventArguments *e))
+{
+	sheet->MouseEventProcedure = procedure;
+	return;
+}
+
+void Sheet_Set_FIFO(UI_Sheet *sheet, DATA_FIFO *fifo)
+{
+	sheet->fifo = fifo;
+	return;
+}
+
 void Sheet_Slide(UI_Sheet *sheet, int px, int py)
 {
 	int movex, movey;
@@ -224,14 +239,16 @@ uint Sheet_UpDown(UI_Sheet *sheet, uint height)
 	uint i;
 	UI_Sheet *now;
 
-	now = sheet;
-	for(i = 0; ; i++){
-		if(now->before->before == 0){
-			break;
-		}
-		now = now->before;
+	if(sheet->before == 0){
+		return 0;
 	}
-	if(i == height - 1){
+
+	now = &sheet->myctrl->base;
+
+	for(i = 0; now != sheet; i++){
+		now = now->next;
+	}
+	if(i == height){
 		return i;
 	}
 	Sheet_Remove(sheet);
@@ -249,7 +266,6 @@ void Sheet_Remove(UI_Sheet *sheet)
 	ctrl = sheet->myctrl;
 
 	ctrl->sheets--;
-	ctrl = sheet->myctrl;
 	sheet->visible = false;
 	Sheet_Refresh_Map(sheet, sheet->position.x, sheet->position.y, sheet->position.x + sheet->size.x - 1, sheet->position.y + sheet->size.y - 1);
 	sheet->before->next = sheet->next;
@@ -734,4 +750,3 @@ uint System_Sheet_Get_Top_Of_Height(void)
 {
 	return Sheet_Get_Top_Of_Height(&sys_sheet_ctrl);
 }
-

@@ -141,6 +141,14 @@ struct TIMER_CONTROL {
 	struct TIMER *ts;
 };
 
+struct MOUSE_EVENT_ARGUMENTS {
+	struct SHEET *focus;
+	struct POSITION_2D move;
+	struct POSITION_2D position_local;
+	uint button;
+	uint button_before;
+};
+
 struct SHEET {
 	void *vram;
 	struct POSITION_2D position;
@@ -154,6 +162,8 @@ struct SHEET {
 	bool visible;
 	bool mouse_movable;
 	struct SHEET_CONTROL *myctrl;
+	void (*MouseEventProcedure)(struct MOUSE_EVENT_ARGUMENTS *e);
+	struct FIFO32 *fifo;
 };
 
 struct SHEET_CONTROL {
@@ -341,7 +351,14 @@ struct WINDOW {
 	struct SHEET *control;
 	uchar title[WINDOW_TITLE_LENGTH];
 	struct WINDOW *next;
-	struct FIFO32 *fifo;
+};
+
+struct CONSOLE {
+	struct WINDOW *win;
+	struct UI_INPUTBOX *input;
+	struct CONSOLE *next;
+	struct FIFO32 fifo;
+	struct TIMER *ctimer;
 };
 
 struct SYSTEM_COMMON_DATA {
@@ -358,7 +375,9 @@ struct SYSTEM_COMMON_DATA {
 	struct MOUSE_DECODE mousedecode;
 	struct UI_MOUSE_CURSOR mouse_cursor;
 	struct SHEET *focus;
+	struct SHEET *key_focus;
 	struct WINDOW windowctrl;
+	struct CONSOLE consctrl;
 };
 
 /*typedef structures*/
@@ -388,6 +407,8 @@ typedef struct DEVICE_FLOPPYDISK_RDE	IO_FloppyDisk_RootDirectoryEntry;
 typedef struct DEVICE_FLOPPYDISK	IO_FloppyDisk;
 typedef struct FILEINFO			IO_File;
 typedef struct WINDOW			UI_Window;
+typedef struct MOUSE_EVENT_ARGUMENTS	UI_MouseEventArguments;
+typedef struct CONSOLE			UI_Console;
 typedef struct SYSTEM_COMMON_DATA	System_CommonData;
 
 /*virtual classes*/
@@ -405,6 +426,11 @@ extern uint *ADR_Paging_Directory;
 void CHNOS_KeyboardControlTask(System_CommonData *systemdata);
 void CHNOS_MouseControlTask(System_CommonData *systemdata);
 
+/*console.c*/
+void Initialise_Console(UI_Console *consctrl);
+UI_Console *Console_Create(uint xchars, uint ychars);
+void Console_MainTask(UI_Console *cons);
+
 /*cpuid.c*/
 void CPU_Identify(DATA_CPUID *id);
 
@@ -421,7 +447,7 @@ void GateDescriptor_Set(uint gd, uint offset, uint selector, uint ar);
 /*fifo.c FIFOバッファ関連*/
 int FIFO32_Initialise(DATA_FIFO *fifo, uint size);
 int FIFO32_Put(DATA_FIFO *fifo, uint data);
-int FIFO32_Put_Arguments(DATA_FIFO *fifo, uint args[]);
+int FIFO32_Put_Arguments(DATA_FIFO *fifo, uint args, ...);
 void FIFO32_Set_Task(DATA_FIFO *fifo, UI_Task *task);
 uint FIFO32_Get(DATA_FIFO *fifo);
 uint FIFO32_Status(DATA_FIFO *fifo);
@@ -466,7 +492,7 @@ int Emergency_Out(const uchar *format, ...);
 void Initialise_System(System_CommonData *systemdata);
 
 /*inputbox.c*/
-void InputBox_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, UI_InputBox *box, uint x, uint y, uint xsize, uint ysize, uint txtbufsize, uint forecol, uint backcol, uint height);
+UI_InputBox *InputBox_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, uint x, uint y, uint xsize, uint ysize, uint txtbufsize, uint forecol, uint backcol, uint height);
 int InputBox_Put_String(UI_InputBox *box, const uchar *s);
 int InputBox_Put_Character(UI_InputBox *box, uchar c);
 void InputBox_Put_String_Main(UI_InputBox *box, const uchar *str);
@@ -560,6 +586,8 @@ void Sheet_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, vo
 UI_Sheet *Sheet_Get(UI_Sheet_Control *ctrl, uint xsize, uint ysize, uint bpp, uint invcol);
 uint Sheet_Show(UI_Sheet *sheet, int px, int py, uint height);
 void Sheet_Set_Movable(UI_Sheet *sheet, bool movable);
+void Sheet_Set_MouseEventProcedure(UI_Sheet *sheet, void (*procedure)(UI_MouseEventArguments *e));
+void Sheet_Set_FIFO(UI_Sheet *sheet, DATA_FIFO *fifo);
 void Sheet_Slide(UI_Sheet *sheet, int px, int py);
 uint Sheet_UpDown(UI_Sheet *sheet, uint height);
 void Sheet_Remove(UI_Sheet *sheet);
@@ -598,7 +626,9 @@ void Timer_TaskSwitch_Set(UI_Timer *ts);
 /*window.c ウィンドウ関連*/
 void Initialise_Window(UI_Window *windowctrl);
 UI_Window *Window_Create(const uchar *title, uint flags, uint xsize, uint ysize);
+UI_Window *Window_Create_User(const uchar *title, uint flags, UI_Sheet *client);
 UI_Window *Window_Get_From_Sheet(UI_Sheet *sheet);
+void Window_Control_MouseEventProcedure(UI_MouseEventArguments *e);
 
 /*xception.c CPU例外関連*/
 void CPU_Exception_Abort(int exception, int *esp);

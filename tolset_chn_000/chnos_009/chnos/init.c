@@ -7,6 +7,8 @@ void Initialise_System(System_CommonData *systemdata)
 
 	systemdata->vesainfo = (DATA_VESAInfo *) ADR_VESAINFO;
 	systemdata->bootinfo = (DATA_BootInfo *) ADR_BOOTINFO;
+	systemdata->focus = 0;
+	systemdata->key_focus = 0;
 
 	eflags = IO_Load_EFlags();
 	IO_CLI();
@@ -39,6 +41,7 @@ void Initialise_System(System_CommonData *systemdata)
 
 	System_Sheet_Initialise(systemdata->vesainfo->PhysBasePtr, systemdata->bootinfo->scrnx, systemdata->bootinfo->scrny, systemdata->vesainfo->BitsPerPixel);
 	Initialise_Window(&systemdata->windowctrl);
+	Initialise_Console(&systemdata->consctrl);
 
 	IO_Store_EFlags(eflags);
 
