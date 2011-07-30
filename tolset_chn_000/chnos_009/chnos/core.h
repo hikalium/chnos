@@ -163,7 +163,9 @@ struct SHEET {
 	bool mouse_movable;
 	struct SHEET_CONTROL *myctrl;
 	void (*MouseEventProcedure)(struct MOUSE_EVENT_ARGUMENTS *e);
+	uint msignal_flags;
 	struct FIFO32 *fifo;
+	uint ksignal_flags;
 };
 
 struct SHEET_CONTROL {
@@ -420,16 +422,19 @@ extern IO_MemoryControl sys_mem_ctrl;
 extern Memory SystemMemory;
 extern UI_TaskControl *taskctrl;
 extern uint *ADR_Paging_Directory;
+extern uchar *ACPI_MemoryMap_Type[5];
 
 /*functions*/
 /*bootpack.c ŠîŠ²•”•ª*/
-void CHNOS_KeyboardControlTask(System_CommonData *systemdata);
-void CHNOS_MouseControlTask(System_CommonData *systemdata);
+void CHNOS_KeyboardControlTask(void);
+void CHNOS_MouseControlTask(void);
+void CHNOS_UI_KeyFocus_Change(UI_Sheet *focus_new);
 
 /*console.c*/
 void Initialise_Console(UI_Console *consctrl);
 UI_Console *Console_Create(uint xchars, uint ychars);
 void Console_MainTask(UI_Console *cons);
+void Console_Command_memmap(UI_Console *cons);
 
 /*cpuid.c*/
 void CPU_Identify(DATA_CPUID *id);
@@ -586,8 +591,8 @@ void Sheet_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, vo
 UI_Sheet *Sheet_Get(UI_Sheet_Control *ctrl, uint xsize, uint ysize, uint bpp, uint invcol);
 uint Sheet_Show(UI_Sheet *sheet, int px, int py, uint height);
 void Sheet_Set_Movable(UI_Sheet *sheet, bool movable);
-void Sheet_Set_MouseEventProcedure(UI_Sheet *sheet, void (*procedure)(UI_MouseEventArguments *e));
-void Sheet_Set_FIFO(UI_Sheet *sheet, DATA_FIFO *fifo);
+void Sheet_Set_MouseEventProcedure(UI_Sheet *sheet, void (*procedure)(UI_MouseEventArguments *e), uint flags);
+void Sheet_Set_FIFO(UI_Sheet *sheet, DATA_FIFO *fifo, uint flags);
 void Sheet_Slide(UI_Sheet *sheet, int px, int py);
 uint Sheet_UpDown(UI_Sheet *sheet, uint height);
 void Sheet_Remove(UI_Sheet *sheet);

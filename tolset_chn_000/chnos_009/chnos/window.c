@@ -93,7 +93,7 @@ UI_Window *Window_Create(const uchar *title, uint flags, uint xsize, uint ysize)
 	}
 	Sheet_Draw_Put_String(win->control, 4 + 8, 4, 0x00000000, win->title);
 
-	Sheet_Set_MouseEventProcedure(win->control, &Window_Control_MouseEventProcedure);
+	Sheet_Set_MouseEventProcedure(win->control, &Window_Control_MouseEventProcedure, 0);
 
 	Sheet_Show(win->control, x, y, System_Sheet_Get_Top_Of_Height());
 	Sheet_Show(win->client, x, y + win->control->size.y, System_Sheet_Get_Top_Of_Height());
@@ -103,6 +103,8 @@ UI_Window *Window_Create(const uchar *title, uint flags, uint xsize, uint ysize)
 	}
 	win->next = 0;
 	end->next = win;
+
+	CHNOS_UI_KeyFocus_Change(win->client);
 
 	return win;
 }
@@ -167,7 +169,7 @@ UI_Window *Window_Create_User(const uchar *title, uint flags, UI_Sheet *client)
 	}
 	Sheet_Draw_Put_String(win->control, 4 + 8, 4, 0x00000000, win->title);
 
-	Sheet_Set_MouseEventProcedure(win->control, &Window_Control_MouseEventProcedure);
+	Sheet_Set_MouseEventProcedure(win->control, &Window_Control_MouseEventProcedure, 0);
 
 	Sheet_Show(win->control, x, y, System_Sheet_Get_Top_Of_Height());
 
@@ -183,6 +185,8 @@ UI_Window *Window_Create_User(const uchar *title, uint flags, UI_Sheet *client)
 	}
 	win->next = 0;
 	end->next = win;
+
+	CHNOS_UI_KeyFocus_Change(win->client);
 
 	return win;
 }

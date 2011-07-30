@@ -38,6 +38,8 @@ void Sheet_Initialise(UI_Sheet_Control *sheetctrl, IO_MemoryControl *memctrl, vo
 	sheetctrl->base.mouse_movable = false;
 	sheetctrl->base.myctrl = sheetctrl;
 	sheetctrl->base.fifo = 0;
+	sheetctrl->base.msignal_flags = 0;
+	sheetctrl->base.ksignal_flags = 0;
 
 	sheetctrl->sheets = 0;
 	return;
@@ -82,6 +84,8 @@ UI_Sheet *Sheet_Get(UI_Sheet_Control *ctrl, uint xsize, uint ysize, uint bpp, ui
 	sheet->mouse_movable = false;
 	sheet->MouseEventProcedure = 0;
 	sheet->fifo = 0;
+	sheet->msignal_flags = 0;
+	sheet->ksignal_flags = 0;
 
 	return sheet;
 }
@@ -157,15 +161,17 @@ void Sheet_Set_Movable(UI_Sheet *sheet, bool movable)
 	return;
 }
 
-void Sheet_Set_MouseEventProcedure(UI_Sheet *sheet, void (*procedure)(UI_MouseEventArguments *e))
+void Sheet_Set_MouseEventProcedure(UI_Sheet *sheet, void (*procedure)(UI_MouseEventArguments *e), uint flags)
 {
 	sheet->MouseEventProcedure = procedure;
+	sheet->msignal_flags = flags;
 	return;
 }
 
-void Sheet_Set_FIFO(UI_Sheet *sheet, DATA_FIFO *fifo)
+void Sheet_Set_FIFO(UI_Sheet *sheet, DATA_FIFO *fifo, uint flags)
 {
 	sheet->fifo = fifo;
+	sheet->ksignal_flags = flags;
 	return;
 }
 
