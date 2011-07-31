@@ -74,15 +74,16 @@ void CHNMain(void)
 
 	desktop = System_Sheet_Get(systemdata.bootinfo->scrnx, systemdata.bootinfo->scrny, 0, 0);
 	Sheet_Show(desktop, 0, 0, System_Sheet_Get_Top_Of_Height());
-	Sheet_Draw_Fill_Rectangle(desktop, 0x66FF66, 0, 0, desktop->size.x - 1, desktop->size.y - 1);
+	Sheet_Draw_Fill_Rectangle(desktop, 0x66ff66, 0, 0, desktop->size.x - 1, desktop->size.y - 1);
 
-	console = InputBox_Initialise(&sys_sheet_ctrl, &sys_mem_ctrl, 8, 16, systemdata.bootinfo->scrnx - 16, systemdata.bootinfo->scrny - 100, 1024, 0xFFFFFF, 0x868686, System_Sheet_Get_Top_Of_Height());
+	console = InputBox_Initialise(&sys_sheet_ctrl, &sys_mem_ctrl, 8, 16, systemdata.bootinfo->scrnx - 16, systemdata.bootinfo->scrny - 100, 1024, 0xffffff, 0x868686, System_Sheet_Get_Top_Of_Height());
 	Sheet_Set_Movable(console->sheet, true);
 
 	taskbar = System_Sheet_Get(systemdata.bootinfo->scrnx, 32, 0, 0);
 	Sheet_Show(taskbar, 0, systemdata.bootinfo->scrny - 32, System_Sheet_Get_Top_Of_Height());
-	Sheet_Draw_Fill_Rectangle(taskbar, 0x6666FF, 0, 0, taskbar->size.x - 1, taskbar->size.y - 1);
-	Sheet_Draw_Put_String(taskbar, 0, 0, 0xFFFFFF, "Taskbar");
+//	Sheet_Draw_Fill_Rectangle(taskbar, 0x6666ff, 0, 0, taskbar->size.x - 1, taskbar->size.y - 1);
+	Sheet_Draw_Fill_Rectangle_Gradation_Vertical(taskbar, 0xffffff, 0x6666ff, 0, 0, taskbar->size.x - 1, taskbar->size.y - 1);
+
 
 	InputBox_Put_String(console, "Welcome to CHNOSProject.");
 
@@ -382,7 +383,19 @@ void CHNOS_MouseControlTask(void)
 			} else if(DATA_BYTE <= i && i < (DATA_BYTE * 2)){	/*マウスからの受信データ*/
 				if(Mouse_Decode(i - DATA_BYTE) != 0){
 					Mouse_Move_Relative(&systemdata.mouse_cursor, systemdata.mousedecode.move.x, systemdata.mousedecode.move.y);
-					systemdata.focus = Sheet_Get_From_Position(&sys_sheet_ctrl, systemdata.mouse_cursor.position.x, systemdata.mouse_cursor.position.y);
+					if(focus == 0){
+						if(systemdata.focus != Sheet_Get_From_Position(&sys_sheet_ctrl, systemdata.mouse_cursor.position.x, systemdata.mouse_cursor.position.y)){
+							if(systemdata.focus != 0 && systemdata.focus->MouseEventProcedure != 0){
+								e.focus = systemdata.focus;
+								e.move.x = 0;
+								e.move.y = 0;
+								e.button = 0;
+								e.button_before = (uint)button_before;
+								systemdata.focus->MouseEventProcedure(&e);
+							}
+						}
+						systemdata.focus = Sheet_Get_From_Position(&sys_sheet_ctrl, systemdata.mouse_cursor.position.x, systemdata.mouse_cursor.position.y);
+					}
 					if((systemdata.mousedecode.btn & MOUSE_BUTTON_L) != 0 && (button_before & MOUSE_BUTTON_L) == 0){	/*L down*/
 						if(systemdata.key_focus != systemdata.focus){
 							key_focus_changed = true;

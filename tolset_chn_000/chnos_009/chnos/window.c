@@ -36,9 +36,8 @@ UI_Window *Window_Create(const uchar *title, uint flags, uint xsize, uint ysize)
 {
 	DATA_BootInfo *boot = (DATA_BootInfo *)ADR_BOOTINFO;
 	UI_Window *win, *end;
-	uint i, color;
+	uint i;
 	int x, y;
-	uchar c;
 
 	win = MemoryBlock_Allocate_System(sizeof(UI_Window));
 	MemoryBlock_Write_Description(win, "UI_Window");
@@ -55,27 +54,12 @@ UI_Window *Window_Create(const uchar *title, uint flags, uint xsize, uint ysize)
 	win->client = System_Sheet_Get(xsize, ysize, 0, 0);
 	Sheet_Set_Movable(win->control, true);
 
-	Sheet_Draw_Fill_Rectangle(win->control, 0x7cfc00, 0, 0, win->control->size.x - 1, win->control->size.y - 1);
+//	Sheet_Draw_Fill_Rectangle(win->control, 0x7cfc00, 0, 0, win->control->size.x - 1, win->control->size.y - 1);
+	Sheet_Draw_Fill_Rectangle_Gradation_Vertical(win->control, 0xffffff, 0x7cfc00, 0, 0, win->control->size.x - 1, win->control->size.y - 1);
+
 	Sheet_Draw_Fill_Rectangle(win->client, 0xffffff, 0, 0, win->client->size.x - 1, win->client->size.y - 1);
 
-	for(y = 0; y < 16; y++){
-		for(x = 0; x < 40; x++){
-			c = closebutton[y][x];
-			color = 0xffffff;
-			if(c == '@'){
-				color = 0x8b0000;
-			} else if(c == '$'){
-				color = 0xff0000;
-			} else if(c == 'Q'){
-				color = 0xff0000;
-			} else if(c == 'J'){
-				color = 0xffffff;
-			} else if(c == 'O'){
-				color = 0xffffff;
-			}
-			Sheet_Draw_Point(win->control, color, win->control->size.x - 44 + x, y);
-		}
-	}
+	Window_Draw_CloseButton(win, false);
 
 	Sheet_Draw_Fill_Rectangle(win->control, 0xffffff, 0, 0, win->control->size.x - 1, 0);
 	Sheet_Draw_Fill_Rectangle(win->control, 0xffffff, 0, 0, 0, win->control->size.y - 1);
@@ -113,9 +97,8 @@ UI_Window *Window_Create_User(const uchar *title, uint flags, UI_Sheet *client)
 {
 	DATA_BootInfo *boot = (DATA_BootInfo *)ADR_BOOTINFO;
 	UI_Window *win, *end;
-	uint i, color;
+	uint i;
 	int x, y;
-	uchar c;
 
 	win = MemoryBlock_Allocate_System(sizeof(UI_Window));
 	MemoryBlock_Write_Description(win, "UI_Window");
@@ -132,26 +115,10 @@ UI_Window *Window_Create_User(const uchar *title, uint flags, UI_Sheet *client)
 	win->client = client;
 	Sheet_Set_Movable(win->control, true);
 
-	Sheet_Draw_Fill_Rectangle(win->control, 0x7cfc00, 0, 0, win->control->size.x - 1, win->control->size.y - 1);
+//	Sheet_Draw_Fill_Rectangle(win->control, 0x7cfc00, 0, 0, win->control->size.x - 1, win->control->size.y - 1);
+	Sheet_Draw_Fill_Rectangle_Gradation_Vertical(win->control, 0xffffff, 0x7cfc00, 0, 0, win->control->size.x - 1, win->control->size.y - 1);
 
-	for(y = 0; y < 16; y++){
-		for(x = 0; x < 40; x++){
-			c = closebutton[y][x];
-			color = 0xffffff;
-			if(c == '@'){
-				color = 0x8b0000;
-			} else if(c == '$'){
-				color = 0xff0000;
-			} else if(c == 'Q'){
-				color = 0xff0000;
-			} else if(c == 'J'){
-				color = 0xffffff;
-			} else if(c == 'O'){
-				color = 0xffffff;
-			}
-			Sheet_Draw_Point(win->control, color, win->control->size.x - 44 + x, y);
-		}
-	}
+	Window_Draw_CloseButton(win, false);
 
 	Sheet_Draw_Fill_Rectangle(win->control, 0xffffff, 0, 0, win->control->size.x - 1, 0);
 	Sheet_Draw_Fill_Rectangle(win->control, 0xffffff, 0, 0, 0, win->control->size.y - 1);
@@ -214,10 +181,50 @@ void Window_Control_MouseEventProcedure(UI_MouseEventArguments *e)
 	}
 
 	if((e->button & MOUSE_BUTTON_L) != 0 && (e->button_before & MOUSE_BUTTON_L) == 0){	/*L down*/
+		CHNOS_UI_KeyFocus_Change(focus_win->client);
 		Sheet_UpDown(focus_win->client, System_Sheet_Get_Top_Of_Height() - 1);
+		if(focus_win->control->size.x - 44 <= e->position_local.x && e->position_local.x <= focus_win->control->size.x - 4 - 1 && 0 <= e->position_local.y && e->position_local.y <= 16 - 1){
+			Window_Draw_CloseButton(focus_win, true);
+		}
 	}
 	if((e->button & MOUSE_BUTTON_L) == 0 && (e->button_before & MOUSE_BUTTON_L) != 0){	/*L release*/
 		Sheet_Slide(focus_win->client, focus_win->control->position.x, focus_win->control->position.y + focus_win->control->size.y);
+		Window_Draw_CloseButton(focus_win, false);
 	}
+	return;
+}
+
+void Window_Draw_CloseButton(UI_Window *win, bool pressed)
+{
+	uint x, y, color;
+	uchar c;
+
+	if(pressed){
+		Sheet_Draw_Fill_Rectangle_Gradation_Vertical(win->control, 0xff0000, 0xffffff, win->control->size.x - 44, 0, win->control->size.x - 4 - 1, 16 - 1);
+	} else{
+		Sheet_Draw_Fill_Rectangle_Gradation_Vertical(win->control, 0xffffff, 0xff0000, win->control->size.x - 44, 0, win->control->size.x - 4 - 1, 16 - 1);
+	}
+
+	for(y = 0; y < 16; y++){
+		for(x = 0; x < 40; x++){
+			c = closebutton[y][x];
+			color = 0x000000;
+			if(c == '@'){
+				//color = 0x8b0000;
+			} else if(c == '$'){
+				//color = 0xff0000;
+			} else if(c == 'Q'){
+				//color = 0xff0000;
+			} else if(c == 'J'){
+				color = 0xffffff;
+			} else if(c == 'O'){
+				//color = 0xffffff;
+			}
+			if(color != 0x000000){
+				Sheet_Draw_Point(win->control, color, win->control->size.x - 44 + x, y);
+			}
+		}
+	}
+
 	return;
 }

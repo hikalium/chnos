@@ -41,7 +41,9 @@ void Initialise_System(System_CommonData *systemdata)
 
 	System_Sheet_Initialise(systemdata->vesainfo->PhysBasePtr, systemdata->bootinfo->scrnx, systemdata->bootinfo->scrny, systemdata->vesainfo->BitsPerPixel);
 	Initialise_Window(&systemdata->windowctrl);
-	Initialise_Console(&systemdata->consctrl);
+	Initialise_Console(&systemdata->consctrl, systemdata);
+
+	systemdata->fd_boot = FloppyDisk_Initialise((uchar *)ADR_DISKIMG);
 
 	IO_Store_EFlags(eflags);
 

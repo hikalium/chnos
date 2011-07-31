@@ -380,6 +380,7 @@ struct SYSTEM_COMMON_DATA {
 	struct SHEET *key_focus;
 	struct WINDOW windowctrl;
 	struct CONSOLE consctrl;
+	struct DEVICE_FLOPPYDISK *fd_boot;
 };
 
 /*typedef structures*/
@@ -431,10 +432,17 @@ void CHNOS_MouseControlTask(void);
 void CHNOS_UI_KeyFocus_Change(UI_Sheet *focus_new);
 
 /*console.c*/
-void Initialise_Console(UI_Console *consctrl);
+void Initialise_Console(UI_Console *consctrl, System_CommonData *systemdata);
 UI_Console *Console_Create(uint xchars, uint ychars);
 void Console_MainTask(UI_Console *cons);
 void Console_Command_memmap(UI_Console *cons);
+void Console_Command_memblock(UI_Console *cons);
+void Console_Command_mem(UI_Console *cons);
+void Console_Command_systeminfo(UI_Console *cons);
+void Console_Command_task(UI_Console *cons);
+void Console_Command_window(UI_Console *cons);
+void Console_Command_console(UI_Console *cons);
+void Console_Command_type(UI_Console *cons, const uchar filename[]);
 
 /*cpuid.c*/
 void CPU_Identify(DATA_CPUID *id);
@@ -611,6 +619,7 @@ void Sheet_Refresh_Invalid(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 void Sheet_Draw_Put_String(UI_Sheet *sheet, uint x, uint y, uint c, const uchar *s);
 void Sheet_Draw_Put_String_With_BackColor(UI_Sheet *sheet, uint x, uint y, uint c, uint bc, const uchar *s);
 void Sheet_Draw_Fill_Rectangle(UI_Sheet *sheet, uint c, uint x0, uint y0, uint x1, uint y1);
+void Sheet_Draw_Fill_Rectangle_Gradation_Vertical(UI_Sheet *sheet, uint c0, uint c1, uint x0, uint y0, uint x1, uint y1);
 void Sheet_Draw_Point(UI_Sheet *sheet, uint c, uint x, uint y);
 void System_Sheet_Initialise(void *vram, uint xsize, uint ysize, uint bpp);
 UI_Sheet *System_Sheet_Get(uint xsize, uint ysize, uint bpp, uint invcol);
@@ -634,6 +643,7 @@ UI_Window *Window_Create(const uchar *title, uint flags, uint xsize, uint ysize)
 UI_Window *Window_Create_User(const uchar *title, uint flags, UI_Sheet *client);
 UI_Window *Window_Get_From_Sheet(UI_Sheet *sheet);
 void Window_Control_MouseEventProcedure(UI_MouseEventArguments *e);
+void Window_Draw_CloseButton(UI_Window *win, bool pressed);
 
 /*xception.c CPU—áŠOŠÖ˜A*/
 void CPU_Exception_Abort(int exception, int *esp);

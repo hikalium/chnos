@@ -710,6 +710,42 @@ void Sheet_Draw_Fill_Rectangle(UI_Sheet *sheet, uint c, uint x0, uint y0, uint x
 	return;
 }
 
+void Sheet_Draw_Fill_Rectangle_Gradation_Vertical(UI_Sheet *sheet, uint c0, uint c1, uint x0, uint y0, uint x1, uint y1)
+{
+	int nowcol, nowcol_R, nowcol_G, nowcol_B, add_R, add_G, add_B;
+	uint x, y;
+
+	if(x1 >= sheet->size.x || y1 >= sheet->size.y){
+		return;
+	}
+
+	if(y1 == y0){
+		return;
+	}
+
+	c0 &= 0x00ffffff;
+	c1 &= 0x00ffffff;
+
+	add_R = (((int)((c1 & 0x00ff0000) >> 16) << 10) - ((int)((c0 & 0x00ff0000) >> 16) << 10)) / (int)(y1 - y0);
+	add_G = (((int)((c1 & 0x0000ff00) >> 8) << 10) - ((int)((c0 & 0x0000ff00) >> 8) << 10)) / (int)(y1 - y0);
+	add_B = (((int)(c1 & 0x000000ff) << 10) - ((int)(c0 & 0x000000ff) << 10)) / (int)(y1 - y0);
+
+	nowcol_R = ((c0 & 0x00ff0000) >> 16) << 10;
+	nowcol_G = ((c0 & 0x0000ff00) >> 8) << 10;
+	nowcol_B = (c0 & 0x000000ff) << 10;
+
+	for(y = y0; y <= y1; y++){
+		nowcol = ((nowcol_R >> 10) << 16) | ((nowcol_G >> 10) << 8) | (nowcol_B >> 10);
+		for(x = x0; x <= x1; x++){
+			Sheet_Draw_Point(sheet, (uint)nowcol, x, y);
+		}
+		nowcol_R += add_R;
+		nowcol_G += add_G;
+		nowcol_B += add_B;
+	}
+
+	return;
+}
 void Sheet_Draw_Point(UI_Sheet *sheet, uint c, uint x, uint y)
 {
 	if(sheet->bpp == 32){
@@ -718,7 +754,8 @@ void Sheet_Draw_Point(UI_Sheet *sheet, uint c, uint x, uint y)
 		c = RGB_32_To_16(c);
 		((ushort *)sheet->vram)[y * sheet->size.x + x] = (ushort)c;
 	} else if(sheet->bpp == 8){
-		c = RGB_32_To_08(c);
+//		c = RGB_32_To_08(c);
+		c = RGB_32_To_08_xy(c, x, y);
 		((uchar *)sheet->vram)[y * sheet->size.x + x] = (uchar)c;
 	}
 	sheet->Refresh(sheet, x, y, x, y);
