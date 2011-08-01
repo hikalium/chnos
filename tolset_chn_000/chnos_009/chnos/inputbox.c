@@ -95,9 +95,7 @@ void InputBox_Put_String_Main(UI_InputBox *box, const uchar *str)
 		} else if(str[i] == '\r'){
 
 		} else if(str[i] == '\n'){
-			if(box->cursor.x != 0){
-				InputBox_NewLine_No_Prompt(box);
-			}
+			InputBox_NewLine_No_Prompt(box);
 		} else if(str[i] == '\t'){
 			for(;;){
 				Sheet_Draw_Fill_Rectangle(box->sheet, box->backcol, box->cursor.x, box->cursor.y, box->cursor.x + 8 - 1, box->cursor.y + 16 - 1);

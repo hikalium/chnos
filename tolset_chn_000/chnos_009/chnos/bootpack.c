@@ -13,20 +13,11 @@ System_CommonData systemdata;
 
 void CHNMain(void)
 {
-	UI_InputBox *console;
-	uint i, j, k;
-	int n;
+	uint i;
 	UI_Timer *c_timer;
 	UI_Sheet *taskbar, *desktop;
 	UI_Task *mytask;
 	uchar s[128];
-	Memory *memblock;
-	uint memusing;
-	UI_Task *task;
-	IO_FloppyDisk *fd;
-	IO_File type_file;
-	UI_Window *win;
-	bool clear_screen;
 
 	IO_CLI();
 
@@ -35,7 +26,6 @@ void CHNMain(void)
 	IO_STI();
 
 	mytask = MultiTask_Get_NowTask();
-	clear_screen = false;
 
 	systemdata.keyctrltask = MultiTask_Task_Get("SysKeyCtrlTask");
 	systemdata.keyctrltask->tss.ldtr = 0;
@@ -76,29 +66,17 @@ void CHNMain(void)
 	Sheet_Show(desktop, 0, 0, System_Sheet_Get_Top_Of_Height());
 	Sheet_Draw_Fill_Rectangle(desktop, 0x66ff66, 0, 0, desktop->size.x - 1, desktop->size.y - 1);
 
-	console = InputBox_Initialise(&sys_sheet_ctrl, &sys_mem_ctrl, 8, 16, systemdata.bootinfo->scrnx - 16, systemdata.bootinfo->scrny - 100, 1024, 0xffffff, 0x868686, System_Sheet_Get_Top_Of_Height());
-	Sheet_Set_Movable(console->sheet, true);
-
 	taskbar = System_Sheet_Get(systemdata.bootinfo->scrnx, 32, 0, 0);
 	Sheet_Show(taskbar, 0, systemdata.bootinfo->scrny - 32, System_Sheet_Get_Top_Of_Height());
-//	Sheet_Draw_Fill_Rectangle(taskbar, 0x6666ff, 0, 0, taskbar->size.x - 1, taskbar->size.y - 1);
 	Sheet_Draw_Fill_Rectangle_Gradation_Vertical(taskbar, 0xffffff, 0x6666ff, 0, 0, taskbar->size.x - 1, taskbar->size.y - 1);
-
-
-	InputBox_Put_String(console, "Welcome to CHNOSProject.");
 
 	c_timer = Timer_Get(&systemdata.sysfifo, 5);
 	Timer_Set(c_timer, 50, interval);
 	Timer_Run(c_timer);
 
-	InputBox_NewLine(console);
-	InputBox_Reset_Input_Buffer(console);
-
-	FIFO32_Put_Arguments(&systemdata.keyboardfifo, 4, 0x01, (uint)&systemdata.sysfifo, 0x00, DATA_BYTE);
-
 	FIFO32_Set_Task(&systemdata.sysfifo, mytask);
 
-	fd = FloppyDisk_Initialise((uint *)ADR_DISKIMG);
+	Console_Create((systemdata.bootinfo->scrnx >> 4), (systemdata.bootinfo->scrny >> 5));
 
 	for (;;) {
 		if(FIFO32_Status(&systemdata.sysfifo) == 0){
@@ -107,176 +85,7 @@ void CHNMain(void)
 			i = FIFO32_Get(&systemdata.sysfifo);
 			if(i < DATA_BYTE){
 				if(i == 5){
-					InputBox_Change_Cursor_State(console);
-				}
-			} else if(DATA_BYTE <= i && i < (DATA_BYTE * 2)){
-				i -= DATA_BYTE;
-				if(i == '\n'){
-					InputBox_Set_Record(console, false);
-					if(console->input_buf[0] != 0x00){
-						InputBox_NewLine_No_Prompt(console);
-					}
-					if(strcmp(console->input_buf, "cls") == 0){
-						InputBox_Clear(console);
-						clear_screen = true;
-					} else if(strcmp(console->input_buf, "memmap") == 0){
-						sprintf(s, "ACPI 0xe820 MemoryMaps:%d\n", systemdata.bootinfo->ACPI_MemoryMapEntries);
-						InputBox_Put_String(console, s);
-						for(j = 0; j < systemdata.bootinfo->ACPI_MemoryMapEntries; j++){
-							sprintf(s, "%02d:[0x%08X%08X](0x%08X%08X) %s 0x%08X\n", j, systemdata.bootinfo->ACPI_MemoryMap[j].Base.high, systemdata.bootinfo->ACPI_MemoryMap[j].Base.low, systemdata.bootinfo->ACPI_MemoryMap[j].Length.high, systemdata.bootinfo->ACPI_MemoryMap[j].Length.low, ACPI_MemoryMap_Type[systemdata.bootinfo->ACPI_MemoryMap[j].Type], systemdata.bootinfo->ACPI_MemoryMap[j].Attribute);
-							InputBox_Put_String(console, s);
-						}
-					} else if(strcmp(console->input_buf, "memblock") == 0){
-						memusing = 0;
-						sprintf(s, "MemoryBlocks:%d\n", SystemMemory.size);
-						InputBox_Put_String(console, s);
-						for(memblock = &SystemMemory; memblock->next != 0; memblock = memblock->next){
-							sprintf(s, "[0x%08X](%8u Bytes):%s\n", memblock->next->addr, memblock->next->size, memblock->next->description);
-							InputBox_Put_String(console, s);
-							memusing += memblock->next->size;
-						}
-						sprintf(s, "MemoryUsing:%u Bytes + (%u Bytes * %u) = %u(%uM)Bytes.", memusing, sizeof(Memory), SystemMemory.size, memusing + (sizeof(Memory) * SystemMemory.size), (memusing + (sizeof(Memory) * SystemMemory.size)) >> 20);
-						InputBox_Put_String(console, s);
-					} else if(strcmp(console->input_buf, "mem") == 0){
-						memusing = 0;
-						sprintf(s, "Memory        :%uByte:%uMB\n", System_MemoryControl_FullSize(), System_MemoryControl_FullSize() >> 20);
-						InputBox_Put_String(console, s);
-						sprintf(s, "Free          :%uByte:%uMB\n", System_MemoryControl_FreeSize(), System_MemoryControl_FreeSize() >> 20);
-						InputBox_Put_String(console, s);
-						InputBox_Put_String(console, "Using:\n");
-						for(memblock = &SystemMemory; memblock->next != 0; memblock = memblock->next){
-							memusing += memblock->next->size;
-						}
-						sprintf(s, "\tMemoryBlock        :%uByte:%uMB\n", memusing + (sizeof(Memory) * SystemMemory.size), (memusing + (sizeof(Memory) * SystemMemory.size)) >> 20);
-						InputBox_Put_String(console, s);
-						memusing = 1;
-						for(j = 0; j < 1024; j++){
-							if((ADR_Paging_Directory[j] & PG_PRESENT) != 0){
-								memusing++;
-							}
-						}
-						sprintf(s, "\tPageDirectory+Table:%uByte:%uMB\n", j << 12, j >> 8);
-						InputBox_Put_String(console, s);
-					} else if(strcmp(console->input_buf, "systeminfo") == 0){
-						sprintf(s, "ACPI 0xe820 MemoryMaps:%d\n", systemdata.bootinfo->ACPI_MemoryMapEntries);
-						InputBox_Put_String(console, s);
-						sprintf(s, "APM-Version:%X.%X\n", systemdata.bootinfo->APM_Version >> 8, systemdata.bootinfo->APM_Version & 0x00FF);
-						InputBox_Put_String(console, s);
-						sprintf(s, "APM-Flags:0x%04X\n", systemdata.bootinfo->APM_Flags);
-						InputBox_Put_String(console, s);
-						sprintf(s, "VESA-Version:%X.%X\n", systemdata.bootinfo->VESA_Version >> 8, systemdata.bootinfo->VESA_Version & 0x00FF);
-						InputBox_Put_String(console, s);
-					} else if(strcmp(console->input_buf, "task") == 0){
-						for(task = taskctrl->next; task != 0; task = task->next){
-							sprintf(s, "0x%04X (%10u):%s\n", task->selector, task->cputime, task->description);
-							InputBox_Put_String(console, s);
-						}
-					} else if(strcmp(console->input_buf, "window") == 0){
-						for(win = systemdata.windowctrl.next; win != 0; win = win->next){
-							sprintf(s, "%s\n", win->title);
-							InputBox_Put_String(console, s);
-						}
-					} else if(strcmp(console->input_buf, "testcons") == 0){
-						Console_Create((systemdata.bootinfo->scrnx >> 4), (systemdata.bootinfo->scrny >> 5));
-					} else if(strncmp(console->input_buf, "type ", 5) == 0){
-						n = FloppyDisk_Search_File(fd, &console->input_buf[5]);
-						if(n != -1){
-							n = FloppyDisk_Load_File(fd, &type_file, n);
-							if(n != -1){
-								for(k = 0; k < type_file.size; k++){
-									InputBox_Put_Character(console, type_file.data[k]);
-								}
-							} else{
-								InputBox_Put_String(console, "type:File load error.\n");
-							}
-							File_Free(&type_file);
-						} else{
-							InputBox_Put_String(console, "type:File not found.\n");
-						}
-					} else if(strcmp(console->input_buf, "dir") == 0){
-						for(j = 0; j < 224; j++){
-							if(fd->files[j].name[0] == 0x00){
-								break;
-							}
-							if(fd->files[j].name[0] != 0xe5){
-								sprintf(s, "FILENAME.EXT %7d %04d/%02d/%02d %02d:%02d:%02d\n", fd->files[j].size, (fd->files[j].updatedate >> 9) + 1980, (fd->files[j].updatedate & 0x01e0) >> 5, fd->files[j].updatedate & 0x001f, fd->files[j].updatetime >> 11, (fd->files[j].updatetime & 0x07e0) >> 5, fd->files[j].updatetime & 0x1f);
-								for(k = 0; k < 8; k++){
-									s[k] = fd->files[j].name[k];
-								}
-								for(k = 9; k < 12; k++){
-									s[k] = fd->files[j].name[k - 1];
-								}
-								InputBox_Put_String(console, s);
-							}
-						}
-					} else if(strcmp(console->input_buf, "gdt") == 0){
-						for(j = 0; j < 8192; j++){
-							if(SegmentDescriptor_Get_Limit(j) != 0){
-								sprintf(s, "0x%04X:[0x%08X](0x%08X) ", j, SegmentDescriptor_Get_Base(j), SegmentDescriptor_Get_Limit(j));
-								InputBox_Put_String(console, s);
-								k = SegmentDescriptor_Get_AccessRight(j);
-								if((k & AR_CODE_OR_DATA) != 0){	/*code or data*/
-									if((k & 0x08) != 0){	/*code*/
-										InputBox_Put_String(console, "Code Execute");
-										if((k & 0x02) != 0){	/*Read*/
-											InputBox_Put_String(console, "/Read ");
-										} else{
-											InputBox_Put_String(console, " Only ");
-										}
-										if((k & 0x04) != 0){	/*Read*/
-											InputBox_Put_String(console, "Conforming");
-										}
-									} else{	/*data*/
-										InputBox_Put_String(console, "Data Read");
-										if((k & 0x02) != 0){	/*Read*/
-											InputBox_Put_String(console, "/Write ");
-										} else{
-											InputBox_Put_String(console, " Only ");
-										}
-										if((k & 0x04) != 0){	/*Read*/
-											InputBox_Put_String(console, "Expand Down");
-										}
-									}
-								} else{	/*SystemDescriptor*/
-									if((k & 0x0f) == 0x02){	/*LDT*/
-										InputBox_Put_String(console, "LDT");
-									} else if((k & 0x0f) == 0x05){	/*TaskGate*/
-										InputBox_Put_String(console, "TaskGate");
-									} else{
-										if((k & 0x07) == 0x01){
-											InputBox_Put_String(console, "TSS-Ready");
-										} else if((k & 0x07) == 0x03){
-											InputBox_Put_String(console, "TSS-Busy");
-										} else if((k & 0x07) == 0x04){
-											InputBox_Put_String(console, "CallGate");
-										} else if((k & 0x07) == 0x06){
-											InputBox_Put_String(console, "INTGate");
-										} else if((k & 0x07) == 0x07){
-											InputBox_Put_String(console, "TrapGate");
-										}
-										if((k & 0x08) != 0){	/*32bit*/
-											InputBox_Put_String(console, "(32bit)");
-										} else{	/*16bit*/
-											InputBox_Put_String(console, "(16bit)");
-										}
-									}
-								}
-								InputBox_Put_String(console, "\n");
-							}
-						}
-					} else if(console->input_buf[0] != 0x00){
-						InputBox_Put_String(console, "Bad Command...");
-					}
-					InputBox_Set_Record(console, true);
-					InputBox_Reset_Input_Buffer(console);
-					if(clear_screen){
-						InputBox_Put_Prompt(console);
-						clear_screen = false;
-					} else{
-						InputBox_NewLine(console);
-					}
-				} else{
-					InputBox_Put_Character(console, i);
+
 				}
 			}
 		}
@@ -419,6 +228,15 @@ void CHNOS_MouseControlTask(void)
 					if((systemdata.mousedecode.btn & MOUSE_BUTTON_C) != 0){	/*C*/
 
 					}
+					if(key_focus_changed){
+						if(key_focus_before != 0 && key_focus_before->fifo != 0 && (key_focus_before->ksignal_flags & SIGNAL_FLAGS_FOCUSINFO) != 0){
+							FIFO32_Put_Arguments(key_focus_before->fifo, 2, SIGNAL_WINDOW_FOCUS_LOST, (uint)key_focus_before);
+						}
+						if(systemdata.key_focus != 0 && systemdata.key_focus->fifo != 0 && (systemdata.key_focus->ksignal_flags & SIGNAL_FLAGS_FOCUSINFO) != 0){
+							FIFO32_Put_Arguments(systemdata.key_focus->fifo, 2, SIGNAL_WINDOW_FOCUS_GET, (uint)systemdata.key_focus);
+						}
+						key_focus_changed = false;
+					}
 					if(systemdata.focus != 0 && systemdata.focus->MouseEventProcedure != 0){	/*フォーカスはシートで、イベントの取得を希望している*/
 						e.focus = systemdata.focus;
 						e.move.x = systemdata.mousedecode.move.x;
@@ -428,15 +246,6 @@ void CHNOS_MouseControlTask(void)
 						e.button = (uint)systemdata.mousedecode.btn;
 						e.button_before = (uint)button_before;
 						systemdata.focus->MouseEventProcedure(&e);
-					}
-					if(key_focus_changed){
-						if(key_focus_before != 0 && key_focus_before->fifo != 0 && (key_focus_before->ksignal_flags & SIGNAL_FLAGS_FOCUSINFO) != 0){
-							FIFO32_Put_Arguments(key_focus_before->fifo, 2, SIGNAL_WINDOW_FOCUS_LOST, (uint)key_focus_before);
-						}
-						if(systemdata.key_focus != 0 && systemdata.key_focus->fifo != 0 && (systemdata.key_focus->ksignal_flags & SIGNAL_FLAGS_FOCUSINFO) != 0){
-							FIFO32_Put_Arguments(systemdata.key_focus->fifo, 2, SIGNAL_WINDOW_FOCUS_GET, (uint)systemdata.key_focus);
-						}
-						key_focus_changed = false;
 					}
 					key_focus_before = systemdata.key_focus;
 					button_before = systemdata.mousedecode.btn;

@@ -98,6 +98,10 @@ void Timer_Run(UI_Timer *timer)
 		return;
 	}
 
+	if(timer->state == inuse){
+		return;
+	}
+
 	eflags = IO_Load_EFlags();
 	IO_CLI();
 
@@ -119,7 +123,6 @@ void Timer_Run(UI_Timer *timer)
 				}
 				target = &(*target)->tree;
 			}
-//			timer->next = *target;	//自分の前のタイマーを指す
 			timer->next = 0;	//常に0
 			*target = timer;//自分を前のタイマーに連結
 			timer->tree = 0;	//自分が終端

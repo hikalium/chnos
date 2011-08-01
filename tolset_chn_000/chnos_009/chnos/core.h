@@ -443,6 +443,8 @@ void Console_Command_task(UI_Console *cons);
 void Console_Command_window(UI_Console *cons);
 void Console_Command_console(UI_Console *cons);
 void Console_Command_type(UI_Console *cons, const uchar filename[]);
+void Console_Command_dir(UI_Console *cons);
+void Console_Command_gdt(UI_Console *cons);
 
 /*cpuid.c*/
 void CPU_Identify(DATA_CPUID *id);
@@ -525,7 +527,7 @@ void Initialise_ProgrammableInterruptController(void);
 void InterruptHandler27(int *esp);
 
 /*io.c*/
-uint IO_Read_CMOS(uchar addr);
+uchar IO_Read_CMOS(uchar addr);
 
 /*keyboard.c*/
 void Initialise_Keyboard(DATA_FIFO *sendto, DATA_FIFO *keycmd, uint offset, uint leds, int *keycmd_wait);

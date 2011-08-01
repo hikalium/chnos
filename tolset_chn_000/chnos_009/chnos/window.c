@@ -54,17 +54,16 @@ UI_Window *Window_Create(const uchar *title, uint flags, uint xsize, uint ysize)
 	win->client = System_Sheet_Get(xsize, ysize, 0, 0);
 	Sheet_Set_Movable(win->control, true);
 
-//	Sheet_Draw_Fill_Rectangle(win->control, 0x7cfc00, 0, 0, win->control->size.x - 1, win->control->size.y - 1);
 	Sheet_Draw_Fill_Rectangle_Gradation_Vertical(win->control, 0xffffff, 0x7cfc00, 0, 0, win->control->size.x - 1, win->control->size.y - 1);
 
 	Sheet_Draw_Fill_Rectangle(win->client, 0xffffff, 0, 0, win->client->size.x - 1, win->client->size.y - 1);
 
 	Window_Draw_CloseButton(win, false);
 
-	Sheet_Draw_Fill_Rectangle(win->control, 0xffffff, 0, 0, win->control->size.x - 1, 0);
-	Sheet_Draw_Fill_Rectangle(win->control, 0xffffff, 0, 0, 0, win->control->size.y - 1);
-	Sheet_Draw_Fill_Rectangle(win->control, 0x32cd32, win->control->size.x - 1, 0, win->control->size.x - 1, win->control->size.y - 1);
-	Sheet_Draw_Fill_Rectangle(win->control, 0x32cd32, 0, win->control->size.y - 1, win->control->size.x - 1, win->control->size.y - 1);
+//	Sheet_Draw_Fill_Rectangle(win->control, 0xffffff, 0, 0, win->control->size.x - 1, 0);
+//	Sheet_Draw_Fill_Rectangle(win->control, 0xffffff, 0, 0, 0, win->control->size.y - 1);
+//	Sheet_Draw_Fill_Rectangle(win->control, 0x32cd32, win->control->size.x - 1, 0, win->control->size.x - 1, win->control->size.y - 1);
+//	Sheet_Draw_Fill_Rectangle(win->control, 0x32cd32, 0, win->control->size.y - 1, win->control->size.x - 1, win->control->size.y - 1);
 
 	x = (boot->scrnx >> 1) - (win->client->size.x >> 1);
 	y = (boot->scrny >> 1) - (win->client->size.y >> 1) - (win->control->size.y >> 1);
@@ -115,15 +114,14 @@ UI_Window *Window_Create_User(const uchar *title, uint flags, UI_Sheet *client)
 	win->client = client;
 	Sheet_Set_Movable(win->control, true);
 
-//	Sheet_Draw_Fill_Rectangle(win->control, 0x7cfc00, 0, 0, win->control->size.x - 1, win->control->size.y - 1);
 	Sheet_Draw_Fill_Rectangle_Gradation_Vertical(win->control, 0xffffff, 0x7cfc00, 0, 0, win->control->size.x - 1, win->control->size.y - 1);
 
 	Window_Draw_CloseButton(win, false);
 
-	Sheet_Draw_Fill_Rectangle(win->control, 0xffffff, 0, 0, win->control->size.x - 1, 0);
-	Sheet_Draw_Fill_Rectangle(win->control, 0xffffff, 0, 0, 0, win->control->size.y - 1);
-	Sheet_Draw_Fill_Rectangle(win->control, 0x32cd32, win->control->size.x - 1, 0, win->control->size.x - 1, win->control->size.y - 1);
-	Sheet_Draw_Fill_Rectangle(win->control, 0x32cd32, 0, win->control->size.y - 1, win->control->size.x - 1, win->control->size.y - 1);
+//	Sheet_Draw_Fill_Rectangle(win->control, 0xffffff, 0, 0, win->control->size.x - 1, 0);
+//	Sheet_Draw_Fill_Rectangle(win->control, 0xffffff, 0, 0, 0, win->control->size.y - 1);
+//	Sheet_Draw_Fill_Rectangle(win->control, 0x32cd32, win->control->size.x - 1, 0, win->control->size.x - 1, win->control->size.y - 1);
+//	Sheet_Draw_Fill_Rectangle(win->control, 0x32cd32, 0, win->control->size.y - 1, win->control->size.x - 1, win->control->size.y - 1);
 
 	x = (boot->scrnx >> 1) - (win->client->size.x >> 1);
 	y = (boot->scrny >> 1) - (win->client->size.y >> 1) - (win->control->size.y >> 1);

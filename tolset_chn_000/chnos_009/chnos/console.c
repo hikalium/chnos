@@ -108,6 +108,10 @@ void Console_MainTask(UI_Console *cons)
 						Console_Command_console(cons);
 					} else if(strncmp(cons->input->input_buf, "type ", 5) == 0){
 						Console_Command_type(cons, &cons->input->input_buf[5]);
+					} else if(strcmp(cons->input->input_buf, "dir") == 0){
+						Console_Command_dir(cons);
+					} else if(strcmp(cons->input->input_buf, "gdt") == 0){
+						Console_Command_gdt(cons);
 					} else if(cons->input->input_buf[0] != 0x00){
 						InputBox_Put_String(cons->input, "Bad Command...");
 					}
@@ -291,4 +295,89 @@ void Console_Command_type(UI_Console *cons, const uchar filename[])
 	}
 
 	return;
+}
+
+void Console_Command_dir(UI_Console *cons)
+{
+	uint i, j;
+	uchar s[64];
+
+	for(i = 0; i < 224; i++){
+		if(sysdata->fd_boot->files[i].name[0] == 0x00){
+			break;
+		}
+		if(sysdata->fd_boot->files[i].name[0] != 0xe5){
+			sprintf(s, "FILENAME.EXT %7d %04d/%02d/%02d %02d:%02d:%02d\n", sysdata->fd_boot->files[i].size, (sysdata->fd_boot->files[i].updatedate >> 9) + 1980, (sysdata->fd_boot->files[i].updatedate & 0x01e0) >> 5, sysdata->fd_boot->files[i].updatedate & 0x001f, sysdata->fd_boot->files[i].updatetime >> 11, (sysdata->fd_boot->files[i].updatetime & 0x07e0) >> 5, sysdata->fd_boot->files[i].updatetime & 0x1f);
+			for(j = 0; j < 8; j++){
+				s[j] = sysdata->fd_boot->files[i].name[j];
+			}
+			for(j = 9; j < 12; j++){
+				s[j] = sysdata->fd_boot->files[i].name[j - 1];
+			}
+			InputBox_Put_String(cons->input, s);
+		}
+	}
+
+	return;
+}
+
+void Console_Command_gdt(UI_Console *cons)
+{
+	uint i, ar;
+	uchar s[64];
+
+	for(i = 0; i < 8192; i++){
+		if(SegmentDescriptor_Get_Limit(i) != 0){
+			sprintf(s, "0x%04X:[0x%08X](0x%08X) ", i, SegmentDescriptor_Get_Base(i), SegmentDescriptor_Get_Limit(i));
+			InputBox_Put_String(cons->input, s);
+			ar = SegmentDescriptor_Get_AccessRight(i);
+			if((ar & AR_CODE_OR_DATA) != 0){	/*code or data*/
+				if((ar & 0x08) != 0){	/*code*/
+					InputBox_Put_String(cons->input, "Code Execute");
+					if((ar & 0x02) != 0){	/*Read*/
+						InputBox_Put_String(cons->input, "/Read ");
+					} else{
+						InputBox_Put_String(cons->input, " Only ");
+					}
+					if((ar & 0x04) != 0){	/*Read*/
+						InputBox_Put_String(cons->input, "Conforming");
+					}
+				} else{	/*data*/
+					InputBox_Put_String(cons->input, "Data Read");
+					if((ar & 0x02) != 0){	/*Read*/
+						InputBox_Put_String(cons->input, "/Write ");
+					} else{
+						InputBox_Put_String(cons->input, " Only ");
+					}
+					if((ar & 0x04) != 0){	/*Read*/
+						InputBox_Put_String(cons->input, "Expand Down");
+					}
+				}
+			} else{	/*SystemDescriptor*/
+				if((ar & 0x0f) == 0x02){	/*LDT*/
+					InputBox_Put_String(cons->input, "LDT");
+				} else if((ar & 0x0f) == 0x05){	/*TaskGate*/
+					InputBox_Put_String(cons->input, "TaskGate");
+				} else{
+					if((ar & 0x07) == 0x01){
+						InputBox_Put_String(cons->input, "TSS-Ready");
+					} else if((ar & 0x07) == 0x03){
+						InputBox_Put_String(cons->input, "TSS-Busy");
+					} else if((ar & 0x07) == 0x04){
+						InputBox_Put_String(cons->input, "CallGate");
+					} else if((ar & 0x07) == 0x06){
+						InputBox_Put_String(cons->input, "INTGate");
+					} else if((ar & 0x07) == 0x07){
+						InputBox_Put_String(cons->input, "TrapGate");
+					}
+					if((ar & 0x08) != 0){	/*32bit*/
+						InputBox_Put_String(cons->input, "(32bit)");
+					} else{	/*16bit*/
+						InputBox_Put_String(cons->input, "(16bit)");
+					}
+				}
+			}
+			InputBox_Put_String(cons->input, "\n");
+		}
+	}
 }
