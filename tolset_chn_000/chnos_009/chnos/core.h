@@ -445,6 +445,7 @@ void Console_Command_console(UI_Console *cons);
 void Console_Command_type(UI_Console *cons, const uchar filename[]);
 void Console_Command_dir(UI_Console *cons);
 void Console_Command_gdt(UI_Console *cons);
+void Console_Command_hlt(UI_Console *cons);
 
 /*cpuid.c*/
 void CPU_Identify(DATA_CPUID *id);
@@ -452,12 +453,17 @@ void CPU_Identify(DATA_CPUID *id);
 /*dsctbl.c ディスクリプター・テーブル関連*/
 void Initialise_GlobalDescriptorTable(void);
 void Initialise_InterruptDescriptorTable(void);
-void SegmentDescriptor_Set_Absolute(uint sd, uint limit, uint base, uint ar);
-uint SegmentDescriptor_Get_Base(uint sd);
-uint SegmentDescriptor_Get_Limit(uint sd);
-uint SegmentDescriptor_Get_AccessRight(uint sd);
-uint SegmentDescriptor_Set(uint limit, int base, int ar);
-void GateDescriptor_Set(uint gd, uint offset, uint selector, uint ar);
+void SegmentDescriptor_Set(IO_SegmentDescriptor *seg_desc, uint limit, uint base, uint ar);
+uint SegmentDescriptor_Get_Base(IO_SegmentDescriptor *seg_desc);
+uint SegmentDescriptor_Get_Limit(IO_SegmentDescriptor *seg_desc);
+uint SegmentDescriptor_Get_AccessRight(IO_SegmentDescriptor *seg_desc);
+void GateDescriptor_Set(IO_GateDescriptor *gate_desc, uint offset, uint selector, uint ar);
+void System_SegmentDescriptor_Set_Absolute(uint selector, uint limit, uint base, uint ar);
+uint System_SegmentDescriptor_Get_Base(uint selector);
+uint System_SegmentDescriptor_Get_Limit(uint selector);
+uint System_SegmentDescriptor_Get_AccessRight(uint selector);
+uint System_SegmentDescriptor_Set(uint limit, int base, int ar);
+void System_GateDescriptor_Set(uint irq, uint offset, uint selector, uint ar);
 
 /*fifo.c FIFOバッファ関連*/
 int FIFO32_Initialise(DATA_FIFO *fifo, uint size);

@@ -10,7 +10,7 @@ void Initialise_ProgrammableIntervalTimer(void)
 	IO_Out8(PIT_CTRL, 0x34);
 	IO_Out8(PIT_CNT0, 0x9c);
 	IO_Out8(PIT_CNT0, 0x2e);
-	GateDescriptor_Set(0x20, (uint)asm_InterruptHandler20, 0x02, AR_INTGATE32);
+	System_GateDescriptor_Set(0x20, (uint)asm_InterruptHandler20, 0x02, AR_INTGATE32);
 	IO_Out8(PIC0_IMR, IO_In8(PIC0_IMR) & 0xfe);
 	timerctrl.count = 0;
 	watch = Timer_Get(0, 0);

@@ -112,6 +112,8 @@ void Console_MainTask(UI_Console *cons)
 						Console_Command_dir(cons);
 					} else if(strcmp(cons->input->input_buf, "gdt") == 0){
 						Console_Command_gdt(cons);
+					} else if(strcmp(cons->input->input_buf, "hlt") == 0){
+						Console_Command_hlt(cons);
 					} else if(cons->input->input_buf[0] != 0x00){
 						InputBox_Put_String(cons->input, "Bad Command...");
 					}
@@ -327,10 +329,10 @@ void Console_Command_gdt(UI_Console *cons)
 	uchar s[64];
 
 	for(i = 0; i < 8192; i++){
-		if(SegmentDescriptor_Get_Limit(i) != 0){
-			sprintf(s, "0x%04X:[0x%08X](0x%08X) ", i, SegmentDescriptor_Get_Base(i), SegmentDescriptor_Get_Limit(i));
+		if(System_SegmentDescriptor_Get_Limit(i) != 0){
+			sprintf(s, "0x%04X:[0x%08X](0x%08X) ", i, System_SegmentDescriptor_Get_Base(i), System_SegmentDescriptor_Get_Limit(i));
 			InputBox_Put_String(cons->input, s);
-			ar = SegmentDescriptor_Get_AccessRight(i);
+			ar = System_SegmentDescriptor_Get_AccessRight(i);
 			if((ar & AR_CODE_OR_DATA) != 0){	/*code or data*/
 				if((ar & 0x08) != 0){	/*code*/
 					InputBox_Put_String(cons->input, "Code Execute");
@@ -380,4 +382,28 @@ void Console_Command_gdt(UI_Console *cons)
 			InputBox_Put_String(cons->input, "\n");
 		}
 	}
+}
+
+void Console_Command_hlt(UI_Console *cons)
+{
+	IO_File file;
+	int n;
+	uint selector;
+
+	n = FloppyDisk_Search_File(sysdata->fd_boot, "hlt.hrb");
+	if(n != -1){
+		n = FloppyDisk_Load_File(sysdata->fd_boot, &file, n);
+		if(n != -1){
+			selector = System_SegmentDescriptor_Set(file.size - 1, (uint)file.data, AR_CODE32_ER);
+			FarJMP(0, selector << 3);
+			System_SegmentDescriptor_Set_Absolute(selector, 0, 0, 0);
+		} else{
+			InputBox_Put_String(cons->input, "hlt:File load error.\n");
+		}
+		File_Free(&file);
+	} else{
+		InputBox_Put_String(cons->input, "hlt:File not found.\n");
+	}
+
+	return;
 }

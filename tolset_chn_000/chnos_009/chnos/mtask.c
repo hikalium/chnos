@@ -90,7 +90,7 @@ UI_Task *MultiTask_Task_Get(const uchar *description)
 	task->tss.flags		= 0;
 	task->tss.iomap		= 0;
 
-	task->selector = SegmentDescriptor_Set(sizeof(IO_TaskStatusSegment) - 1, (int)&task->tss, AR_TSS32);
+	task->selector = System_SegmentDescriptor_Set(sizeof(IO_TaskStatusSegment) - 1, (int)&task->tss, AR_TSS32);
 
 	task->quantum = 2; /*0.02sec Default*/
 

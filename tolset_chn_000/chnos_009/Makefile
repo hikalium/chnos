@@ -14,11 +14,13 @@ default :
 
 # ファイル生成規則
 
-chnos.img : chnos/chnipl.bin chnos/chnos.sys chnos/chnipl.nas 
+chnos.img : chnos/chnipl.bin chnos/chnos.sys chnos/chnipl.nas \
+		hlt/hlt.hrb
 	$(EDIMG)   imgin:../z_tools/fdimg0at.tek \
 		wbinimg src:chnos/chnipl.bin len:512 from:0 to:0 \
 		copy from:chnos/chnos.sys to:@: \
 		copy from:chnos/chnipl.nas to:@: \
+		copy from:hlt/hlt.hrb to:@: \
 		imgout:chnos.img
 
 # コマンド
@@ -47,6 +49,7 @@ install :
 
 full :
 	$(MAKE) -C chnos
+	$(MAKE) -C hlt
 	$(MAKE) chnos.img
 
 run_full :
@@ -70,9 +73,11 @@ src_only :
 	-$(DEL) chnos.img
 
 clean_full :
+	$(MAKE) -C hlt			clean
 	$(MAKE) -C chnos		clean
 
 src_only_full :
+	$(MAKE) -C hlt			src_only
 	$(MAKE) -C chnos		src_only
 	-$(DEL) chnos.img
 

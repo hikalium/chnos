@@ -30,7 +30,7 @@ void Initialise_ProgrammableInterruptController(void)
 	IO_Out8(PIC0_IMR, 0xfb);	/*11111011つまり、IRQ2番（スレーブ）だけ許可。あとは無視。（マスタ）*/	
 	IO_Out8(PIC1_IMR, 0xff);	/*11111111つまり、全て無視*/
 
-	GateDescriptor_Set(0x27, (uint)asm_InterruptHandler27, 0x02, AR_INTGATE32);	/*IRQ-07対策*/
+	System_GateDescriptor_Set(0x27, (uint)asm_InterruptHandler27, 0x02, AR_INTGATE32);	/*IRQ-07対策*/
 
 	return;
 }
