@@ -297,6 +297,7 @@ struct TASK {
 	uint cputime;
 	struct TASK *next;
 	state_alloc state;
+	struct CONSOLE *cons;
 };
 
 struct LISTENER {
@@ -361,6 +362,8 @@ struct CONSOLE {
 	struct CONSOLE *next;
 	struct FIFO32 fifo;
 	struct TIMER *ctimer;
+	struct FILEINFO app_codefile;
+	ushort app_cs;
 };
 
 struct SYSTEM_COMMON_DATA {
@@ -426,6 +429,9 @@ extern uint *ADR_Paging_Directory;
 extern uchar *ACPI_MemoryMap_Type[5];
 
 /*functions*/
+/*api.c APIèàóù*/
+void API_Execute(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ecx, uint eax);
+
 /*bootpack.c äÓä≤ïîï™*/
 void CHNOS_KeyboardControlTask(void);
 void CHNOS_MouseControlTask(void);
@@ -445,7 +451,9 @@ void Console_Command_console(UI_Console *cons);
 void Console_Command_type(UI_Console *cons, const uchar filename[]);
 void Console_Command_dir(UI_Console *cons);
 void Console_Command_gdt(UI_Console *cons);
-void Console_Command_hlt(UI_Console *cons);
+void Console_Execute(UI_Console *cons);
+void Console_Execute_CHNOSProject(UI_Console *cons, int n);
+void Console_Execute_haribote(UI_Console *cons, int n);
 
 /*cpuid.c*/
 void CPU_Identify(DATA_CPUID *id);
@@ -767,3 +775,4 @@ void asm_InterruptHandler20(void);
 void asm_InterruptHandler21(void);
 void asm_InterruptHandler27(void);
 void asm_InterruptHandler2c(void);
+void asm_API_Execute(void);

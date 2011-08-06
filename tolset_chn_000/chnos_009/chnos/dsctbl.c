@@ -60,6 +60,8 @@ void Initialise_InterruptDescriptorTable(void)
 	System_GateDescriptor_Set(0x1e, (uint)asm_CPU_ExceptionHandler1e, 0x02, AR_INTGATE32);
 	System_GateDescriptor_Set(0x1f, (uint)asm_CPU_ExceptionHandler1f, 0x02, AR_INTGATE32);
 
+	System_GateDescriptor_Set(0x40, (uint)asm_API_Execute, 0x02, AR_INTGATE32);
+
 	return;
 }
 

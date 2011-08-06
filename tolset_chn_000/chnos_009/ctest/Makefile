@@ -1,5 +1,8 @@
+# .chnアプリ(C言語)用Makefile
 
-APP      = hlt
+APP      = ctest
+
+OBJS_APP = $(APP).obj chnapi.obj
 
 TOOLPATH = ../../z_tools/
 INCPATH  = ../../z_tools/CHNOSProject/
@@ -22,19 +25,22 @@ SJISCONV = $(TOOLPATH)sjisconv.exe -s
 # デフォルト動作
 
 default :
-	$(MAKE) $(APP).hrb
+	$(MAKE) $(APP).chn
 
 # ファイル生成規則
 
-$(APP).hrb : $(APP).nas Makefile
-	$(NASK) $(APP).nas $(APP).hrb $(APP).lst
+$(APP).bim : $(OBJS_APP) Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:$(APP).bim map:$(APP).map $(OBJS_APP)
+
+$(APP).chn : $(APP).bim Makefile
+	$(BIM2CHN) $(APP).bim $(APP).chn 0
 
 #一般規則
 
 %.ca : %.c Makefile
 	$(SJISCONV) $*.c $*.ca
 
-%.gas : %.ca core.h core_set.h Makefile
+%.gas : %.ca Makefile
 	$(CC1) -o $*.gas $*.ca
 
 %.nas : %.gas Makefile
@@ -52,8 +58,10 @@ clean :
 	-$(DEL) *.lst
 	-$(DEL) *.gas
 	-$(DEL) *.obj
+	-$(DEL) $(APP).bim
+	-$(DEL) $(APP).map
 
 src_only :
 	$(MAKE) clean
-	-$(DEL) $(APP).hrb
+	-$(DEL) $(APP).chn
 

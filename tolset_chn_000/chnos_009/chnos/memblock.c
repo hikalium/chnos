@@ -117,6 +117,10 @@ int MemoryBlock_Free(void *addr)
 {
 	Memory *next, *block;
 
+	if(addr == 0){
+		return -1;
+	}
+
 	for(next = &SystemMemory; next->next != 0; next = next->next){
 		if(next->next->addr == addr){
 			block = next->next;

@@ -111,6 +111,9 @@
 	GLOBAL	_asm_InterruptHandler2c
 	EXTERN	_InterruptHandler2c
 
+	GLOBAL	_asm_API_Execute
+	EXTERN	_API_Execute
+
 
 [SECTION .text]
 
@@ -688,4 +691,13 @@ _asm_InterruptHandler2c:
 	popad
 	pop	ds
 	pop	es
+	iretd
+
+_asm_API_Execute:
+	sti
+	pushad
+	pushad
+	call	_API_Execute
+	add	esp, 32
+	popad
 	iretd

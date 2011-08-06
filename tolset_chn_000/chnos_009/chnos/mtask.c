@@ -98,6 +98,8 @@ UI_Task *MultiTask_Task_Get(const uchar *description)
 
 	task->state = initialized;
 
+	task->cons = 0;
+
 	for(i = 0; i < (TASK_DESCRIPTION_LENGTH - 1); i++){
 		if(description[i] == 0x00){
 			break;

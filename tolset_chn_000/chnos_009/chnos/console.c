@@ -74,6 +74,7 @@ void Console_MainTask(UI_Console *cons)
 	bool clear_screen;
 
 	mytask = MultiTask_Get_NowTask();
+	mytask->cons = cons;
 	clear_screen = false;
 
 	InputBox_Put_Prompt(cons->input);
@@ -112,10 +113,8 @@ void Console_MainTask(UI_Console *cons)
 						Console_Command_dir(cons);
 					} else if(strcmp(cons->input->input_buf, "gdt") == 0){
 						Console_Command_gdt(cons);
-					} else if(strcmp(cons->input->input_buf, "hlt") == 0){
-						Console_Command_hlt(cons);
 					} else if(cons->input->input_buf[0] != 0x00){
-						InputBox_Put_String(cons->input, "Bad Command...");
+						Console_Execute(cons);
 					}
 					InputBox_Set_Record(cons->input, true);
 					InputBox_Reset_Input_Buffer(cons->input);
@@ -384,26 +383,81 @@ void Console_Command_gdt(UI_Console *cons)
 	}
 }
 
-void Console_Command_hlt(UI_Console *cons)
+void Console_Execute(UI_Console *cons)
 {
-	IO_File file;
 	int n;
-	uint selector;
+	uchar *ext, appname[11];
+	uint i;
 
-	n = FloppyDisk_Search_File(sysdata->fd_boot, "hlt.hrb");
-	if(n != -1){
-		n = FloppyDisk_Load_File(sysdata->fd_boot, &file, n);
-		if(n != -1){
-			selector = System_SegmentDescriptor_Set(file.size - 1, (uint)file.data, AR_CODE32_ER);
-			FarJMP(0, selector << 3);
-			System_SegmentDescriptor_Set_Absolute(selector, 0, 0, 0);
-		} else{
-			InputBox_Put_String(cons->input, "hlt:File load error.\n");
+	ext = 0;
+	for(i = 0; cons->input->input_buf[i] != 0x00; i++){
+		if(cons->input->input_buf[i] == '.'){
+			ext = &cons->input->input_buf[i];
 		}
-		File_Free(&file);
-	} else{
-		InputBox_Put_String(cons->input, "hlt:File not found.\n");
 	}
 
+	n = FloppyDisk_Search_File(sysdata->fd_boot, cons->input->input_buf);
+	if(n != -1){
+		if(ext != 0){
+			if(strcmp(ext, ".chn") == 0){
+				Console_Execute_CHNOSProject(cons, n);
+			} else if(strcmp(ext, ".hrb") == 0){
+				Console_Execute_haribote(cons, n);
+			} else{
+				InputBox_Put_String(cons->input, "Console:Unknown file type.\n");
+			}
+		} else{
+			InputBox_Put_String(cons->input, "Console:Unknown file type.\n");
+		}
+	} else{
+		if(ext == 0){	/*ファイルが存在せず、かつ拡張子がなかった場合、.chnであると仮定する。*/
+			sprintf(appname, "        .CHN");
+			for(i = 0; i < 8; i++){
+				if(cons->input->input_buf[i] == 0x00){
+					break;
+				}
+				appname[i] = cons->input->input_buf[i];
+			}
+		}
+		n = FloppyDisk_Search_File(sysdata->fd_boot, appname);
+		if(n != -1){
+			Console_Execute_CHNOSProject(cons, n);
+		} else{
+			InputBox_Put_String(cons->input, "Console:No such File or Application.\n");
+		}
+	}
 	return;
 }
+
+void Console_Execute_CHNOSProject(UI_Console *cons, int n)
+{
+	n = FloppyDisk_Load_File(sysdata->fd_boot, &cons->app_codefile, n);
+	if(n != -1){
+		cons->app_cs = System_SegmentDescriptor_Set(cons->app_codefile.size - 1, (uint)cons->app_codefile.data, AR_CODE32_ER);
+//		FarJMP(0,cons->app_cs << 3);
+		FarCall(0, cons->app_cs << 3);
+		System_SegmentDescriptor_Set_Absolute(cons->app_cs, 0, 0, 0);
+		cons->app_cs = 0;
+	} else{
+		InputBox_Put_String(cons->input, "Console:Execute.hrb:File load error.\n");
+	}
+	File_Free(&cons->app_codefile);
+	return;
+}
+
+void Console_Execute_haribote(UI_Console *cons, int n)
+{
+	n = FloppyDisk_Load_File(sysdata->fd_boot, &cons->app_codefile, n);
+	if(n != -1){
+		cons->app_cs = System_SegmentDescriptor_Set(cons->app_codefile.size - 1, (uint)cons->app_codefile.data, AR_CODE32_ER);
+//		FarJMP(0,cons->app_cs << 3);
+		FarCall(0, cons->app_cs << 3);
+		System_SegmentDescriptor_Set_Absolute(cons->app_cs, 0, 0, 0);
+		cons->app_cs = 0;
+	} else{
+		InputBox_Put_String(cons->input, "Console:Execute.hrb:File load error.\n");
+	}
+	File_Free(&cons->app_codefile);
+	return;
+}
+
