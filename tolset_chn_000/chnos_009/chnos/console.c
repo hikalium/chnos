@@ -72,6 +72,7 @@ void Console_MainTask(UI_Console *cons)
 	uint i, j;
 	uint buf[3];
 	bool clear_screen;
+	uchar s[64];
 
 	mytask = MultiTask_Get_NowTask();
 	mytask->cons = cons;
@@ -113,6 +114,9 @@ void Console_MainTask(UI_Console *cons)
 						Console_Command_dir(cons);
 					} else if(strcmp(cons->input->input_buf, "gdt") == 0){
 						Console_Command_gdt(cons);
+					} else if(strcmp(cons->input->input_buf, "test") == 0){
+						sprintf(s, "taskaddr:0x%08X\n", mytask);
+						InputBox_Put_String(cons->input, s);
 					} else if(cons->input->input_buf[0] != 0x00){
 						Console_Execute(cons);
 					}
@@ -431,15 +435,29 @@ void Console_Execute(UI_Console *cons)
 
 void Console_Execute_CHNOSProject(UI_Console *cons, int n)
 {
+	UI_Task *mytask;
+
+	mytask = MultiTask_Get_NowTask();
 	n = FloppyDisk_Load_File(sysdata->fd_boot, &cons->app_codefile, n);
 	if(n != -1){
-		cons->app_cs = System_SegmentDescriptor_Set(cons->app_codefile.size - 1, (uint)cons->app_codefile.data, AR_CODE32_ER);
-//		FarJMP(0,cons->app_cs << 3);
-		FarCall(0, cons->app_cs << 3);
+		cons->app_cs = System_SegmentDescriptor_Set(cons->app_codefile.size - 1, (uint)cons->app_codefile.data, AR_CODE32_ER | AR_USER);
+		cons->app_ds = System_SegmentDescriptor_Set(64 * 1024 - 1, (uint)MemoryBlock_Allocate_System(64 * 1024), AR_DATA32_RW | AR_USER);
+		if(cons->app_codefile.size >= 8 && strncmp(cons->app_codefile.data + 4, "CHNP", 4) == 0){
+			cons->app_codefile.data[0] = 0xe8;
+			cons->app_codefile.data[1] = 0x16;
+			cons->app_codefile.data[2] = 0x00;
+			cons->app_codefile.data[3] = 0x00;
+			cons->app_codefile.data[4] = 0x00;
+			cons->app_codefile.data[5] = 0xcb;
+		}
+		APP_Run(0, cons->app_cs << 3, System_SegmentDescriptor_Get_Limit(cons->app_ds) + 1, cons->app_ds << 3, &(mytask->tss.esp0));
+		System_SegmentDescriptor_Set_Absolute(cons->app_ds, 0, 0, 0);
+		cons->app_ds = 0;
+		MemoryBlock_Free((void *)System_SegmentDescriptor_Get_Base(cons->app_ds));
 		System_SegmentDescriptor_Set_Absolute(cons->app_cs, 0, 0, 0);
 		cons->app_cs = 0;
 	} else{
-		InputBox_Put_String(cons->input, "Console:Execute.hrb:File load error.\n");
+		InputBox_Put_String(cons->input, "Console:Execute.chn:File load error.\n");
 	}
 	File_Free(&cons->app_codefile);
 	return;
@@ -450,7 +468,14 @@ void Console_Execute_haribote(UI_Console *cons, int n)
 	n = FloppyDisk_Load_File(sysdata->fd_boot, &cons->app_codefile, n);
 	if(n != -1){
 		cons->app_cs = System_SegmentDescriptor_Set(cons->app_codefile.size - 1, (uint)cons->app_codefile.data, AR_CODE32_ER);
-//		FarJMP(0,cons->app_cs << 3);
+		if(cons->app_codefile.size >= 8 && strncmp(cons->app_codefile.data + 4, "Hari", 4) == 0){
+			cons->app_codefile.data[0] = 0xe8;
+			cons->app_codefile.data[1] = 0x16;
+			cons->app_codefile.data[2] = 0x00;
+			cons->app_codefile.data[3] = 0x00;
+			cons->app_codefile.data[4] = 0x00;
+			cons->app_codefile.data[5] = 0xcb;
+		}
 		FarCall(0, cons->app_cs << 3);
 		System_SegmentDescriptor_Set_Absolute(cons->app_cs, 0, 0, 0);
 		cons->app_cs = 0;

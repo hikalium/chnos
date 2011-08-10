@@ -17,7 +17,6 @@ void CHNMain(void)
 	UI_Timer *c_timer;
 	UI_Sheet *taskbar, *desktop;
 	UI_Task *mytask;
-	uchar s[128];
 
 	IO_CLI();
 

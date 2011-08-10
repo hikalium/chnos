@@ -114,6 +114,8 @@
 	GLOBAL	_asm_API_Execute
 	EXTERN	_API_Execute
 
+	GLOBAL	APP_Terminate
+
 
 [SECTION .text]
 
@@ -695,9 +697,27 @@ _asm_InterruptHandler2c:
 
 _asm_API_Execute:
 	sti
+	push	ds
+	push	es
 	pushad
 	pushad
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	mov	fs,ax
+	mov	gs,ax
 	call	_API_Execute
-	add	esp, 32
+;If returned value is not zero, terminate application. EAX is address of ESP0 value.
+	cmp	eax,0
+	jne	APP_Terminate
+;End of terminate code.
+	add	esp,32
 	popad
+	pop	es
+	pop	ds
 	iretd
+
+APP_Terminate:	;eax is address of esp0.
+	mov	esp,[eax]
+	popad
+	ret

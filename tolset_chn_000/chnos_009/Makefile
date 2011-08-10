@@ -22,12 +22,14 @@ default :
 
 chnos.img : chnos/chnipl.bin chnos/chnos.sys chnos/chnipl.nas \
 		asmtest/asmtest.hrb \
+		crack1/crack1.chn \
 		ctest/ctest.chn
 	$(EDIMG)   imgin:../z_tools/fdimg0at.tek \
 		wbinimg src:chnos/chnipl.bin len:512 from:0 to:0 \
 		copy from:chnos/chnos.sys to:@: \
 		copy from:chnos/chnipl.nas to:@: \
 		copy from:asmtest/asmtest.hrb to:@: \
+		copy from:crack1/crack1.chn to:@: \
 		copy from:ctest/ctest.chn to:@: \
 		imgout:chnos.img
 
@@ -58,6 +60,7 @@ install :
 full :
 	$(MAKE) -C chnos
 	$(MAKE) -C asmtest
+	$(MAKE) -C crack1
 	$(MAKE) -C ctest
 	$(MAKE) chnos.img
 
@@ -83,11 +86,13 @@ src_only :
 
 clean_full :
 	$(MAKE) -C asmtest		clean
+	$(MAKE) -C crack1		clean
 	$(MAKE) -C ctest		clean
 	$(MAKE) -C chnos		clean
 
 src_only_full :
 	$(MAKE) -C asmtest		src_only
+	$(MAKE) -C crack1		src_only
 	$(MAKE) -C ctest		src_only
 	$(MAKE) -C chnos		src_only
 	-$(DEL) chnos.img

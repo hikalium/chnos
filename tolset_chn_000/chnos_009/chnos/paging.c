@@ -23,14 +23,14 @@ void Initialise_Paging(void *vram, uint xsize, uint ysize, uint bpp)
 Emergency_Out("Mem-Paging:Tables-Initialized");
 
 	for(i = 0; i < j; i++){
-		Paging_Set_Entry_Directory(&ADR_Paging_Directory[i], Paging_Get_Entry_Setting_Address(ADR_Paging_Directory[i]), PG_PRESENT | PG_WRITABLE | PG_SUPERVISOR | PG_WRITEBACK | PG_CACHE_ENABLE | PG_NOTACCESSED | PG_NOTWRITTEN | PG_4KBPAGE | PG_NOTGLOBAL, 0x00000000);
+		Paging_Set_Entry_Directory(&ADR_Paging_Directory[i], Paging_Get_Entry_Setting_Address(ADR_Paging_Directory[i]), PG_PRESENT | PG_WRITABLE | PG_USER | PG_WRITEBACK | PG_CACHE_ENABLE | PG_NOTACCESSED | PG_NOTWRITTEN | PG_4KBPAGE | PG_NOTGLOBAL, 0x00000000);
 		if(i == j - 1 && l != 0){
 			for(k = 0; k < l; k++){
-				Paging_Set_Entry_Table(&(Paging_Get_Entry_Setting_Address(ADR_Paging_Directory[i])[k]), (uint *)((i << 22) + (k * 1024 * 4)), PG_PRESENT | PG_WRITABLE | PG_SUPERVISOR | PG_WRITEBACK | PG_CACHE_ENABLE | PG_NOTACCESSED | PG_NOTWRITTEN | PG_4KBPAGE | PG_NOTGLOBAL, 0x00000000);
+				Paging_Set_Entry_Table(&(Paging_Get_Entry_Setting_Address(ADR_Paging_Directory[i])[k]), (uint *)((i << 22) + (k * 1024 * 4)), PG_PRESENT | PG_WRITABLE | PG_USER | PG_WRITEBACK | PG_CACHE_ENABLE | PG_NOTACCESSED | PG_NOTWRITTEN | PG_4KBPAGE | PG_NOTGLOBAL, 0x00000000);
 			}
 		} else{
 			for(k = 0; k < 1024; k++){
-				Paging_Set_Entry_Table(&(Paging_Get_Entry_Setting_Address(ADR_Paging_Directory[i])[k]), (uint *)((i << 22) + (k * 1024 * 4)), PG_PRESENT | PG_WRITABLE | PG_SUPERVISOR | PG_WRITEBACK | PG_CACHE_ENABLE | PG_NOTACCESSED | PG_NOTWRITTEN | PG_4KBPAGE | PG_NOTGLOBAL, 0x00000000);
+				Paging_Set_Entry_Table(&(Paging_Get_Entry_Setting_Address(ADR_Paging_Directory[i])[k]), (uint *)((i << 22) + (k * 1024 * 4)), PG_PRESENT | PG_WRITABLE | PG_USER | PG_WRITEBACK | PG_CACHE_ENABLE | PG_NOTACCESSED | PG_NOTWRITTEN | PG_4KBPAGE | PG_NOTGLOBAL, 0x00000000);
 			}
 		}
 	}

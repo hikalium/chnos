@@ -273,7 +273,14 @@ struct TASK_STATUS_SEGMENT {
 	uint cr3;
 	uint eip;
 	uint eflags;
-	uint eax, ecx, edx, ebx, esp, ebp, esi, edi;
+	uint eax;
+	uint ecx;
+	uint edx;
+	uint ebx;
+	uint esp;
+	uint ebp;
+	uint esi;
+	uint edi;
 	ushort es, reserve04;
 	ushort cs, reserve05;
 	ushort ss, reserve06;
@@ -364,6 +371,7 @@ struct CONSOLE {
 	struct TIMER *ctimer;
 	struct FILEINFO app_codefile;
 	ushort app_cs;
+	ushort app_ds;
 };
 
 struct SYSTEM_COMMON_DATA {
@@ -430,7 +438,7 @@ extern uchar *ACPI_MemoryMap_Type[5];
 
 /*functions*/
 /*api.c API処理*/
-void API_Execute(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ecx, uint eax);
+uint *API_Execute(uint edi, uint esi, uint ebp, uint esp, uint ebx, uint edx, uint ecx, uint eax);
 
 /*bootpack.c 基幹部分*/
 void CHNOS_KeyboardControlTask(void);
@@ -737,6 +745,7 @@ void Read_TSC(uint *addr);		//addr番地のuint[2]に、マシン固有レジスタ(MSR)内にあ
 					//この関数は、cpuidのTSCビットが有効でなければ使用できない。
 uint Memory_Test_Sub(uint start, uint end);
 void INT_3(void);			//ブレークポイント例外を発生させる。
+void APP_Run(uint eip, uint cs, uint esp, uint ds, uint *esp0);
 
 /*nasfunc1.nas C言語の関数に依存する関数群。おもに割り込み関係。*/
 void asm_CPU_ExceptionHandler00(void);

@@ -1,13 +1,11 @@
 # .chnアプリ(C言語)用Makefile
 
-APP      = ctest
+APP      = crack1
 
-OBJS_APP = $(APP).obj
+OBJS_APP = $(APP).obj chnapi.obj
 
 TOOLPATH = ../../z_tools/
 INCPATH  = ../../z_tools/CHNOSProject/
-
-include ../chnapi/apilist.txt
 
 MAKE     = $(TOOLPATH)make.exe -r
 NASK     = $(TOOLPATH)nask.exe
@@ -31,8 +29,8 @@ default :
 
 # ファイル生成規則
 
-$(APP).bim : $(OBJS_APP) $(OBJS_API) Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:$(APP).bim map:$(APP).map $(OBJS_APP) $(OBJS_API)
+$(APP).bim : $(OBJS_APP) Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:$(APP).bim map:$(APP).map $(OBJS_APP)
 
 $(APP).chn : $(APP).bim Makefile
 	$(BIM2CHN) $(APP).bim $(APP).chn 0
