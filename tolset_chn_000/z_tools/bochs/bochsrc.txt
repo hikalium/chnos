@@ -8,6 +8,7 @@ boot: floppy
 clock: sync=realtime, time0=local
 floppy_bootsig_check: disabled=0
 log: bochsout.txt
+com1: enabled=1, mode=file, dev=seriout.txt
 panic: action=ask
 error: action=report
 info: action=report

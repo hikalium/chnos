@@ -337,6 +337,10 @@ _asm_CPU_ExceptionHandler0d:
 	mov	ds,ax
 	mov	es,ax
 	call	_CPU_ExceptionHandler0d
+;If returned value is not zero, terminate application. EAX is address of ESP0 value.
+	cmp	eax,0
+	jne	APP_Terminate
+;End of terminate code.
 	pop	eax
 	popad
 	pop	ds
@@ -718,6 +722,11 @@ _asm_API_Execute:
 	iretd
 
 APP_Terminate:	;eax is address of esp0.
+	mov	bx,ss
+	mov	ds,bx
+	mov	es,bx
+	mov	fs,bx
+	mov	gs,bx
 	mov	esp,[eax]
 	popad
 	ret

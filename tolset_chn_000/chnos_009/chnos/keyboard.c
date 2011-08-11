@@ -27,6 +27,7 @@ uint key_shift = 0, key_leds;
 uint offset_data_k;
 DATA_FIFO *sendto_k, *keycmd_k;
 int *keycmd_wait_k;
+uint kignore = 0;
 
 void Initialise_Keyboard(DATA_FIFO *sendto, DATA_FIFO *keycmd, uint offset, uint leds, int *keycmd_wait)
 {
@@ -47,15 +48,27 @@ void Initialise_Keyboard(DATA_FIFO *sendto, DATA_FIFO *keycmd, uint offset, uint
 	FIFO32_Put(keycmd_k, KEYCMD_LED);
 	FIFO32_Put(keycmd_k, key_leds);
 
+	Keyboard_Controller_Wait_SendReady();
+	IO_Out8(PORT_KEYCMD, KEYCMD_ENABLE);
+	Keyboard_Controller_Wait_SendReady();
+	IO_Out8(PORT_KEYCMD, 0xae);
+	Keyboard_Controller_Wait_SendReady();
+	IO_Out8(PORT_KEYCMD, 0xa8);
+
 	return;
 }
 
 void InterruptHandler21(int *esp)
 {
 	int data;
-	data = IO_In8(KEYB_DATA);
+
+	if(kignore == 0){
+		data = IO_In8(KEYB_DATA);
+		FIFO32_Put(sendto_k, data + offset_data_k);
+	} else{
+		kignore--;
+	}
 	IO_Out8(PIC0_OCW2, 0x61);	/* IRQ-01受付完了をPICに通知。0x60+番号。*/
-	FIFO32_Put(sendto_k, data + offset_data_k);
 	return;
 }
 

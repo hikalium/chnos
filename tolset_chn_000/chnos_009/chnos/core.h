@@ -671,6 +671,7 @@ void Window_Draw_CloseButton(UI_Window *win, bool pressed);
 
 /*xception.c CPU—áŠOŠÖ˜A*/
 void CPU_Exception_Abort(int exception, int *esp);
+uint *CPU_Exception_Fault(int exception, int *esp);
 void CPU_ExceptionHandler00(int *esp);
 void CPU_ExceptionHandler01(int *esp);
 void CPU_ExceptionHandler02(int *esp);
@@ -684,7 +685,7 @@ void CPU_ExceptionHandler09(int *esp);
 void CPU_ExceptionHandler0a(int *esp);
 void CPU_ExceptionHandler0b(int *esp);
 void CPU_ExceptionHandler0c(int *esp);
-void CPU_ExceptionHandler0d(int *esp);
+uint *CPU_ExceptionHandler0d(int *esp);
 void CPU_ExceptionHandler0e(int *esp);
 void CPU_ExceptionHandler0f(int *esp);
 void CPU_ExceptionHandler10(int *esp);

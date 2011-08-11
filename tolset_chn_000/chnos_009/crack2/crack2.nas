@@ -7,10 +7,9 @@
 [SECTION .text]
 
 _CHNMain:
-	mov	edx, 2
-	mov	ebx, msg
-	int	0x40
+	mov	eax,1*8
+	mov	ds,ax
+	mov	byte[0x102600],0
 	mov	edx, 4
 	int	0x40
-msg:
-	db	"hello", 0
+

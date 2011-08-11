@@ -174,6 +174,7 @@
 #define PORT_KEYCMD	0x0064
 #define KEYCMD_SENDTO_MOUSE	0xd4
 #define KEYCMD_LED	0xed
+#define KEYCMD_ENABLE	0xf4
 
 #define MOUSECMD_RESET	0xff
 #define MOUSECMD_RESEND	0xfe

@@ -2,7 +2,7 @@
 #include "core.h"
 
 /*CPU Exceptions*/
-char *cpu_exceptions[0x20] = {
+uchar *cpu_exceptions[0x20] = {
 	"Divided by zero.",
 	"Reserved.",
 	"Nonmaskable interrupt.",
@@ -37,7 +37,7 @@ char *cpu_exceptions[0x20] = {
 	"Reserved."
 };
 
-char *cpu_exception_infos[16] = {
+uchar *cpu_exception_infos[16] = {
 	"EDI      ",
 	"ESI      ",
 	"EBP      ",
@@ -61,7 +61,7 @@ void CPU_Exception_Abort(int exception, int *esp)
 	int i;
 
 Emergency_Out_Reset();
-Emergency_Out("Exception 0x%02X:%s", exception, (uchar *)cpu_exceptions[exception]);
+Emergency_Out("Exception 0x%02X:%s", exception, cpu_exceptions[exception]);
 for(i = 0; i < 8; i++){
 	Emergency_Out("%s0x%08X %s0x%08X", cpu_exception_infos[i << 1], esp[i << 1], cpu_exception_infos[(i << 1) + 1], esp[(i << 1) + 1]);
 }
@@ -69,7 +69,7 @@ Emergency_Out("CR0 = 0x%08X", Load_CR0());
 Emergency_Out("CR2 = 0x%08X", Load_CR2());
 Emergency_Out("CR3 = 0x%08X", Load_CR3());
 
-	debug("Exception 0x%02X:\n%s\n", exception, (uchar *)cpu_exceptions[exception]);
+	debug("Exception 0x%02X:\n%s\n", exception, cpu_exceptions[exception]);
 
 	debug("#PUSHAD by _asm_CPU_ExceptionHandler\n");
 	for(i = 0; i <= 7; i++){
@@ -94,6 +94,23 @@ Emergency_Out("CR3 = 0x%08X", Load_CR3());
 	for(;;){
 		IO_HLT();
 	}
+}
+
+uint *CPU_Exception_Fault(int exception, int *esp)
+{
+	UI_Task *nowtask;
+	uchar s[128];
+
+	nowtask = MultiTask_Get_NowTask();
+	if(nowtask->cons != 0 && nowtask->cons->app_cs != 0){
+		sprintf(s, "\nException 0x%02X:\n\t%s\n", exception, (uchar *)cpu_exceptions[exception]);
+		InputBox_Put_String(nowtask->cons->input, s);
+		sprintf(s, "\t%s:0x%08X\n", cpu_exception_infos[11], esp[11]);	//EIP
+		InputBox_Put_String(nowtask->cons->input, s);
+	} else{
+		CPU_Exception_Abort(exception, esp);
+	}
+	return &nowtask->tss.esp0;
 }
 
 void CPU_ExceptionHandler00(int *esp)
@@ -161,9 +178,9 @@ void CPU_ExceptionHandler0c(int *esp)
 	CPU_Exception_Abort(0x0c, esp);
 }
 
-void CPU_ExceptionHandler0d(int *esp)
+uint *CPU_ExceptionHandler0d(int *esp)
 {
-	CPU_Exception_Abort(0x0d, esp);
+	return CPU_Exception_Fault(0x0d, esp);
 }
 
 void CPU_ExceptionHandler0e(int *esp)

@@ -3,6 +3,7 @@
 
 void CHNMain(void)
 {
-	api_putchar('A');
+	api_putchar('C');
+	api_putstr("TESTtest...\nNewLine.");
 	api_end();
 }

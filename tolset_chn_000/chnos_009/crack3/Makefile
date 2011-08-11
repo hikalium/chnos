@@ -1,6 +1,6 @@
 # .chnƒAƒvƒŠ—pMakefile
 
-APP      = crack1
+APP      = crack3
 OBJS_APP = $(APP).obj
 
 include ../chnmake.txt
