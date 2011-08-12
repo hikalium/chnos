@@ -459,6 +459,8 @@ void Console_Command_console(UI_Console *cons);
 void Console_Command_type(UI_Console *cons, const uchar filename[]);
 void Console_Command_dir(UI_Console *cons);
 void Console_Command_gdt(UI_Console *cons);
+void Console_Command_midi(UI_Console *cons, const uchar filename[]);
+uint Console_Command_midi_Convert_VariableLengthValue(uchar *base, uint *offset);
 void Console_Execute(UI_Console *cons);
 void Console_Execute_CHNOSProject(UI_Console *cons, int n);
 void Console_Execute_haribote(UI_Console *cons, int n);

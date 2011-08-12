@@ -11,8 +11,6 @@ uchar *ACPI_MemoryMap_Type[5] = {
 
 System_CommonData systemdata;
 
-extern uint kignore;
-
 void CHNMain(void)
 {
 	uint i;
@@ -81,14 +79,6 @@ void CHNMain(void)
 
 	for (;;) {
 		if(FIFO32_Status(&systemdata.sysfifo) == 0){
-debug("KBD-StatusR:%02X\n", IO_In8(0x64));
-Keyboard_Controller_Wait_SendReady();
-kignore = 1;	//ƒL[Š„‚è‚İ‚ğˆê‰ñ‚¾‚¯‰¡æ‚è‚·‚éB
-IO_Out8(PORT_KEYCMD, 0x20);
-Keyboard_Controller_Wait_SendReady();
-debug("KBD-8042ModeR:%02X\n", IO_In8(0x60));
-debug("PIC-0-IMR:%02X\n", IO_In8(0x21));
-debug("PIC-1-IMR:%02X\n", IO_In8(0xa1));
 			MultiTask_Task_Sleep(mytask);
 		} else{
 			i = FIFO32_Get(&systemdata.sysfifo);

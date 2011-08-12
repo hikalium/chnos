@@ -32,6 +32,7 @@ chnos.img : chnos/chnipl.bin chnos/chnos.sys chnos/chnipl.nas \
 		wbinimg src:chnos/chnipl.bin len:512 from:0 to:0 \
 		copy from:chnos/chnos.sys to:@: \
 		copy from:chnos/chnipl.nas to:@: \
+		copy from:chnos/test.mid to:@: \
 		copy from:asmtest/asmtest.chn to:@: \
 		copy from:bug1/bug1.chn to:@: \
 		copy from:crack1/crack1.chn to:@: \
