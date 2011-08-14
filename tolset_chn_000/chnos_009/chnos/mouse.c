@@ -37,11 +37,13 @@ void Initialise_Mouse(DATA_FIFO *sendto, uint offset, UI_MouseInfo *decode)
 	sendto_m = sendto;
 	offset_data_m = offset;
 	decode_m = decode;
-
+Emergency_Out("Mouse Initialise Start");
 	decode->phase = 0;
 	Mouse_Send_Command(MOUSECMD_RESET);
+Emergency_Out("Mouse Send Command");
 	System_GateDescriptor_Set(0x2c, (uint)asm_InterruptHandler2c, 0x02, AR_INTGATE32);
 	IO_Out8(PIC1_IMR, IO_In8(PIC1_IMR) & 0xef);
+Emergency_Out("Mouse Set INT");
 
 	return;
 }

@@ -2,8 +2,6 @@
 #include "core.h"
 
 UI_TimerControl timerctrl;
-bool beep = false;
-uint beepnow = 0;
 
 void Initialise_ProgrammableIntervalTimer(void)
 {
@@ -54,20 +52,6 @@ void InterruptHandler20(int *esp)
 				break;
 			}
 		}
-	}
-	if(beep){
-		PIT_Beep_Off();
-		if(beepnow == 0){
-			PIT_Beep_Set(262);
-			beepnow = 1;
-		} else if(beepnow == 1){
-			PIT_Beep_Set(330);
-			beepnow = 2;
-		} else{
-			PIT_Beep_Set(392);
-			beepnow = 0;
-		}
-		PIT_Beep_On();
 	}
 	if(taskswitch){
 		MultiTask_TaskSwitch();

@@ -57,6 +57,7 @@ asmhead:
 
 	call	set_vesa
 	call	chk_keyled
+
         call    pmode
 
 halt_loop:

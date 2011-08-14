@@ -34,25 +34,19 @@ void Initialise_Keyboard(DATA_FIFO *sendto, DATA_FIFO *keycmd, uint offset, uint
 	keycmd_k = keycmd;
 	offset_data_k = offset;
 	keycmd_wait_k = keycmd_wait;
-
+Emergency_Out("KBD Initialise Start");
 	Keyboard_Controller_Wait_SendReady();
 	IO_Out8(PORT_KEYCMD, KEYCMD_WRITE_MODE);
 	Keyboard_Controller_Wait_SendReady();
 	IO_Out8(KEYB_DATA, KBC_MODE);
-
+Emergency_Out("KBD Set Mode");
 	System_GateDescriptor_Set(0x21, (uint)asm_InterruptHandler21, 0x02, AR_INTGATE32);
 	IO_Out8(PIC0_IMR, IO_In8(PIC0_IMR) & 0xfd);
-
+Emergency_Out("KBD Set INT");
 	key_leds = (leds >> 4) & 7;
 	FIFO32_Put(keycmd_k, KEYCMD_LED);
 	FIFO32_Put(keycmd_k, key_leds);
-
-	Keyboard_Controller_Wait_SendReady();
-	IO_Out8(PORT_KEYCMD, KEYCMD_ENABLE);
-	Keyboard_Controller_Wait_SendReady();
-	IO_Out8(PORT_KEYCMD, 0xae);
-	Keyboard_Controller_Wait_SendReady();
-	IO_Out8(PORT_KEYCMD, 0xa8);
+Emergency_Out("KBD Set LED");
 
 	return;
 }

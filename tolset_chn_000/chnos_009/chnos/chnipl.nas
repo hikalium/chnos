@@ -32,10 +32,10 @@ CYLS    equ             0x0ff0
 ; プログラム本体
 
 entry:
-	mov		ax, 0			; レジスタ初期化
-	mov		ss, ax
-	mov		sp, 0x7c00
-	mov		ds, ax
+	mov	ax, 0			; レジスタ初期化
+	mov	ss, ax
+	mov	sp, 0x7c00
+	mov	ds, ax
 
 ; ディスクを読む
 

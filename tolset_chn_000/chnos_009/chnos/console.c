@@ -20,6 +20,21 @@ uchar *MIDI_Notes[12] = {
 	"B "
 };
 
+ushort ToneTable[12] = {
+	262,
+	277,
+	294,
+	311,
+	330,
+	349,
+	370,
+	392,
+	415,
+	440,
+	466,
+	494
+};
+
 void Initialise_Console(UI_Console *consctrl, System_CommonData *systemdata)
 {
 	console_root = consctrl;
@@ -132,6 +147,7 @@ void Console_MainTask(UI_Console *cons)
 					} else if(strcmp(cons->input->input_buf, "test") == 0){
 						sprintf(s, "taskaddr:0x%08X\n", mytask);
 						InputBox_Put_String(cons->input, s);
+						IO_Beep(440, 5000000);
 					} else if(strncmp(cons->input->input_buf, "midi ", 5) == 0){
 						Console_Command_midi(cons, &cons->input->input_buf[5]);
 					} else if(cons->input->input_buf[0] != 0x00){
@@ -408,9 +424,14 @@ void Console_Command_midi(UI_Console *cons, const uchar filename[])
 {
 	IO_File file;
 	int n;
-	uint p, q, tracksize, r, datalength;
+	uint p, q, tracksize, r, datalength, delta;
 	uchar s[128];
+	uint DeltaTimePerQuarterNote, microsTimePerQuarterNote, microsTimePerDeltaTime;
 
+	DeltaTimePerQuarterNote = 480;
+	microsTimePerQuarterNote = 500000;
+	microsTimePerDeltaTime = microsTimePerQuarterNote / DeltaTimePerQuarterNote;
+	
 	n = FloppyDisk_Search_File(sysdata->fd_boot, filename);
 	if(n != -1){
 		n = FloppyDisk_Load_File(sysdata->fd_boot, &file, n);
@@ -428,7 +449,9 @@ void Console_Command_midi(UI_Console *cons, const uchar filename[])
 				InputBox_Put_String(cons->input, s);
 				p += 2;
 
-				sprintf(s, "DeltaTime(per quarter note):%d\n", (file.data[p + 0] << 8) | file.data[p + 1]);
+				DeltaTimePerQuarterNote = (file.data[p + 0] << 8) | file.data[p + 1];
+				microsTimePerDeltaTime = microsTimePerQuarterNote / DeltaTimePerQuarterNote;
+				sprintf(s, "DeltaTime(per quarter note):%d\n", DeltaTimePerQuarterNote);
 				InputBox_Put_String(cons->input, s);
 				p += 2;
 
@@ -443,9 +466,11 @@ void Console_Command_midi(UI_Console *cons, const uchar filename[])
 						p += 4;
 
 						for(q = 0; q < tracksize; ){
-							r = Console_Command_midi_Convert_VariableLengthValue(&file.data[p + 0], &q);
-							sprintf(s, "\t%8d:", r);
+							delta = Console_Command_midi_Convert_VariableLengthValue(&file.data[p + 0], &q);
+							sprintf(s, "\t%8d:", delta);
 							InputBox_Put_String(cons->input, s);
+
+							IO_Wait(microsTimePerDeltaTime * delta);
 
 							if(file.data[p + q + 0] == 0xff){
 								InputBox_Put_String(cons->input, "Meta ");
@@ -506,7 +531,9 @@ void Console_Command_midi(UI_Console *cons, const uchar filename[])
 									InputBox_Put_String(cons->input, s);
 									q += datalength;
 								} else if(r == 0x51){	//テンポ設定（4分音符あたりのマイクロ秒）
-									sprintf(s, "Tempo size:%d\n", datalength);
+									microsTimePerQuarterNote = (file.data[p + q + 0] << 16) | (file.data[p + q + 1] << 8) | file.data[p + q + 2];
+									sprintf(s, "Tempo %dmicrosec per quarter note.\n", datalength);
+									microsTimePerDeltaTime = microsTimePerQuarterNote / DeltaTimePerQuarterNote;
 									InputBox_Put_String(cons->input, s);
 									q += datalength;
 								} else if(r == 0x54){	//SMPTEオフセット
@@ -532,12 +559,16 @@ void Console_Command_midi(UI_Console *cons, const uchar filename[])
 							} else if((file.data[p + q + 0] & 0xf0) == 0x80){	//note off
 								sprintf(s, "Note:Off ch:%d note:%d%s\n", (file.data[p + q + 0] & 0x0f), (int)(file.data[p + q + 1] / 12) - 1, MIDI_Notes[file.data[p + q + 1] % 12]);
 								InputBox_Put_String(cons->input, s);
+								PIT_Beep_Off();
 								q += 3;
 							} else if((file.data[p + q + 0] & 0xf0) == 0x90){	//note on or off
 								if(file.data[p + q + 2] == 0x00){	//note off
 									sprintf(s, "Note:Off ch:%d note:%d%s\n", (file.data[p + q + 0] & 0x0f), (int)(file.data[p + q + 1] / 12) - 1, MIDI_Notes[file.data[p + q + 1] % 12]);
+									PIT_Beep_Off();
 								} else{
 									sprintf(s, "Note:On  ch:%d note:%d%s vel:%d\n", (file.data[p + q + 0] & 0x0f), (int)(file.data[p + q + 1] / 12) - 1, MIDI_Notes[file.data[p + q + 1] % 12], file.data[p + q + 2]);
+									PIT_Beep_On();
+									Console_Command_midi_Beep_Set_NoteNumber(file.data[p + q + 1]);
 								}
 								InputBox_Put_String(cons->input, s);
 								q += 3;
@@ -555,6 +586,7 @@ void Console_Command_midi(UI_Console *cons, const uchar filename[])
 								break;
 							}
 						}
+						PIT_Beep_Off();
 						p += tracksize;
 					} else{
 						InputBox_Put_String(cons->input, "midi:Unknown Track.\n");
@@ -592,6 +624,29 @@ uint Console_Command_midi_Convert_VariableLengthValue(uchar *base, uint *offset)
 	*offset += i;
 
 	return r;
+}
+
+void Console_Command_midi_Beep_Set_NoteNumber(uchar n)
+{
+	uint fq, oct;
+
+	fq = 0;
+	oct = 0;
+
+	fq = ToneTable[n % 12];
+	oct = n / 12;
+
+	if(n > 71){	//4オクターブより上
+		oct = oct - 5;
+		fq = fq << oct;
+	} else if(n < 60){	//4オクターブより下
+		oct = 5 - oct;
+		fq = fq >> oct;
+	}
+
+	PIT_Beep_Set(fq);
+
+	return;
 }
 
 void Console_Execute(UI_Console *cons)

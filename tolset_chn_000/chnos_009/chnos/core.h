@@ -461,6 +461,7 @@ void Console_Command_dir(UI_Console *cons);
 void Console_Command_gdt(UI_Console *cons);
 void Console_Command_midi(UI_Console *cons, const uchar filename[]);
 uint Console_Command_midi_Convert_VariableLengthValue(uchar *base, uint *offset);
+void Console_Command_midi_Beep_Set_NoteNumber(uchar n);
 void Console_Execute(UI_Console *cons);
 void Console_Execute_CHNOSProject(UI_Console *cons, int n);
 void Console_Execute_haribote(UI_Console *cons, int n);
@@ -552,6 +553,8 @@ void InterruptHandler27(int *esp);
 
 /*io.c*/
 uchar IO_Read_CMOS(uchar addr);
+void IO_Beep(uint fq, uint microsec);
+void IO_Wait(uint microsec);
 
 /*keyboard.c*/
 void Initialise_Keyboard(DATA_FIFO *sendto, DATA_FIFO *keycmd, uint offset, uint leds, int *keycmd_wait);
